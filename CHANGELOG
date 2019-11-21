@@ -1,0 +1,591 @@
+﻿[COLOR="DeepSkyBlue"]1.0[/COLOR]
+[LIST]
+[*] Starting to modularize the code.
+[*] Reinstalled the old spanish language strings (where available).
+[*] Use LibSFUtils functions to handle localization strings
+[*] Renamed addon to avoid conflicting with pChat during development (so I can still use pChat in the beginning stages).
+[*] Removed embedded libraries. The following libraries now need to be installed separately: LibAddonMenu, LibMediaProvider-1.0, LibMainMenu, and libChat2
+[*] Removed LibCustomTitles
+[/LIST]
+
+-------------------------------------------------------------------------------
+
+Prior to this, you should look at the pChat addon (version 9.3.11.25) by DesertDwellers that this was based off of.
+
+
+## v9.3.11.25 ##
+================
+-- Updated LibCustomTitles
+-- Updated Manafest to support variable AddOnVersion
+
+This is an maintenance update, new version 9.4 is in development and will be released soon.  Was not ready to release before Murkmire update.
+
+-------------------------------------------------------------------------------
+
+## v9.3.10.24 ##
+===============
+-- Fixed issue Tells being stored as last chat channel for a tab.
+
+If you have the issue, simply choose a different channel for it along with sending a message.
+
+-------------------------------------------------------------------------------
+
+## v9.3.8.24 ##
+===============
+-- Fixed issue with AGS displaying messages of purchases.
+
+-------------------------------------------------------------------------------
+
+## v9.3.7.24 ##
+===============
+-- Default tab in settings now shows the tab names as opposed to the tab numbers.
+-- Updated libCustomTitles to the most recent version to address issues with RUEso add on.
+-- Remember to disable libCustomTitles follow the instructions http://www.esoui.com/downloads/info1765-DisableCustomTitles.html
+
+Known Issue: Default Channel for default tab is still not functioning, I released this update early to accomadate issues with RUEso addon.
+
+Note About Default Tab:  -- If tabs are renamed it may take a reloadui to get refresh the names, but as long as the tab number is still the same there will be no issue.  That is if you have your "Guild 1" tab as the default, and rename it to "G1", as long as the tab is in the same place the function for Default Tab will not be affected.
+
+-------------------------------------------------------------------------------
+
+## v9.3.6.24 ##
+===============
+-- Fix to 9.3.5.24, fixed default tab as it ceased to function. Programmer typo 
+-- Added support for library libCustomTitles, to disable it install the AddOn http://www.esoui.com/downloads/info1765-DisableCustomTitles.html
+
+-------------------------------------------------------------------------------
+
+## v9.3.5.24 ##
+===============
+-- Fix suggested by SlippyCheeze to avoid infinite loads
+-- Combined the old keybinds with the ones recently added, now all keybinds under heading pChat.
+-- Added Chat Tab Settings to addon menu.  For coming options.
+-- Added option to remember the last chat channel used in a tab.  (See Below)
+
+-------------------------------------------------------------------------------
+
+
+## v9.3.4.23## 
+===============
+-- A fix put into place for line 1407 reported as a bad argument by Itabit
+-- Restructred Settings menu, using submenus instead of annoying long list.
+-- Changed default window darkness to 6 instead of 1.
+
+Notes:  I have not been able to duplicate the bad argument error reported by Itabit, however, he found a solution was to start with a fresh saved vars.  I did code a fix, however I cannot confirm it will work at this point.  Please report any problems you may get with this release.
+
+v9.3.2.23
+=========
+-- Fixed typos from Chat Tab lables for new bindings
+
+v9.3.1.23
+=========
+This release was planned to have more changes, however I decided to push these out sooner to everyone.
+
+-- Russian translation updated by alexesprit
+-- Keybinds for up to 12 tabs, choose them in the Control options of the game menu.  Choose keybinds for each tab, when pressed, 
+     you will be in that tab.
+-- Fixed default tab, it was being superseeded by Chat History, it is now setting default tab after history is loaded.
+-- Changed transparency selection to chose between 0 to 11.  Option "0" is not going to be the most transparent, but the default
+     ESO Background.  "1" will be the most transparent, all the way up to 11 being the darkest.  You may experience when using the
+     default option of 0 that it may appear too light or too dark, quit the game to desktop and go back in and it should be correct.
+
+Next up, working on a rewrite of the settings which impact how the saved vars is saved, it will be highly likely that the Sync Chat option
+may go away, opting for a selection of either character based settings, or account wide settings.  Unless I discover another use of the chat 
+sync that will impact the add on negatively.
+
+v9.3.0.23
+=======
+-- Updated Chat Transparency to have 10 levels of transparency. Always wanted more choices on this :)
+
+v9.2.23
+=======
+-- Updated libaddonmenu library to r26
+-- Keybinding to whisper target is functioning correctly
+-- Restored saving up to 24 hours of chat.
+-- Restored Augment feature going from 200 lines to 1000 lines.
+-- Problem of intermittent freezing at login from character screen should be resolved.
+
+
+v9.1.23
+=======
+- Updated manifest to correct one.
+
+
+v9
+=======
+- API & Lib bump
+- Moved translation of the addon to a better system
+
+v8.2
+=======
+- Fixed URL parsing error when path was containing a "%"
+- Fixed Chat restoration leading to an infinite loading screen when trying to restore a very special text.
+
+v8.1
+=======
+- API Bump & Lib Upate
+- URL Handling can now be disabled (enabled per default)
+- Users of Minimize Chat in menus don't have their chat minimized anymore when entering in Cursor Mode. Please note that chat won't be minimized too when displaying few Addons UI.
+- Few tiny fixes
+
+v7.6
+=======
+- Fixed an error which caused pChat to enable all categories (channels) on ~all tabs.
+- Fixed an error which caused few addon messages being shown before older messages instead of after
+- Tiny fix on copy for JP/RU users
+
+v7.2
+=======
+- Fixed a little error which caused Lua errors from some addons messages
+- Added few TLD's in the list of authorized TLD's for URL handling
+- Complexs URLs should now really work
+- Chat restoration won't restore anymore messages cleared by a "Clear Tab" command
+- Fixed few cases with Nicknaming leading that the concerned nicknamed person was not tellable
+
+v7
+=======
+- API & Lib Update
+- Added URL Handling. URL Links will now be clickable and will open a popup to go to the selected URL. Please note : Due to ZOS restrictions, URL MUST have the protocol http:// or https:// . URL without protocol or protocols such mumble:// or ts3server:// are not recognized.
+Ex of valid URL : https://youtu.be/nsgHyzwmbnQ
+- Added Format Names to all channels. You can now set @UserId, Char@UserID or Char name for any channel. 1 option for Zone/tell/yell, 1 for party, and 1 per guild. Please note that whisps from @userID cannot be set to Char or Char@UserID.
+- Added Nicknames. You can add for any character or UserID a nickname. it will replace for this person all format names. Format is OldName = New Name ( ex : @MyUserID = Me )
+- Added OpenDyslexic font to the base package.
+- Another fixs for Japaneese & Cyrillic (many thanks 2ch)
+- Fixed Automessages Keybind & New Message
+- Tiny fixes here and there
+
+v6.2
+=======
+- Fix for Faded messages setting
+- Added a new option to show last 1000 messsages instead of last 200 (enabled per default)
+- Another fix for Japanese
+- Another fix for Party display
+
+v6.1
+=======
+- API Bump (ths version is compatible with both PTS & Live)
+- Added Japanese support & Cyrillic support. Please note that Cyrillic will only be available in next version of game. For now Russian users should continue to use RuESO & others addons in order to have Cyrillic integration. For the actual "space" problem, you can switch to other fonts like "Ubuntu".
+- Fixed random bug on Party member renamming. An old random bug on party switch should also been fixed.
+- Keybind "Whisp my target" now whisp your target or your last target if no players are targetted.
+- Display faded lines option has ben changed. It now display the last 1000 lines, instead than refreshing at each frame the hidden ones. Result should be the same, but for a little less cpu usage.
+- Another code clean. DEVELOPPERS, please read my comments in comments section.
+- Chat is now restored after switching language (and other options which require a loading screen, such as display settings).
+- Due to an addition for developpers, some users may now encounter some (very rare) messages coming from another addons at startup. If so, the concerned addon should be modified. It's mainly forgotten debug messages.
+
+v5
+=======
+- API Bump
+- Name of members in group channel can now be set to be @UserID or Character@UserID
+- Copy dialog max length is now 20,000 characters max, up from 960.
+
+v4.1a
+=======
+- Since this version, pChat embeds Custom Titles, to provide Custom Titles to some users. For more info please see the concerned addon description.
+- Russian translation updated
+- Added Cyrillic modified font in font list
+- Я надеюсь, что это работает, я не был в состоянии проверить
+
+v4
+=======
+- Added a switch to channel feature to history when using arrow keys to match channel previously used. Enabled per default.
+- Added configurable switch for guild/officer chan. Set any value (slash command or symbol) space separated
+- Updated LibAddonMenu library
+- API Bump for Thieves Guild DLC
+
+
+v3.1
+=======
+- Tiny fixes for nex context Menu options
+- Added an option to restore text entry when switching between characters
+- Added an option to restore only system messages
+
+v3
+=======
+- API Bump
+- Added an option to select tab per default at login
+- Restore chat function now restore also your last selected tab when you ReloadUI.
+- Added a Clear Text option to context menu of tab. It will clear the current text buffer. Please note that even if you clear a tab, text remains memorized in copy functions per exemple
+- Code clean
+
+v2.7
+=======
+- Upgrade to LibStub-r4 and bumped API version to Imperial City
+- Party leader can now have special colors, desactivated per default
+- Added a party subcategory in options
+- Fixed bug when clicking on whisp message to reply back to sender
+- Fixed the forgotten debug "I say a LFG message"
+- You can now choose if whisps are restored on logout/quit, activated per default
+- You can now choose if text entry history is restored on logout/quit, desactivated per default
+- Automated message can now go up to 350 chars
+
+v2.6.1
+=======
+- Upgrade to LibAddonMenu-2.0-r18 and LibStub-r3
+- Chat window can now be totally transparent, set transparency to 0 in chat window options
+- Added a keybind to whisper your target
+- Added few patterns for the LFG anti-spam
+
+v2.6
+=======
+- Added Automated Messages. Configuration accessible trought /msg (you can also bind a key in your settings). You can here define short tags which will be used to send long automated messages. ex: !ts will sent the message "/p Hello our teamspeak server is blablah.ourguild.com pass: sugar". Tag must be 1-12 characters long without spaces. Messages are up to 351 chars, same as chat, and can include channel switchs (such as /p blablabla, /g1 hello, etc) or emotes (like /kiss).
+- Added slider for a darker chat window. 1 is standard transparency and 4 is a zero transparency window.
+- Added an option to add a newline between sender name and message. Please note that emotes won't get a newline even if this setting is enabled.
+- Clicking on a whisper message now change your text entry to whisper the concerned player
+- Few tiny fixes and some option panel reorganization
+
+v2.5.1
+=======
+- Capped max lines for chat restoration to 5000 lines to avoid big dumps
+
+v2.5
+=======
+- Added a keybind to toggle chat (configuration directly in your keybinds).
+
+- Added an option to do not change default channel at startup. This one is available in the default channel list.
+If this option is selected, pChat won't change channel when entering game, when leaving a party (if auto switch party is activated) and when reloadui/logoff. This option shoud be used for users of FCO ChatTabBrain who get an improved textEntry configuration.
+
+- Fixed Guild Chat compatibility when restoring chat. GuildChat users should update their addon too.
+- Text entry is not restored anymore at login if last message before logout was received after max limit time
+- Handlers are not added anymore when reloading chat for people who disabled copy
+
+- Max limit time for chat restore is now 2h (from 3h)
+- Improved German translation. Many thanks to Baetram
+- Updated Russian translation. Many thanks to KiriX
+
+v2.4.3
+=======
+- Optimized RestoreHistory function. It won't dump anymore the text which will be dropped, also fixed a bug that caused sometimes the chat was also restored even if the timer was elapsed and few things on dumping back chat which could cause spam filtering and copying fail. Also, Restore History don't need anymore the ChatSync Feature being activated for LogOut, Kick & Quit.
+Plus, the timer for chat restoration is now based on each message timestamp and not logout time (if you set the timer to 3h, delog/relog immediatly, the messages past 3h won't be restored). Please note that for a ReloadUI, this timer is still ignored.
+
+Because of this small change, the chat reverted from previous versions of pChat won't get their colors but default channel ones. Plus all System Messages reverted from previous versions of pChat will be stripped.
+
+- Fixed a bug which reverted (again) your guild colors to black after leaving a guild.
+- Fixed a tiny bug on copy when length was > 1000 chars if last char was non-Ascii.
+
+v2.4.2
+=======
+- Fix on ChatConfig Synchronisation when alting.
+
+v2.4.1
+=======
+- Added an option to do not restore system messages when you restore your chat.
+- When you select your sound in list, it will now be played.
+- Switch to Next Tab was disabled, oops.
+- Updated russian translation, many thanks to KiriX
+- Improved options panel desactivation. If a control is disabled, it's because another control has a value which desactive this one. I cannot add for now reason of why control is disabled due to library restriction. I'll add intuitive tooltips when it'll be possible.
+
+v2.4
+=======
+- Added History :
+When you'll reloadUI Your TextEntry history (available with up/down arrow key) will re restored, your chat will be restored, your current channel will also be restored. This action is enabled per default and can be disabled.
+If you active the Chat Sync feature (available in options - activated per default in last release), You could also activate this option if you LogOut get kicked on just leave game. For those 3 settings a shared timer in hours is added.
+PS: If you crash (any reason), the last session won't be restored, but the precedent one, I can't do anything for it, just don't crash
+
+- Added Switch to Next Tab feature - It will permit you to switch to the next tab. Default Keybind is Shift+Tab, if you hit Shift while stealth, you'll stand up, so you'll maybe need to rebind this action. You can change it in your UI settings keybinds
+
+- Added Whisp Notification.
+If you activate this option, when you'll receive a whisp, if your actual tab don't show IM's or you didn't scrolled at the bottom, a notification will pop at the top right corner of the Chat Window. If you click on sender name, the chat will scroll at the button or switch to the next tab with IM enabled and scroll at the bottom. If your chat was Minimized when you receive an IM, a "IM" button will appear in red in the mini chat bar. It will show you the sender name and it's IM.
+Clicking on it will restore your chat and same as before. This feature is disabled per default.
+
+Improved copy dialog, the pages 2+ didn't get focus when opening them
+Fixed system messages which outputs now to all containers for users of ChatIt with this option activated.
+Fixed the rare bug with leftGuild (I guess it's ok, I can't test it).
+Fixed the default sound when receiving an IM, it was set to None, it's now "Notification"[/list]
+
+v2.3b
+=======
+- Fixes rare bugs at startup and /say which was badly declared as defaultchannel.
+
+v2.3a
+=======
+- Fixes two bugs introduced with last versions.
+For pChat color users, entry was generally set to dark red with v2.3
+and an error at startup for few people who left a guild while using version 2.1+
+
+v2.3
+=======
+- You can now choose in which tab System messages are displayed As the option is tab-dependant, the checkbox is in the parameters of your tab.
+Take care: As a lot of addons output to chat, you're strongly prompted to keep at least SysMessages in 1 tab.
+Developpers: Due to restrictions, pChat will snip your output to ChatSystem before this one will be completly ready (mainly for AddonLoaded debug).
+- Fixes rares bugs with unknown books linked into the chat, convertName which was failing in some rares cases and Guild Reorganization
+
+v2.2a
+=======
+- Automatic party switch re-enabled
+- Fixed rare bug with Guild Reorganizations
+
+v2.2
+=======
+- Fonts now use LibmediaProvider. Your font list may now be longer than before and shared with all addons
+- Fixed font "Droid Sans"
+
+
+v2.1
+=======
+
+- Added Font selector
+
+15 new fonts included for people who would like to change their font.
+To add yourself a font :
+First, download a font with TrueType format (.ttf) or OpenType format (.otf)
+Then paste it in pChat\fonts folder. You can create a new folder or just put the file here, as you want. Please don't include .txt files
+Then, open with a text editor file pChat\fonts.lua (use notepad or a better tool, like Notepad++)
+At the end of file, add your font like this : pChat.fontCollection["Font Name"] = "pChat/fonts/Folder/file.ttf" - Windows users must use "/" also.
+Save and close.
+Do a /ReloadUI ingame
+Go in pChat settings, your font will be added in the dropdown Fonts. Just select it. It will reloadUI your game.
+Take Care of Minion and updates, Minion and Updates generally erase the whole content of an addon. If your font is erased the chat won't be shown and the entrybox will be really small. If you get this problem, you can still type commands (like /reloadui) or go in pChat Settings and select font "ESO Standard Font"
+
+EU Users : If you need to use your language specific characters, Here are the characters that the game actually handles. Some fonts don't include all of them : !\"#$%&'()*+,-./0123456789:;<=>?@ ABCDEFGHIJKLMNOPQRSTUVWXYZ [\]^_`abcdefghijklmnopqrstuvwxyz{|} ~¡£¤¦§©«-®°²³´µ¶·»½¿ ÀÁÂÄÆÇÈÉÊËÌÍÎÏÑÒÓÔÖ×ÙÚÛÜßàáâäæçèéêëìíîïñòóôöùúûüÿŸ
+
+- Added anti-reorganization guild :
+When you leave a guild, and the guild you just left was not the last of your list, the guilds are reorganized. Leaving Guild1 means your guild2 become 1, the 3 become2, etc
+So, now, when you leave a guild, pChat just rollback your guild color settings / Chat tabs settings / Your pChat default channel
+
+- Fixed color of entry box for users of pChat colors. Now the entry color is same as 1st pChat color. If you use ESO social colors, you don't care of this fix.
+
+
+v2
+=======
+- Added an Anti-Spam : For now, 3 subfilters :
+Flood, Enabled per default. Protects Only geo-channels (Zone, ZFR, ZDE, ZEN, Say, Yells, Emote) Same messages in defined timer (0-180 seconds, 30 per default) are dropped.
+Looking For : Disabled per default, Drop LFG/LFM messages in all channels
+Want To : Disabled per default, Drop WTB/WTS/WTT messages in all channels
+
+Please note: For Looking For and Want To message, if you enable the protection and YOU bypass the system, it will auto disable for a certain period, configurable, in minutes (0-10, 5 per default).
+
+Guild Recruitment and Gold Spam will be added in a future release.
+
+- Added feature: Wisp Char instead of account in Guild messages, if only Character name is shown
+EU Users : If you cannot group your guildmates with accentued chars, the guildmate MUST submit an ingame ticket to ZOS for renaming due to Accentuation problem (generally done in a day).
+
+- Fixed last "h" bugs (color tags without anything inside).
+- Fixed ChatIt & SpamFilter integration due to a missing key in a core function rewrited by pChat
+- Fixed YOUR Charname when using "Set Offline"
+- Copy system now select the text for an easier usage
+
+- Changed settings for NEW users :
+Brackets are removed per default
+Guild Numbers are disabled per default
+Show tag in entry box is enabled per default
+Chat Sync Configuration is activated per default
+
+- Updated LibAddonMenu-r17
+- Updated LibChat2 for better 3rd party addon integration
+- Updated to last API (Justice)
+
+
+v 1.18
+=======
+- CopySystem re-enabled. To copy a string, Right-click on it and select which part of the chat you want to copy. Due to strong ZOS limitations, you'll need to Ctrl+C the text at least in the Text Entry box or in a dedicated dialog.
+- Added Chat config Synchronization between chars to help you to have same chat settings between all your chars. Disabled by default, Also include an embedded Import Tool in the options panel
+- Added option which will configure the chat of a new char same as your last played one
+- Fixed some incorrect colored sysmessages written by 3rd party-addons.
+
+v 1.17
+=======
+- Spanish translation (Thanks to Toperharrier !)
+- Added option to Minimize chat when game starts
+- Added option to Minimize chat when entering in Menus (Guild, Craft, Char. Stats, etc). And Another one to restore window after exiting menus.
+
+v 1.16
+=======
+- Fixed error when joining a guild
+- Channel names now update immediatly after leaving a guild
+
+v 1.15
+=======
+- Added /zone as default channel in options, /g1 stay default value and existing config are not modified.
+- Clicking on a say/yell/zone/zoneEN/zoneFR/zoneDE message also switch your channel to the channel you cliked on.
+
+v 1.14
+=======
+- Added Russian translation (Thanks to Kirix)
+- Color of the warning tab name can now be changed. Default is blue Azure
+- Dropped Changelog & Readme from the zip, they're on they website now
+
+v 1.13.1
+=======
+- Reverted : Whisp a guildmate will whisp its account, cause ZOS didn't fix its bug yet.
+
+v 1.13
+=======
+- Dropped Copy text since ZOS blocked this feature
+- Updated API version
+- Upgrade to LibAddonMenu 2.0-r16
+- Whisp a guildmate with its charname displayed now whisp the char instead of the account
+
+v 1.12
+=======
+- Added option to remove brackets on player names for people which don't like them (disabled by default)
+- NPC names on NPC channels are no longer linkable, their names are now without brackets too
+- Name of players which use emote channel (/me) are now without brackets, colon after name has been removed too, they still remain linkable
+- Corrected bug with party switching when group don't get leader
+- Removed forgotten comment when joinin a guild, uups!
+- Fixed "your" Char name when alting
+
+v 1.11
+=======
+- API updated to last game version, Nota: Due to new ZOS feature "Link in Chat" breaking some functionalities, core functions (ZO_LinkHandler_OnLinkClicked, ZO_LinkHandler_OnLinkMouseUp) have been overwrited. Send a comment if you got any problem !
+- Added Party switch : When creating/joining a party, your channel switch to party, when leaving, it automatically get back to your default channel defined in options, activated by default
+- Corrected nil error at startup for users of "Prevent Chat Text fadding"
+- Corected bug which didn't included timestamps on copied strings
+- Added more checks in order to fix infinite Timestamp spam at startup for some users, thanks to send a comment if you still got the problem!
+- Code clean : Reduced pChat footprint when switching zones and after a long time of playing
+- Corrected bug with default channel, it will only be set at login, not each time you change zone
+- pChat no longer use libChat "registerFrom" for 3rd party addons
+- Updated libChat2 version
+
+v 1.10.2
+=======
+- Finished parsing to handle last malformed colorized messages displayed by addons
+- Little Correction for long messages with non-ascii chars
+- pChat is compatible again with other libChat-1 addons
+- Reorganized some parts of code to avoid some nil messages
+- Corrected bug with inifinite "Text copied to clipboard"
+
+v 1.10.1
+=======
+- Copy System now Handle Textures in chat, image will be properly displayed in chat and stripped in copy
+- Improved parsing to handle some malformed colorized messages displayed by addons
+- pChat won't fail anymore for people which play with an unnoficial language pack (such as russian)
+
+v 1.10
+=======
+- Copy System : You can now copy your chat - Please see Website Desc for more info
+- A sound is now played when you receive a Whisp (Activated per defaut, configurable)
+- Clicking on guildname, guild tag timestamp or message will change your current channel to the one you clicked on and set focus on the chat editbox
+- ESO Colors are now activated by defaut (only for new users, it won't erase existing setting)
+- Displaying timestamps on System Messages if activated
+- Correction to CharacterRewrite to handle Guild Reorganization
+- Strip Color is now enabled by default (only for new users, it won't erase existing setting)
+- Updating to libChat2
+
+v 1.9.1
+=======
+- Corrected bug with Characterewrite
+- German traduction updated
+- Few debug option added
+
+v 1.9
+=======
+- Implemented chatbox resizing up to fullscreen
+- Added default channel at login, set to /guild1 per defaut
+- Option to custum Officer tag, if not set will be guild tag
+- Option to use ESO colors, desactivated perdefaut, if "Use two colors" is checked, then user name will be a little bit darker and the message will be a little bit brighter
+- ESO Color : Slider to adjust brightness difference between player and message text
+- 1st part of dynamic menu disabling depending on others settings, still lot of work here
+Bug fixes:
+- Rewrite of nameconversion system
+- Corrected random bug for CharacterName@UserID
+- Corrected random bug for no-rewrited name on firsts seconds after login
+
+v 1.8.1
+=======
+- Corrected nil error for EN/DE users
+
+v 1.8
+=======
+- Updated API version
+- Merging pNames in pChat - enabled by default
+- Option to get back strings such as says, yells, zone and [Party] - disabled by default
+- Timestamp color now can be same as chat - disabled by default
+- Upgrade to LibAddonMenu 2.0-r14
+- Options panel reorganized
+- Slash command added for option, type /pchat
+- Tags in officer chat with GM- prefix if activated
+- Code clean
+
+v 1.7
+=======
+- Few code clean
+- German traduction
+- Improved Strip colors function
+- Fixed random bug on guildname
+
+v 1.6
+=======
+- Updated API version
+- Upgrade to LibAddonMenu 2.0-r13
+- French traduction
+- Added default settings & ZOS EULA
+
+v 1.5.1
+=======
+- Updated API version
+
+v 1.5.0
+=======
+New features:
+- Timestamp configuration
+Bug fixes:
+- Fixed an issue where chat channel names would go blank, causing issues for SpamFilter users.
+
+v 1.4.4
+=======
+Bug fixes:
+- Fixed an issue where, after leaving a guild, chat channel names would go blank, causing issues for SpamFilter users.
+Misc code cleanup:
+- Removed a vestigial function.
+
+v 1.4.3
+=======
+Warnings:
+- Guild tags will be wiped with this update.
+Bug fixes:
+- Issues with guild leaving and joining should mostly be fixed. You need to use /reloadui to update the list in the options menu.
+- Improved handling of guild tags.
+
+v 1.4.2
+=======
+Bug fixes:
+- Fixed a bug where officer chat was giving errors, following ZOS's officer chat fix.
+
+v 1.4.1
+=======
+New features:
+- Added option to show guild tag next to the text entry box.
+Bug fixes:
+- Fixed NPC names displaying ^F and ^M
+
+v 1.4.0
+=======
+Just backend changes.
+
+v 1.3.0
+=======
+New features:
+- Option to stop playing using their own colours (eg. rainbow text)
+- Option to make messages use only 1 colour instead of 2 (left and right) colours.
+UI changes:
+- Redesigned options menu so each channel takes only 1 line instead of 2.
+Misc code cleanup:
+- Changed the event that triggers loading pChat.
+- Added the version number to the addon name to make it easier to check the version.
+
+v 1.1.1
+=======
+Fading option actually works now.
+
+v 1.1.0
+=======
+Added an option to prevent chat from fading.
+Fixed /r and backspace to reply to whispers (To use backspace to reply you'll have to go into the keybindings menu of the game and under "User Interface", bind "Reply to Whisper" to backspace. By default the game doesn't set it).
+Added 2-clause BSD license.
+
+v 1.0.2
+=======
+Converted EOL from LF to CR+LF
+
+v 1.0.1
+=======
+Fixed a crashing bug caused by having an extra .txt file.
+
+v 1.0.0
+=======
+Now including a menu to configure stuff
+
+v 0.5.1
+=======
+Fixed timestamp problem (incorrect variable name).
+Extra characters should now be removed.
