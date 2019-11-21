@@ -6,6 +6,8 @@ rChat = {
     settingName = "rChat",
     settingDisplayName = "rChat",
     author = "Shadowfen",
+    savedvar = "RCHAT_OPTS",
+    sv_version = 1,
 }
 rChat.settingDisplayName = SF.GetIconized(rChat.settingDisplayName, SF.colors.gold.hex)
 rChat.version = SF.GetIconized(rChat.version, SF.colors.gold.hex)

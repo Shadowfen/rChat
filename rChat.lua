@@ -5904,7 +5904,7 @@ end
 -- Initialises the settings and settings menu
 local function GetDBAndBuildLAM()
 	
-	db = ZO_SavedVars:NewAccountWide('RCHAT_OPTS', 1, nil, defaults)
+	db = ZO_SavedVars:NewAccountWide(rChat.savedvar, rChat.sv_version, nil, defaults)
 	
 	local panelData = {
 		type = "panel",

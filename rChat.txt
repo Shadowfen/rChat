@@ -9,7 +9,7 @@
 ## Version: 1.0
 ## Author: Shadowfen
 ## APIVersion: 100029
-## SavedVariables: rChatSaved
+## SavedVariables: RCHAT_OPTS
 ## AddOnVersion: 1
 ## DependsOn: LibSFUtils LibAddonMenu-2.0 LibMediaProvider-1.0 LibMainMenu libChat2
 
