@@ -1,6 +1,7 @@
 ﻿[COLOR="DeepSkyBlue"]1.0[/COLOR]
 [LIST]
 [*] Starting to modularize the code.
+[*] Split out the spam filtering to its own file.
 [*] Reinstalled the old spanish language strings (where available).
 [*] Use LibSFUtils functions to handle localization strings
 [*] Renamed addon to avoid conflicting with pChat during development (so I can still use pChat in the beginning stages).

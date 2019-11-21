@@ -20,6 +20,7 @@ fonts.lua
 
 rChat_Global.lua
 rChat.lua
+rChat_Spam.lua
 rChat.xml
 copyDialog.xml
 bindings.xml

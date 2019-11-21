@@ -1,3 +1,9 @@
+-- This is always the first source file loaded so that
+-- it can create the addon table/namespace.
+
+-- It also loads strings for the proper language.
+
+
 local SF = LibSFUtils
  
 rChat = {
