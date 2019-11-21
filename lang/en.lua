@@ -30,7 +30,6 @@ rChat_localization_strings["en"] = {
 	RCHAT_enableWhisperTab = "Enable Whisper Redirect",
 	RCHAT_enableWhisperTabT = "Enable redirect your whispers to a specific tab.",
 	
--- New Need Translations
 	RCHAT_OPTIONSH = "Messages Settings",
 
 	RCHAT_GUILDNUMBERS = "Guild numbers",

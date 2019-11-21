@@ -19,21 +19,27 @@ local isAddonInitialized	= false
 
 -- Default variables to push in SavedVars
 local defaults = {
-	-- LAM handled
+    -- ---- Message Settings
 	showGuildNumbers = false,
 	allGuildsSameColour = false,
 	allZonesSameColour = true,
 	allNPCSameColour = true,
 	delzonetags = true,
 	carriageReturn = false,
+	useESOcolors = true,
+	diffforESOcolors = 40,
 	alwaysShowChat = false,
 	augmentHistoryBuffer = true,
 	oneColour = false,
 	showTagInEntry = true,
+	geoChannelsFormat = 2,
+	disableBrackets = true,
+	addChannelAndTargetToHistory = true,
+	urlHandling = true,
+	enablecopy = true,
+    -- ----
 	showTimestamp = true,
 	timestampcolorislcol = false,
-	useESOcolors = true,
-	diffforESOcolors = 40,
 	timestampFormat = "HH:m",
 	guildTags = {},
 	officertag = {},
@@ -42,21 +48,19 @@ local defaults = {
 	formatguild = {},
 	defaultchannel = CHAT_CHANNEL_GUILD_1,
 	soundforincwhisps = SOUNDS.NEW_NOTIFICATION,
-	enablecopy = true,
 	enableChatTabChannel = true,
 	enablepartyswitch = true,
 	enableWhisperTab = false,
 	groupLeader = false,
-	disableBrackets = true,
+    -- ---- Chat Window Settings specific options
 	chatMinimizedAtLaunch = false,
 	chatMinimizedInMenus = false,
 	chatMaximizedAfterMenus = false,
 	windowDarkness = 6,
+	fonts = "ESO Standard Font",
+    -- colours["tabwarning"]
+    -- ----
 	chatSyncConfig = true,
-	floodProtect = true,
-	floodGracePeriod = 30,
-	lookingForProtect = false,
-	wantToProtect = false,
 	restoreOnReloadUI = true,
 	restoreOnLogOut = true,
 	restoreOnQuit = false,
@@ -65,18 +69,20 @@ local defaults = {
 	restoreSystemOnly = false,
 	restoreWhisps = true,
 	restoreTextEntryHistoryAtLogOutQuit = false,
-	addChannelAndTargetToHistory = true,
 	timeBeforeRestore = 2,
 	notifyIM = false,
 	nicknames = "",
 	defaultTab = 1,
 	defaultTabName = "",
 	groupNames = 1,
-	geoChannelsFormat = 2,
-	urlHandling = true,
+    -- ---- Anti Spam specific options
 	-- guildRecruitProtect = false,
 	spamGracePeriod = 5,
-	fonts = "ESO Standard Font",
+	floodProtect = true,
+	floodGracePeriod = 30,
+	lookingForProtect = false,
+	wantToProtect = false,
+    -- ----
 	colours = {
 		[2*CHAT_CHANNEL_SAY] = "|cFFFFFF", -- say Left
 		[2*CHAT_CHANNEL_SAY + 1] = "|cFFFFFF", -- say Right
@@ -140,27 +146,6 @@ local defaults = {
 -- SV
 local db
 local targetToWhisp
-
--- seem to be unused
---[[
-local guild1 = 1
-local guild2 = 2
-local guild3 = 3
-local guild4 = 4
-local guild5 = 5
-local guildName1 = ""
-local guildName2 = ""
-local guildName3 = ""
-local guildName4 = ""
-local guildName5 = ""
-local guildId1 = nil
-local guildId2 = nil
-local guildId3 = nil
-local guildId4 = nil
-local guildId5 = nil
-local guildMaxNum = 0
---]]
---  end unused
 
 
 -- rChatData will receive variables and objects.
@@ -272,8 +257,6 @@ local chatStrings = {
 }
 
 local MENU_CATEGORY_RCHAT = nil
-
-
 
 -- Turn a ([0,1])^3 RGB colour to "|cABCDEF" form. We could use ZO_ColorDef, but we have so many colors so we don't do it.
 local function ConvertRGBToHex(r, g, b)
@@ -4344,7 +4327,7 @@ local function BuildLAMPanel()
 				width = "full",
 				default = defaults.disableBrackets,
 			},
-			{--Traget Histoyr
+			{--Target History
 				type = "checkbox",
 				name = L(RCHAT_ADDCHANNELANDTARGETTOHISTORY),
 				tooltip = L(RCHAT_ADDCHANNELANDTARGETTOHISTORYTT),
@@ -4593,7 +4576,7 @@ local function BuildLAMPanel()
 				width = "full",
 				default = defaults.chatMinimizedAtLaunch,
 			},
-			{-- Minimize Menues
+			{-- Minimize Menus
 				type = "checkbox",
 				name = L(RCHAT_CHATMINIMIZEDINMENUS),
 				tooltip = L(RCHAT_CHATMINIMIZEDINMENUSTT),
