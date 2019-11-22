@@ -1,5 +1,3 @@
---  rChat object will receive functions
-rChat = rChat or {}
 
 -- Registering librairies
 local LAM = LibAddonMenu2
@@ -7,9 +5,6 @@ local RCHATLC = LibChat2
 local LMP = LibMediaProvider
 local LMM = LibMainMenu
 local SF = LibSFUtils
-
--- Common
-local ADDON_NAME = rChat.name
 
 local L = GetString
 
@@ -68,13 +63,13 @@ local defaults = {
 	notifyIM = false,
     -- ---- Whisper Settings
 
-    -- ---- Party Settings
+    -- ---- Group Settings
 	enablepartyswitch = true,
 	groupLeader = false,
     -- colours["groupleader"]
     -- colours["groupleader1"]
 	groupNames = 1,
-    -- ---- Party Settings - End
+    -- ---- Group Settings - End
     
     -- ---- Chat Window Settings specific options
 	chatMinimizedAtLaunch = false,
@@ -184,10 +179,7 @@ local targetToWhisp
 
 
 -- rChatData will receive variables and objects.
-local rChatData = {
-	cachedMessages = {}, -- This one must be init before OnAddonLoaded because it will receive data before this event.
-}
-rChat.data = rChatData
+local rChatData = rChat.data
 
 -- Used for rChat LinkHandling
 local RCHAT_LINK = "p"
@@ -412,7 +404,7 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
 
 		end
 		
-	-- Geo chat, Party, Whisps with characterName
+	-- Geo chat, Group, Whisps with characterName
 	else
 		
 		new_from = zo_strformat(SI_UNIT_NAME, new_from)
@@ -4212,7 +4204,7 @@ local function BuildLAMPanel()
 	-- Messages Settings
 	optionsData[#optionsData + 1] = {
 		type = "submenu",
-		name = L(RCHAT_OPTIONSH),
+        name = SF.GetIconized(RCHAT_OPTIONSH, SF.hex.bronze),
 		controls = {
 			{-- LAM Option Show Guild Numbers
 				type = "checkbox",
@@ -4222,7 +4214,7 @@ local function BuildLAMPanel()
 				setFunc = function(newValue)
 					db.showGuildNumbers = newValue
 				end,
-				width = "full",
+				width = "half",
 				default = defaults.showGuildNumbers,
 			},
 			{-- LAM Option Use Same Color for all Guilds
@@ -4231,26 +4223,8 @@ local function BuildLAMPanel()
 				tooltip = L(RCHAT_ALLGUILDSSAMECOLOURTT),
 				getFunc = function() return db.allGuildsSameColour end,
 				setFunc = function(newValue) db.allGuildsSameColour = newValue end,
-				width = "full",
+				width = "half",
 				default = defaults.allGuildsSameColour,
-			},
-			{-- LAM Option Use same color for all zone chats
-				type = "checkbox",
-				name = L(RCHAT_ALLZONESSAMECOLOUR),
-				tooltip = L(RCHAT_ALLZONESSAMECOLOURTT),
-				getFunc = function() return db.allZonesSameColour end,
-				setFunc = function(newValue) db.allZonesSameColour = newValue end,
-				width = "full",
-				default = defaults.allZonesSameColour,
-			},
-			{-- LAM Option Use same color for all NPC
-				type = "checkbox",
-				name = L(RCHAT_ALLNPCSAMECOLOUR),
-				tooltip = L(RCHAT_ALLNPCSAMECOLOURTT),
-				getFunc = function() return db.allNPCSameColour end,
-				setFunc = function(newValue) db.allNPCSameColour = newValue end,
-				width = "full",
-				default = defaults.allNPCSameColour,
 			},
 			{-- LAM Option Remove Zone Tags
 				type = "checkbox",
@@ -4270,67 +4244,15 @@ local function BuildLAMPanel()
 				width = "full",
 				default = defaults.carriageReturn,
 			},
-			{-- LAM Option Use ESO Colors
-				type = "checkbox",
-				name = L(RCHAT_USEESOCOLORS),
-				tooltip = L(RCHAT_USEESOCOLORSTT),
-				getFunc = function() return db.useESOcolors end,
-				setFunc = function(newValue) db.useESOcolors = newValue end,
-				width = "half",
-				default = defaults.useESOcolors,
-			},
-			{-- LAM Option Difference Between ESO Colors
-				type = "slider",
-				name = L(RCHAT_DIFFFORESOCOLORS),
-				tooltip = L(RCHAT_DIFFFORESOCOLORSTT),
-				min = 0,
-				max = 100,
-				step = 1,
-				getFunc = function() return db.diffforESOcolors end,
-				setFunc = function(newValue) db.diffforESOcolors = newValue end,
-				width = "half",
-				default = defaults.diffforESOcolors,
-				disabled = function() return not db.useESOcolors end,
-			},
-			{-- LAM Option Prevent Chat Fading
-				type = "checkbox",
-				name = L(RCHAT_PREVENTCHATTEXTFADING),
-				tooltip = L(RCHAT_PREVENTCHATTEXTFADINGTT),
-				getFunc = function() return db.alwaysShowChat end,
-				setFunc = function(newValue) db.alwaysShowChat = newValue end,
-				width = "full",
-				default = defaults.alwaysShowChat,
-			},
-			{-- Augment lines of chat
-				type = "checkbox",
-				name = L(RCHAT_AUGMENTHISTORYBUFFER),
-				tooltip = L(RCHAT_AUGMENTHISTORYBUFFERTT),
-				getFunc = function() return db.augmentHistoryBuffer end,
-				setFunc = function(newValue) db.augmentHistoryBuffer = newValue end,
-				width = "full",
-				default = defaults.augmentHistoryBuffer,
-			},
-			{-- LAM Option Use one color for lines
-				type = "checkbox",
-				name = L(RCHAT_USEONECOLORFORLINES),
-				tooltip = L(RCHAT_USEONECOLORFORLINESTT),
-				getFunc = function() return db.oneColour end,
-				setFunc = function(newValue) db.oneColour = newValue end,
-				width = "full",
-				default = defaults.oneColour,
-			},
-			{-- LAM Option Guild Tags next to entry box
-				type = "checkbox",
-				name = L(RCHAT_GUILDTAGSNEXTTOENTRYBOX),
-				tooltip = L(RCHAT_GUILDTAGSNEXTTOENTRYBOXTT),
-				width = "full",
-				default = defaults.showTagInEntry,
-				getFunc = function() return db.showTagInEntry end,
-				setFunc = function(newValue)
-							db.showTagInEntry = newValue
-							UpdateCharCorrespondanceTableChannelNames()
-						end
-			},
+            {
+                type = "header",
+                name = SF.GetIconized(RCHAT_GEOCHANNELSFORMAT, SF.hex.superior),
+                width = "full",
+            },
+            {
+                type = "description",
+                text = "",
+            },
 			{-- LAM Option Names Format
 				type = "dropdown",
 				name = L(RCHAT_GEOCHANNELSFORMAT),
@@ -4362,6 +4284,74 @@ local function BuildLAMPanel()
 				width = "half",
 				default = defaults.disableBrackets,
 			},
+            {
+                type = "header",
+                name = SF.GetIconized(RCHAT_TIMESTAMPH, SF.hex.superior),
+                width = "full",
+            },
+            {
+                type = "description",
+                text = "",
+            },
+			{
+				type = "checkbox",
+				name = L(RCHAT_ENABLETIMESTAMP),
+				tooltip = L(RCHAT_ENABLETIMESTAMPTT),
+				getFunc = function() return db.showTimestamp end,
+				setFunc = function(newValue) db.showTimestamp = newValue end,
+				width = "full",
+				default = defaults.showTimestamp,
+			},
+			{
+				type = "checkbox",
+				name = L(RCHAT_TIMESTAMPCOLORISLCOL),
+				tooltip = L(RCHAT_TIMESTAMPCOLORISLCOLTT),
+				getFunc = function() return db.timestampcolorislcol end,
+				setFunc = function(newValue) db.timestampcolorislcol = newValue end,
+				width = "full",
+				default = defaults.timestampcolorislcol,
+				disabled = function() return not db.showTimestamp end,
+			},
+			{	
+				type = "editbox",
+				name = L(RCHAT_TIMESTAMPFORMAT),
+				tooltip = L(RCHAT_TIMESTAMPFORMATTT),
+				getFunc = function() return db.timestampFormat end,
+				setFunc = function(newValue) db.timestampFormat = newValue end,
+				width = "full",
+				default = defaults.timestampFormat,
+				disabled = function() return not db.showTimestamp end,
+			},
+			{
+				type = "colorpicker",
+				name = L(RCHAT_TIMESTAMP),
+				tooltip = L(RCHAT_TIMESTAMPTT),
+				getFunc = function() return ConvertHexToRGBA(db.colours.timestamp) end,
+				setFunc = function(r, g, b) db.colours.timestamp = ConvertRGBToHex(r, g, b) end,
+				default = ConvertHexToRGBAPacked(defaults.colours.timestamp),
+				disabled = function() return not db.showTimestamp end,
+			},
+            {
+                type = "header",
+                name = SF.GetIconized("Misc", SF.hex.superior),
+                width = "full",
+            },
+            {
+                type = "description",
+                text = "",
+            },
+			{-- LAM Option Guild Tags next to entry box
+				type = "checkbox",
+				name = L(RCHAT_GUILDTAGSNEXTTOENTRYBOX),
+				tooltip = L(RCHAT_GUILDTAGSNEXTTOENTRYBOXTT),
+				width = "full",
+				default = defaults.showTagInEntry,
+				getFunc = function() return db.showTagInEntry end,
+				setFunc = function(newValue)
+							db.showTagInEntry = newValue
+							UpdateCharCorrespondanceTableChannelNames()
+						end
+			},
 			{--Target History
 				type = "checkbox",
 				name = L(RCHAT_ADDCHANNELANDTARGETTOHISTORY),
@@ -4390,10 +4380,11 @@ local function BuildLAMPanel()
 				default = defaults.enablecopy,
 			},--
 		},
-	} -- Chat Tabs
+	} 
+    -- Chat Tabs
 	optionsData[#optionsData + 1] = {
 		type = "submenu",
-		name = L(RCHAT_CHATTABH),
+        name = SF.GetIconized(RCHAT_CHATTABH, SF.hex.bronze),
 		controls = {
 			{-- Enable chat channel memory
 				type = "checkbox",
@@ -4475,10 +4466,11 @@ local function BuildLAMPanel()
 			},
 			-- !!!!!need code for specific tab here
 		},
-	} -- Group Submenu
+	} 
+    -- Group Submenu
 	optionsData[#optionsData + 1] = {
 		type = "submenu",
-		name = L(RCHAT_GROUPH),
+        name = SF.GetIconized(RCHAT_GROUPH, SF.hex.bronze),
 		controls = {
 			{-- Enable Party Switch
 				type = "checkbox",
@@ -4547,10 +4539,11 @@ local function BuildLAMPanel()
 				end,
 			},
 		},
-	} -- Sync Settings Header
+	} 
+    -- Sync Settings Header
 	optionsData[#optionsData + 1] = {
 		type = "submenu",
-		name = L(RCHAT_SYNCH),
+        name = SF.GetIconized(RCHAT_SYNCH, SF.hex.bronze),
 		controls = {
 			{-- Sync ON
 				type = "checkbox",
@@ -4573,19 +4566,12 @@ local function BuildLAMPanel()
 				end,
 			},
 		},
-	} -- Mouse
+	} 
+    -- Chat Appearance
 	optionsData[#optionsData + 1] = {
 		type = "submenu",
-		name = L(RCHAT_APPEARANCEMH),
+        name = SF.GetIconized(RCHAT_APPEARANCEMH, SF.hex.bronze),
 		controls = {
-			{--	New Message Color
-				type = "colorpicker",
-				name = L(RCHAT_TABWARNING),
-				tooltip = L(RCHAT_TABWARNINGTT),
-				getFunc = function() return ConvertHexToRGBA(db.colours["tabwarning"]) end,
-				setFunc = function(r, g, b) db.colours["tabwarning"] = ConvertRGBToHex(r, g, b) end,
-				default = ConvertHexToRGBAPacked(defaults.colours["tabwarning"]),
-			},
 			{-- Chat Window Transparency
 				type = "slider",
 				name = L(RCHAT_WINDOWDARKNESS),
@@ -4602,7 +4588,42 @@ local function BuildLAMPanel()
 				width = "full",
 				default = defaults.windowDarkness,
 			},
-			{-- Minimize at luanch
+			{-- LAM Option Prevent Chat Fading
+				type = "checkbox",
+				name = L(RCHAT_PREVENTCHATTEXTFADING),
+				tooltip = L(RCHAT_PREVENTCHATTEXTFADINGTT),
+				getFunc = function() return db.alwaysShowChat end,
+				setFunc = function(newValue) db.alwaysShowChat = newValue end,
+				width = "full",
+				default = defaults.alwaysShowChat,
+			},
+			{-- Augment lines of chat
+				type = "checkbox",
+				name = L(RCHAT_AUGMENTHISTORYBUFFER),
+				tooltip = L(RCHAT_AUGMENTHISTORYBUFFERTT),
+				getFunc = function() return db.augmentHistoryBuffer end,
+				setFunc = function(newValue) db.augmentHistoryBuffer = newValue end,
+				width = "full",
+				default = defaults.augmentHistoryBuffer,
+			},
+			{-- LAM Option Use one color for lines
+				type = "checkbox",
+				name = L(RCHAT_USEONECOLORFORLINES),
+				tooltip = L(RCHAT_USEONECOLORFORLINESTT),
+				getFunc = function() return db.oneColour end,
+				setFunc = function(newValue) db.oneColour = newValue end,
+				width = "full",
+				default = defaults.oneColour,
+			},
+			{--	New Message Color
+				type = "colorpicker",
+				name = L(RCHAT_TABWARNING),
+				tooltip = L(RCHAT_TABWARNINGTT),
+				getFunc = function() return ConvertHexToRGBA(db.colours["tabwarning"]) end,
+				setFunc = function(r, g, b) db.colours["tabwarning"] = ConvertRGBToHex(r, g, b) end,
+				default = ConvertHexToRGBAPacked(defaults.colours["tabwarning"]),
+			},
+			{-- Minimize at launch
 				type = "checkbox",
 				name = L(RCHAT_CHATMINIMIZEDATLAUNCH),
 				tooltip = L(RCHAT_CHATMINIMIZEDATLAUNCHTT),
@@ -4620,7 +4641,7 @@ local function BuildLAMPanel()
 				width = "full",
 				default = defaults.chatMinimizedInMenus,
 			},
-			{ -- Mximize After Menus
+			{ -- Maximize After Menus
 				type = "checkbox",
 				name = L(RCHAT_CHATMAXIMIZEDAFTERMENUS),
 				tooltip = L(RCHAT_CHATMAXIMIZEDAFTERMENUSTT),
@@ -4646,9 +4667,10 @@ local function BuildLAMPanel()
 			},
 		},
 	} -- LAM Menu Whispers
+    -- Whispers
 	optionsData[#optionsData + 1] = {
 		type = "submenu",
-		name = L(RCHAT_IMH),
+        name = SF.GetIconized(RCHAT_IMH, SF.hex.bronze),
 		controls = {
 			{-- LAM Option Whispers: Sound
 				type = "dropdown",
@@ -4705,10 +4727,11 @@ local function BuildLAMPanel()
 				default = defaults.notifyIM,
 			},
 		},
-	}-- LAM Menu Restore Chat
+	}
+    -- LAM Menu Restore Chat
 	optionsData[#optionsData + 1] = {
 		type = "submenu",
-		name = L(RCHAT_RESTORECHATH),
+        name = SF.GetIconized(RCHAT_RESTORECHATH, SF.hex.bronze),
 		controls = {
 			{-- LAM Option Restore: After ReloadUI
 				type = "checkbox",
@@ -4796,9 +4819,10 @@ local function BuildLAMPanel()
 			},
 		},
 	} -- Anti-Spam   Timestamp options
+    -- Anti Spam
 	optionsData[#optionsData + 1] = {
 		type = "submenu",
-		name = L(RCHAT_ANTISPAMH),
+        name = SF.GetIconized(RCHAT_ANTISPAMH, SF.hex.bronze),
 		controls = {
 			{-- flood protect
 				type = "checkbox",
@@ -4868,59 +4892,47 @@ local function BuildLAMPanel()
 			},
 		},
 	} -- Timestamp options
+    -- Chat Colors
 	optionsData[#optionsData + 1] = {
 		type = "submenu",
-		name = L(RCHAT_TIMESTAMPH),
+        name = SF.GetIconized(RCHAT_COLORSH, SF.hex.bronze),
 		controls = {
-			{
+			{-- LAM Option Use ESO Colors
 				type = "checkbox",
-				name = L(RCHAT_ENABLETIMESTAMP),
-				tooltip = L(RCHAT_ENABLETIMESTAMPTT),
-				getFunc = function() return db.showTimestamp end,
-				setFunc = function(newValue) db.showTimestamp = newValue end,
-				width = "full",
-				default = defaults.showTimestamp,
+				name = L(RCHAT_USEESOCOLORS),
+				tooltip = L(RCHAT_USEESOCOLORSTT),
+				getFunc = function() return db.useESOcolors end,
+				setFunc = function(newValue) db.useESOcolors = newValue end,
+				width = "half",
+				default = defaults.useESOcolors,
 			},
-			{
-				type = "checkbox",
-				name = L(RCHAT_TIMESTAMPCOLORISLCOL),
-				tooltip = L(RCHAT_TIMESTAMPCOLORISLCOLTT),
-				getFunc = function() return db.timestampcolorislcol end,
-				setFunc = function(newValue) db.timestampcolorislcol = newValue end,
-				width = "full",
-				default = defaults.timestampcolorislcol,
-				disabled = function() return not db.showTimestamp end,
+			{-- LAM Option Difference Between ESO Colors
+				type = "slider",
+				name = L(RCHAT_DIFFFORESOCOLORS),
+				tooltip = L(RCHAT_DIFFFORESOCOLORSTT),
+				min = 0,
+				max = 100,
+				step = 1,
+				getFunc = function() return db.diffforESOcolors end,
+				setFunc = function(newValue) db.diffforESOcolors = newValue end,
+				width = "half",
+				default = defaults.diffforESOcolors,
+				disabled = function() return not db.useESOcolors end,
 			},
-			{	
-				type = "editbox",
-				name = L(RCHAT_TIMESTAMPFORMAT),
-				tooltip = L(RCHAT_TIMESTAMPFORMATTT),
-				getFunc = function() return db.timestampFormat end,
-				setFunc = function(newValue) db.timestampFormat = newValue end,
-				width = "full",
-				default = defaults.timestampFormat,
-				disabled = function() return not db.showTimestamp end,
-			},
-			{
-				type = "colorpicker",
-				name = L(RCHAT_TIMESTAMP),
-				tooltip = L(RCHAT_TIMESTAMPTT),
-				getFunc = function() return ConvertHexToRGBA(db.colours.timestamp) end,
-				setFunc = function(r, g, b) db.colours.timestamp = ConvertRGBToHex(r, g, b) end,
-				default = ConvertHexToRGBAPacked(defaults.colours.timestamp),
-				disabled = function() return not db.showTimestamp end,
-			},
-		},
-	}
-		-- Addon Menu Other Colors
-	optionsData[#optionsData + 1] = {
-		type = "submenu",
-		name = L(RCHAT_CHATCOLORSH),
-		controls = {
+            {
+                type = "header",
+                name = SF.GetIconized(RCHAT_CHATCOLORSH, SF.hex.superior),
+                width = "full",
+            },
+            {
+                type = "description",
+                text = RCHAT_CHATCOLORTT,
+            },
 			{-- Say players
 				type = "colorpicker",
 				name = L(RCHAT_SAY),
 				tooltip = L(RCHAT_SAYTT),
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_SAY]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_SAY] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_SAY]),
@@ -4930,6 +4942,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_SAYCHAT),
 				tooltip = L(RCHAT_SAYCHATTT),
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_SAY + 1]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_SAY + 1] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_SAY + 1]),
@@ -4939,6 +4952,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_ZONE),
 				tooltip = L(RCHAT_ZONETT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_ZONE]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_ZONE] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_ZONE]),
@@ -4948,6 +4962,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_ZONECHAT),
 				tooltip = L(RCHAT_ZONECHATTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_ZONE + 1]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_ZONE + 1] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_ZONE + 1]),
@@ -4957,6 +4972,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_YELL),
 				tooltip = L(RCHAT_YELLTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_YELL]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_YELL] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_YELL]),
@@ -4966,6 +4982,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_YELLCHAT),
 				tooltip = L(RCHAT_YELLCHATTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_YELL + 1]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_YELL + 1] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_YELL + 1]),
@@ -4975,6 +4992,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_INCOMINGWHISPERS),
 				tooltip = L(RCHAT_INCOMINGWHISPERSTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_WHISPER]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_WHISPER] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_WHISPER]),
@@ -4984,6 +5002,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_INCOMINGWHISPERSCHAT),
 				tooltip = L(RCHAT_INCOMINGWHISPERSCHATTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_WHISPER + 1]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_WHISPER + 1] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_WHISPER + 1]),
@@ -4993,6 +5012,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_OUTGOINGWHISPERS),
 				tooltip = L(RCHAT_OUTGOINGWHISPERSTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_WHISPER_SENT]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_WHISPER_SENT] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_WHISPER_SENT]),
@@ -5002,6 +5022,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_OUTGOINGWHISPERSCHAT),
 				tooltip = L(RCHAT_OUTGOINGWHISPERSCHATTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_WHISPER_SENT + 1]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_WHISPER_SENT + 1] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_WHISPER_SENT + 1]),
@@ -5011,6 +5032,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_GROUP),
 				tooltip = L(RCHAT_GROUPTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_PARTY]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_PARTY] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_PARTY]),
@@ -5020,21 +5042,26 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_GROURCHAT),
 				tooltip = L(RCHAT_GROURCHATTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_PARTY + 1]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_PARTY + 1] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_PARTY + 1]),
 				disabled = function() return db.useESOcolors end,
 			},
-		},
-	}--Other Colors
-	optionsData[#optionsData + 1] = {
-		type = "submenu",
-		name = L(RCHAT_OTHERCOLORSH),
-		controls = {
+            {
+                type = "header",
+                name = SF.GetIconized(RCHAT_OTHERCOLORSH, SF.hex.superior),
+                width = "full",
+            },
+            {
+                type = "description",
+                text = RCHAT_OTHERCOLORTT,
+            },
 			{
 				type = "colorpicker",
 				name = L(RCHAT_EMOTES),
-				tooltip = L(RCHAT_EMOTESTT), 
+				tooltip = L(RCHAT_EMOTESTT),
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_EMOTE]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_EMOTE] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_EMOTE]),
@@ -5044,15 +5071,22 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_EMOTESCHAT),
 				tooltip = L(RCHAT_EMOTESCHATTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_EMOTE + 1]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_EMOTE + 1] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_EMOTE + 1]),
 				disabled = function() return db.useESOcolors end,
 			},
+            {
+                type = "header",
+                name = SF.GetIconized(RCHAT_NPC, SF.hex.superior),
+                width = "full",
+            },
 			{--
 				type = "colorpicker",
 				name = L(RCHAT_NPCSAY),
 				tooltip = L(RCHAT_NPCSAYTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_MONSTER_SAY]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_MONSTER_SAY] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_MONSTER_SAY]),
@@ -5062,15 +5096,26 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_NPCSAYCHAT),
 				tooltip = L(RCHAT_NPCSAYCHATTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_MONSTER_SAY + 1]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_MONSTER_SAY + 1] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_MONSTER_SAY + 1]),
 				disabled = function() return db.useESOcolors end,
 			},
+			{-- LAM Option Use same color for all NPC
+				type = "checkbox",
+				name = L(RCHAT_ALLNPCSAMECOLOUR),
+				tooltip = L(RCHAT_ALLNPCSAMECOLOURTT),
+				getFunc = function() return db.allNPCSameColour end,
+				setFunc = function(newValue) db.allNPCSameColour = newValue end,
+				width = "full",
+				default = defaults.allNPCSameColour,
+			},
 			{--
 				type = "colorpicker",
 				name = L(RCHAT_NPCYELL),
 				tooltip = L(RCHAT_NPCYELLTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_MONSTER_YELL]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_MONSTER_YELL] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_MONSTER_YELL]),
@@ -5086,6 +5131,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_NPCYELLCHAT),
 				tooltip = L(RCHAT_NPCYELLCHATTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_MONSTER_YELL + 1]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_MONSTER_YELL + 1] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_MONSTER_YELL + 1]),
@@ -5101,6 +5147,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_NPCWHISPER),
 				tooltip = L(RCHAT_NPCWHISPERTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_MONSTER_WHISPER]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_MONSTER_WHISPER] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_MONSTER_WHISPER]),
@@ -5116,6 +5163,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_NPCWHISPERCHAT),
 				tooltip = L(RCHAT_NPCWHISPERCHATTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_MONSTER_WHISPER + 1]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_MONSTER_WHISPER + 1] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_MONSTER_WHISPER + 1]),
@@ -5131,6 +5179,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_NPCEMOTES),
 				tooltip = L(RCHAT_NPCEMOTESTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_MONSTER_EMOTE]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_MONSTER_EMOTE] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_MONSTER_EMOTE]),
@@ -5146,6 +5195,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_NPCEMOTESCHAT),
 				tooltip = L(RCHAT_NPCEMOTESCHATTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_MONSTER_EMOTE + 1]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_MONSTER_EMOTE + 1] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_MONSTER_EMOTE + 1]),
@@ -5157,10 +5207,25 @@ local function BuildLAMPanel()
 					end
 				end,
 			},
+            {
+                type = "header",
+                name = SF.GetIconized(RCHAT_LANGZONEH, SF.hex.superior),
+                width = "full",
+            },
+			{-- LAM Option Use same color for all zone chats
+				type = "checkbox",
+				name = L(RCHAT_ALLZONESSAMECOLOUR),
+				tooltip = L(RCHAT_ALLZONESSAMECOLOURTT),
+				getFunc = function() return db.allZonesSameColour end,
+				setFunc = function(newValue) db.allZonesSameColour = newValue end,
+				width = "full",
+				default = defaults.allZonesSameColour,
+			},
 			{--
 				type = "colorpicker",
 				name = L(RCHAT_ENZONE),
 				tooltip = L(RCHAT_ENZONETT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_1]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_1] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_1]),
@@ -5176,6 +5241,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_ENZONECHAT),
 				tooltip = L(RCHAT_ENZONECHATTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_1 + 1]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_1 + 1] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_1 + 1]),
@@ -5191,6 +5257,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_FRZONE),
 				tooltip = L(RCHAT_FRZONETT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_2]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_2] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_2]),
@@ -5206,6 +5273,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_FRZONECHAT),
 				tooltip = L(RCHAT_FRZONECHATTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_2 + 1]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_2 + 1] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_2 + 1]),
@@ -5221,6 +5289,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_DEZONE),
 				tooltip = L(RCHAT_DEZONETT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_3]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_3] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_3]),
@@ -5236,6 +5305,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_DEZONECHAT),
 				tooltip = L(RCHAT_DEZONECHATTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_3 + 1]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_3 + 1] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_3 + 1]),
@@ -5251,6 +5321,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_JPZONE),
 				tooltip = L(RCHAT_JPZONETT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_4]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_4] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_4]),
@@ -5266,6 +5337,7 @@ local function BuildLAMPanel()
 				type = "colorpicker",
 				name = L(RCHAT_JPZONECHAT),
 				tooltip = L(RCHAT_JPZONECHATTT), 
+                width = "half",                
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_4 + 1]) end,
 				setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_4 + 1] = ConvertRGBToHex(r, g, b) end,
 				default = ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_4 + 1]),
@@ -5277,12 +5349,19 @@ local function BuildLAMPanel()
 					end
 				end,
 			},
-		},
-	}
+        },
+    }
+
 -- Guilds
 	
 --  Guild Stuff
 --
+	local guildOptionsData = {
+		type = "submenu",
+		name = SF.GetIconized(RCHAT_GUILDOPT, SF.hex.bronze),
+		controls = {}
+    }
+
 	for guild = 1, GetNumGuilds() do
 		
 		-- Guildname
@@ -5299,7 +5378,7 @@ local function BuildLAMPanel()
 			-- 2 is default value
 			db.formatguild[guildName] = 2
 		end
-		optionsData[#optionsData + 1] = {
+		guildOptionsData.controls[#guildOptionsData.controls + 1] = {
 		type = "submenu",
 		name = guildName,
 		controls = {
@@ -5355,6 +5434,7 @@ local function BuildLAMPanel()
 			},
 		-- Config store 1/2/3 to avoid language switchs
 		-- TODO : Optimize
+            -- Name Format
 			{
 				type = "dropdown",
 				name = L(RCHAT_NAMEFORMAT),
@@ -5408,7 +5488,7 @@ local function BuildLAMPanel()
 			},
 			{
 				type = "colorpicker",
-				name = guildName .. L(RCHAT_OFFICERSTT) .. L(RCHAT_MEMBERS),
+				name = zo_strformat(RCHAT_MEMBERS, guildName..L(RCHAT_OFFICERSTT)),
 				tooltip = zo_strformat(RCHAT_SETCOLORSFOROFFICIERSTT, guildName),
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*(CHAT_CHANNEL_OFFICER_1 + guild - 1)]) end,
 				setFunc = function(r, g, b) db.colours[2*(CHAT_CHANNEL_OFFICER_1 + guild - 1)] = ConvertRGBToHex(r, g, b) end,
@@ -5417,7 +5497,7 @@ local function BuildLAMPanel()
 			},
 			{
 				type = "colorpicker",
-				name = guildName .. L(RCHAT_OFFICERSTT) .. L(RCHAT_CHAT),
+				name = zo_strformat(RCHAT_CHAT, guildName..L(RCHAT_OFFICERSTT)),
 				tooltip = zo_strformat(RCHAT_SETCOLORSFOROFFICIERSCHATTT, guildName),
 				getFunc = function() return ConvertHexToRGBA(db.colours[2*(CHAT_CHANNEL_OFFICER_1 + guild - 1) + 1]) end,
 				setFunc = function(r, g, b) db.colours[2*(CHAT_CHANNEL_OFFICER_1 + guild - 1) + 1] = ConvertRGBToHex(r, g, b) end,
@@ -5429,6 +5509,7 @@ local function BuildLAMPanel()
 	end
 	
 
+    optionsData[#optionsData + 1] = guildOptionsData
 	
 	
 	LAM:RegisterOptionControls("rChatOptions", optionsData)

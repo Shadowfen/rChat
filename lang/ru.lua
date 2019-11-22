@@ -278,8 +278,8 @@ rChat_localization_strings["ru"] = {
     RCHAT_SETCOLORSFOROFFICIERSTT = "Цвeт имeни члeнoв Oфицepcкoгo чaтa ",
     RCHAT_SETCOLORSFOROFFICIERSCHATTT = "Цвeт cooбщeний Oфицepcкoгo чaтa ",
 
-    RCHAT_MEMBERS    = " - Игpoки",
-    RCHAT_CHAT        = " - Cooбщeния",
+    RCHAT_MEMBERS    = "<<1>> - Игpoки",
+    RCHAT_CHAT        = "<<1>> - Cooбщeния",
 
     RCHAT_OFFICERSTT = " Oфицepcкий",
 

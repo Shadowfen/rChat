@@ -20,3 +20,7 @@ rChat.version = SF.GetIconized(rChat.version, SF.colors.gold.hex)
 rChat.author = SF.GetIconized(rChat.author, SF.colors.purple.hex)
 
 SF.LoadLanguage(rChat_localization_strings, "en")
+
+rChat.data = {
+	cachedMessages = {}, -- This one must be init before OnAddonLoaded because it will receive data before this event.
+}

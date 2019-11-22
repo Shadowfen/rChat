@@ -108,16 +108,16 @@ rChat_localization_strings["es"] = {
 	RCHAT_DEFAULTCHANNELCHOICE21 = "/officer5",
 
 	RCHAT_GEOCHANNELSFORMAT = "Names format",
-	RCHAT_GEOCHANNELSFORMATTT = "Names format for local channels (say, zone, tell)",
+	RCHAT_GEOCHANNELSFORMATTT = "Formato de nombres para canales locales (say, zone, tell)",
 
-	RCHAT_DEFAULTTAB = "Default tab",
-	RCHAT_DEFAULTTABTT = "Select which tab to display at startup",
+	RCHAT_DEFAULTTAB = "Ficha predeterminada",
+	RCHAT_DEFAULTTABTT = "Seleccione qué pestaña mostrar al inicio",
 
-	RCHAT_ADDCHANNELANDTARGETTOHISTORY = "Switch channel when using history",
-	RCHAT_ADDCHANNELANDTARGETTOHISTORYTT = "Switch the channel when using arrow keys to match the channel previously used.",
+	RCHAT_ADDCHANNELANDTARGETTOHISTORY = "Cambiar de canal al usar el historial",
+	RCHAT_ADDCHANNELANDTARGETTOHISTORYTT = "Cambie el canal cuando use las teclas de flecha para que coincida con el canal utilizado anteriormente.",
 
-	RCHAT_URLHANDLING = "Detect and make URLs linkable",
-	RCHAT_URLHANDLINGTT = "If a URL starting with http(s):// is linked in chat pChat will detect it and you'll be able to click on it to directly go on the concerned link with your system browser",
+	RCHAT_URLHANDLING = "Detectar y hacer clic en URL",
+	RCHAT_URLHANDLINGTT = "Si una URL que comienza con http (s): // está vinculada en el chat, pChat la detectará y podrá hacer clic en ella para ir directamente al enlace correspondiente con el navegador de su sistema",
 
 	RCHAT_ENABLECOPY = "Activar copia",
 	RCHAT_ENABLECOPYTT = "Activar copia con un clic derecho sobre el texto - también activar el conmutador de canal con un clic izquierdo. Desactive esta opción si tienes problemas para visualizar los enlaces en el chat",
@@ -125,22 +125,22 @@ rChat_localization_strings["es"] = {
 
 	-- Group Settings
 
-	RCHAT_GROUPH = "Party channel tweaks",
+	RCHAT_GROUPH = "Ajustes de canales grupales",
 
 	RCHAT_ENABLEPARTYSWITCH = "Habilitar cambio automático al entrar en grupo",
 	RCHAT_ENABLEPARTYSWITCHTT = "Habilitar el cambio automático cambiara tu canal de chat actual al canal de grupo al entrar en uno y lo restaurará al salir de el",
 
-	RCHAT_GROUPLEADER = "Special color for party leader",
-	RCHAT_GROUPLEADERTT = "Enabling this feature will let you set a special color for party leader messages",
+	RCHAT_GROUPLEADER = "Color especial para el líder del grupo",
+	RCHAT_GROUPLEADERTT = "Habilitar esta función le permitirá establecer un color especial para los mensajes del líder del grupo",
 
-	RCHAT_GROUPLEADERCOLOR = "Party leader color",
-	RCHAT_GROUPLEADERCOLORTT = "Color of party leader messages. 2nd color is only to set if \"Use ESO colors\" is set to Off",
+	RCHAT_GROUPLEADERCOLOR = "Color para líder del grupo",
+	RCHAT_GROUPLEADERCOLORTT = "Color de los mensajes del líder del grupo. El segundo color solo se establece si \"Usar colores de ESO \" se establece en Desactivado",
 
-	RCHAT_GROUPLEADERCOLOR1 = "Color of messages for party leader",
-	RCHAT_GROUPLEADERCOLOR1TT = "Color of message for party leader. If \"Use ESO colors\" is set to Off, this option will be disabled. The color of the party leader will be the one set above and the party leader messages will be this one",
+	RCHAT_GROUPLEADERCOLOR1 = "Color de los mensajes para el líder del grupo",
+	RCHAT_GROUPLEADERCOLOR1TT = "Color del mensaje para el líder del grupo. Si \"Usar colores de ESO \" está configurado en Desactivado, esta opción se desactivará. El color del líder del grupo será el establecido anteriormente y los mensajes del líder del grupo serán este.",
 
 	RCHAT_GROUPNAMES = "Formato de nombres para grupos",
-	RCHAT_GROUPNAMESTT = "Formato de los nombres de tus compañeros de grupo en el canal grupal",
+	RCHAT_GROUPNAMESTT = "Formato delos nombres de tus compañeros de grupo en el canal grupal",
 
 	RCHAT_GROUPNAMESCHOICE1 = "@UserID",
 	RCHAT_GROUPNAMESCHOICE2 = "Character Name",
@@ -148,7 +148,7 @@ rChat_localization_strings["es"] = {
 
 	-- Sync settings
 
-	RCHAT_SYNCH = "Syncing settings",
+	RCHAT_SYNCH = "Configuraciones de sincronización",
 
 	RCHAT_CHATSYNCCONFIG = "Sincronizar la configuración del chat",
 	RCHAT_CHATSYNCCONFIGTT = "Si la sincronización está habilitada, todos tus personajes tendrán la misma configuración del chat (color, orientación, tamaño de la ventana, pestañas) \ nPS: Seleccione esta opción cuando su chat configurado correctamente!",
@@ -292,8 +292,8 @@ rChat_localization_strings["es"] = {
 	RCHAT_SETCOLORSFOROFFICIERSTT = "Establecer colores para miembro del chat de Oficiales de <<1>>",
 	RCHAT_SETCOLORSFOROFFICIERSCHATTT = "Establecer colores para mensajes del chat de Oficiales de <<1>>",
 
-	RCHAT_MEMBERS = " - Jugadores",
-	RCHAT_CHAT = " - Mensajes",
+	RCHAT_MEMBERS = "<<1>> - Jugadores",
+	RCHAT_CHAT = "<<1>> - Mensajes",
 
 	RCHAT_OFFICERSTT = " Oficiales",
 

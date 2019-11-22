@@ -293,8 +293,8 @@ rChat_localization_strings["fr"] = {
     RCHAT_SETCOLORSFOROFFICIERSTT = "Définir les couleurs pour les membres du canal Officier de ",
     RCHAT_SETCOLORSFOROFFICIERSCHATTT = "Définir les couleurs pour les messages du canal Officier de ",
 
-    RCHAT_MEMBERS = " - Joueurs",
-    RCHAT_CHAT = " - Messages",
+    RCHAT_MEMBERS = "<<1>> - Joueurs",
+    RCHAT_CHAT = "<<1>> - Messages",
                                     
     RCHAT_OFFICERSTT = " Officiers",
                                     

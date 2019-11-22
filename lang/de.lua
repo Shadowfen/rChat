@@ -302,8 +302,8 @@ rChat_localization_strings["de"] = {
     RCHAT_SETCOLORSFOROFFICIERSTT = "Farbe für Mitglieder des 'Offiziers-Chats' von ",
     RCHAT_SETCOLORSFOROFFICIERSCHATTT = "Farbe für Nachrichten des 'Offiziers-Chats' von ",
 
-    RCHAT_MEMBERS = " - Spieler",
-    RCHAT_CHAT =     " - Nachrichten",
+    RCHAT_MEMBERS = "<<1>> - Spieler",
+    RCHAT_CHAT =     "<<1>> - Nachrichten",
                         
     RCHAT_OFFICERSTT = " Offiziere",
                         

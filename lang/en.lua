@@ -114,22 +114,22 @@ rChat_localization_strings["en"] = {
 
 	-- Group Settings
 
-	RCHAT_GROUPH = "Party channel tweaks",
+	RCHAT_GROUPH = "Group channel tweaks",
 
-	RCHAT_ENABLEPARTYSWITCH = "Enable Party Switch",
-	RCHAT_ENABLEPARTYSWITCHTT = "Enabling Party switch will switch your current channel to party when joining a party and  switch back to your default channel when leaving a party",
+	RCHAT_ENABLEPARTYSWITCH = "Enable Group Switch",
+	RCHAT_ENABLEPARTYSWITCHTT = "Enabling Group switch will switch your current channel to group when joining a group and  switch back to your default channel when leaving a group",
 
-	RCHAT_GROUPLEADER = "Special color for party leader",
-	RCHAT_GROUPLEADERTT = "Enabling this feature will let you set a special color for party leader messages",
+	RCHAT_GROUPLEADER = "Special color for group leader",
+	RCHAT_GROUPLEADERTT = "Enabling this feature will let you set a special color for group leader messages",
 
-	RCHAT_GROUPLEADERCOLOR = "Party leader color",
-	RCHAT_GROUPLEADERCOLORTT = "Color of party leader messages. 2nd color is only to set if \"Use ESO colors\" is set to Off",
+	RCHAT_GROUPLEADERCOLOR = "Group leader color",
+	RCHAT_GROUPLEADERCOLORTT = "Color of group leader messages. 2nd color is only to set if \"Use ESO colors\" is set to Off",
 
-	RCHAT_GROUPLEADERCOLOR1 = "Color of messages for party leader",
-	RCHAT_GROUPLEADERCOLOR1TT = "Color of message for party leader. If \"Use ESO colors\" is set to Off, this option will be disabled. The color of the party leader will be the one set above and the party leader messages will be this one",
+	RCHAT_GROUPLEADERCOLOR1 = "Color of messages for Group leader",
+	RCHAT_GROUPLEADERCOLOR1TT = "Color of message for group leader. If \"Use ESO colors\" is set to Off, this option will be disabled. The color of the group leader will be the one set above and the group leader messages will be this one",
 
 	RCHAT_GROUPNAMES = "Names format for groups",
-	RCHAT_GROUPNAMESTT = "Format of your groupmates names in party channel",
+	RCHAT_GROUPNAMESTT = "Format of your groupmates names in group channel",
 
 	RCHAT_GROUPNAMESCHOICE1 = "@UserID",
 	RCHAT_GROUPNAMESCHOICE2 = "Character Name",
@@ -256,6 +256,7 @@ rChat_localization_strings["en"] = {
 	RCHAT_TIMESTAMPTT = "Set color for the timestamp",
 
 	-- Guild settings
+    RCHAT_GUILDOPT = "Guild Settings",
 
 	RCHAT_NICKNAMEFOR = "Nickname",
 	RCHAT_NICKNAMEFORTT = "Nickname for ",
@@ -289,7 +290,9 @@ rChat_localization_strings["en"] = {
 
 	-- Channel colors settings
 
+	RCHAT_COLORSH = "Colors Settings",
 	RCHAT_CHATCOLORSH = "Chat Colors",
+	RCHAT_CHATCOLORTT = "",
 
 	RCHAT_SAY = "Say - Player",
 	RCHAT_SAYTT = "Set player color for say channel",
@@ -330,6 +333,7 @@ rChat_localization_strings["en"] = {
 	-- Other colors
 
 	RCHAT_OTHERCOLORSH = "Other Colors",
+	RCHAT_OTHERCOLORTT = "",
 
 	RCHAT_EMOTES = "Emotes - Player",
 	RCHAT_EMOTESTT = "Set player color for emotes",
@@ -337,6 +341,7 @@ rChat_localization_strings["en"] = {
 	RCHAT_EMOTESCHAT = "Emotes - Chat",
 	RCHAT_EMOTESCHATTT = "Set chat color for emotes",
 
+	RCHAT_LANGZONEH = "Language Zones",
 	RCHAT_ENZONE = "EN Zone - Player",
 	RCHAT_ENZONETT = "Set player color for English zone channel",
 
@@ -361,6 +366,7 @@ rChat_localization_strings["en"] = {
 	RCHAT_JPZONECHAT = "JP Zone - Chat",
 	RCHAT_JPZONECHATTT = "Set chat color for Japanese zone channel",
 
+	RCHAT_NPC = "NPC",
 	RCHAT_NPCSAY = "NPC Say - NPC name",
 	RCHAT_NPCSAYTT = "Set NPC name color for NPC say",
 
@@ -416,7 +422,7 @@ rChat_localization_strings["en"] = {
 	RCHAT_RCHAT_AUTOMSG_MESSAGE_DEFAULT_TEXT = "Write here the text which will be sent when you'll be using the auto message function",
 	RCHAT_RCHAT_AUTOMSG_MESSAGE_TIP1_TEXT = "Newlines will be automatically deleted",
 	RCHAT_RCHAT_AUTOMSG_MESSAGE_TIP2_TEXT = "This message will be sent when you'll validate the message \"!nameOfMessage\". (ex: |cFFFFFF!ts3|r)",
-	RCHAT_RCHAT_AUTOMSG_MESSAGE_TIP3_TEXT = "To send a message in a specified channel, add its switch at the begenning of the message (ex: |cFFFFFF/g1|r)",
+	RCHAT_RCHAT_AUTOMSG_MESSAGE_TIP3_TEXT = "To send a message in a specified channel, add its switch at the beginning of the message (ex: |cFFFFFF/g1|r)",
 	RCHAT_RCHAT_AUTOMSG_NAME_HEADER = "Abbreviation of your message",
 	RCHAT_RCHAT_AUTOMSG_MESSAGE_HEADER = "Substitution message",
 	RCHAT_RCHAT_AUTOMSG_ADD_TITLE_HEADER = "New automated message",
