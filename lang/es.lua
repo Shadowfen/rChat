@@ -139,8 +139,8 @@ rChat_localization_strings["es"] = {
 	RCHAT_GROUPLEADERCOLOR1 = "Color of messages for party leader",
 	RCHAT_GROUPLEADERCOLOR1TT = "Color of message for party leader. If \"Use ESO colors\" is set to Off, this option will be disabled. The color of the party leader will be the one set above and the party leader messages will be this one",
 
-	RCHAT_GROUPNAMES = "Names format for groups",
-	RCHAT_GROUPNAMESTT = "Format of your groupmates names in party channel",
+	RCHAT_GROUPNAMES = "Formato de nombres para grupos",
+	RCHAT_GROUPNAMESTT = "Formato de los nombres de tus compañeros de grupo en el canal grupal",
 
 	RCHAT_GROUPNAMESCHOICE1 = "@UserID",
 	RCHAT_GROUPNAMESCHOICE2 = "Character Name",
@@ -156,11 +156,10 @@ rChat_localization_strings["es"] = {
 	RCHAT_CHATSYNCCONFIGIMPORTFROM = "Importar configuración del chat",
 	RCHAT_CHATSYNCCONFIGIMPORTFROMTT = "Siempre se puede importar la configuración del chat instantánea de otro personaje (color, orientación, tamaño de la ventana, pestañas)",
 
-	-- Apparence
+	-- Appearance
+	RCHAT_APPEARANCEMH = "Apariencia de la ventana de chat",
 
-	RCHAT_APPARENCEMH = "Chat window settings",
-
-	RCHAT_WINDOWDARKNESS = "Chat window transparency",
+	RCHAT_WINDOWDARKNESS = "Transparencia de la ventana de chat",
 	RCHAT_WINDOWDARKNESSTT = "Increase the darkening of the chat window",
 
 	RCHAT_CHATMINIMIZEDATLAUNCH = "Chat es minimizado en el arranque",
@@ -185,8 +184,8 @@ rChat_localization_strings["es"] = {
 	RCHAT_SOUNDFORINCWHISPS = "Sonido para susurros entrantes",
 	RCHAT_SOUNDFORINCWHISPSTT = "Elige un sonido a reproducir cuando recibas un susurro",
 
-	RCHAT_NOTIFYIM = "Visual notification",
-	RCHAT_NOTIFYIMTT = "If you miss a whisp, a notification will appear in the top right corner of the chat allowing you to quickly access to it. Plus, if your chat was minimized at that time, a notification will be displayed in the minibar",
+	RCHAT_NOTIFYIM = "Notificación visual",
+	RCHAT_NOTIFYIMTT = "Si pierde un susurro, aparecerá una notificación en la esquina superior derecha del chat que le permitirá acceder rápidamente a él. Además, si su chat se minimizó en ese momento, se mostrará una notificación en el minibar",
 
 	RCHAT_SOUNDFORINCWHISPSCHOICE1 = "Ninguno",
 	RCHAT_SOUNDFORINCWHISPSCHOICE2 = "Notificación",
@@ -195,34 +194,34 @@ rChat_localization_strings["es"] = {
 
 	-- Restore chat settings
 
-	RCHAT_RESTORECHATH = "Restore chat",
+	RCHAT_RESTORECHATH = "Restaurar chat",
 
-	RCHAT_RESTOREONRELOADUI = "After a ReloadUI",
-	RCHAT_RESTOREONRELOADUITT = "After reloading game with a ReloadUI(), pChat will restore your chat and its history",
+	RCHAT_RESTOREONRELOADUI = "Después de ReloadUI",
+	RCHAT_RESTOREONRELOADUITT = "Después de volver a cargar el juego con un ReloadUI (), pChat restaurará su chat y su historial",
 
-	RCHAT_RESTOREONLOGOUT = "After a LogOut",
-	RCHAT_RESTOREONLOGOUTTT = "After a logoff, pChat will restore your chat and its history if you login in the allotted time set under",
+	RCHAT_RESTOREONLOGOUT = "Después de un cierre de sesión",
+	RCHAT_RESTOREONLOGOUTTT = "Después de cerrar sesión, rChat restaurará su chat y su historial si inicia sesión en el tiempo asignado establecido en",
 
-	RCHAT_RESTOREONAFK = "After being kicked",
-	RCHAT_RESTOREONAFKTT = "After being kicked from game after inactivity, flood or a network disconnect, pChat will restore your chat and its history if you login in the allotted time set under",
+	RCHAT_RESTOREONAFK = "Después de ser pateado",
+	RCHAT_RESTOREONAFKTT = "Después de ser expulsado del juego después de inactividad, inundación o desconexión de la red, rChat restaurará su chat y su historial si inicia sesión en el tiempo asignado.",
 
-	RCHAT_RESTOREONQUIT = "After leaving game",
-	RCHAT_RESTOREONQUITTT = "After leaving game, pChat will restore your chat and its history if you login in the allotted time set under",
+	RCHAT_RESTOREONQUIT = "Después de salir del juego",
+	RCHAT_RESTOREONQUITTT = "Después de abandonar el juego, rChat restaurará su chat y su historial si inicia sesión en el tiempo asignado.",
 
-	RCHAT_TIMEBEFORERESTORE = "Maximum time for restoring chat",
-	RCHAT_TIMEBEFORERESTORETT = "After this time (in hours), pChat will not attempt to restore the chat",
+	RCHAT_TIMEBEFORERESTORE = "Tiempo máximo para restaurar el chat",
+	RCHAT_TIMEBEFORERESTORETT = "Después de este tiempo (en horas), rChat no intentará restaurar el chat",
 
-	RCHAT_RESTORESYSTEM = "Restore System Messages",
-	RCHAT_RESTORESYSTEMTT = "Restore System Messages (Such as login notifications or add ons messages) when chat is restored",
+	RCHAT_RESTORESYSTEM = "Restaurar mensajes del sistema",
+	RCHAT_RESTORESYSTEMTT = "Restaurar mensajes del sistema (como notificaciones de inicio de sesión o mensajes de complementos) cuando se restaura el chat",
 
-	RCHAT_RESTORESYSTEMONLY = "Restore Only System messages",
-	RCHAT_RESTORESYSTEMONLYTT = "Restore Only System Messages (Such as login notifications or add ons messages) when chat is restored",
+	RCHAT_RESTORESYSTEMONLY = "Restaurar solo mensajes del sistema",
+	RCHAT_RESTORESYSTEMONLYTT = "Restaurar solo mensajes del sistema (como notificaciones de inicio de sesión o mensajes de complementos) cuando se restaura el chat",
 
-	RCHAT_RESTOREWHISPS = "Restore Whispers",
-	RCHAT_RESTOREWHISPSTT = "Restore whispers sent and received after logoff, disconnect or quit. Whispers are always restored after a ReloadUI()",
+	RCHAT_RESTOREWHISPS = "Restaurar susurros",
+	RCHAT_RESTOREWHISPSTT = "Restaure los susurros enviados y recibidos después del cierre de sesión, desconecte o salga. Los susurros siempre se restauran después de un ReloadUI ()",
 
-	RCHAT_RESTORETEXTENTRYHISTORYATLOGOUTQUIT  = "Restore Text entry history",
-	RCHAT_RESTORETEXTENTRYHISTORYATLOGOUTQUITTT  = "Restore Text entry history available with arrow keys after logoff, disconnect or quit. History of text entry is always restored after a ReloadUI()",
+	RCHAT_RESTORETEXTENTRYHISTORYATLOGOUTQUIT  = "Restaurar el historial de entrada de texto",
+	RCHAT_RESTORETEXTENTRYHISTORYATLOGOUTQUITTT  = "Restaurar el historial de entrada de texto disponible con las teclas de flecha después de cerrar sesión, desconectar o salir. El historial de entrada de texto siempre se restaura después de un ReloadUI ()",
 
 	-- Anti Spam settings
 
@@ -274,11 +273,11 @@ rChat_localization_strings["es"] = {
 	RCHAT_OFFICERTAG = "Etiqueta de canal de Oficial",
 	RCHAT_OFFICERTAGTT = "Prefijo para canales de Oficiales",
 
-	RCHAT_SWITCHFOR = "Switch for channel",
-	RCHAT_SWITCHFORTT = "New switch for channel. Ex: /myguild",
+	RCHAT_SWITCHFOR = "Interruptor para canal",
+	RCHAT_SWITCHFORTT = "Nuevo interruptor para canal. Ex: /myguild",
 
-	RCHAT_OFFICERSWITCHFOR = "Switch for officer channel",
-	RCHAT_OFFICERSWITCHFORTT = "New switch for officer channel. Ex: /offs",
+	RCHAT_OFFICERSWITCHFOR = "Interruptor para canal oficial",
+	RCHAT_OFFICERSWITCHFORTT = "Nuevo Interruptor para canal oficial. Ex: /offs",
 
 	RCHAT_NAMEFORMAT = "Formato de nombre",
 	RCHAT_NAMEFORMATTT = "Selecciona como son presentados los nombres de miembros del gremio",
@@ -293,8 +292,8 @@ rChat_localization_strings["es"] = {
 	RCHAT_SETCOLORSFOROFFICIERSTT = "Establecer colores para miembro del chat de Oficiales de <<1>>",
 	RCHAT_SETCOLORSFOROFFICIERSCHATTT = "Establecer colores para mensajes del chat de Oficiales de <<1>>",
 
-	RCHAT_MEMBERS = "<<1>> - Jugadores",
-	RCHAT_CHAT = "<<1>> - Mensajes",
+	RCHAT_MEMBERS = " - Jugadores",
+	RCHAT_CHAT = " - Mensajes",
 
 	RCHAT_OFFICERSTT = " Oficiales",
 
@@ -418,25 +417,25 @@ rChat_localization_strings["es"] = {
 	RCHAT_COPYDISCUSSIONCT = "Copiar conversación de canal",
 	RCHAT_ALLCT = "Copiar chat completo",
 
-	RCHAT_SWITCHTONEXTTABBINDING = "Switch to next tab",
+	RCHAT_SWITCHTONEXTTABBINDING = "Cambiar a la pestaña siguiente",
 	RCHAT_TOGGLECHATBINDING = "Activar la ventana de charla",
-	RCHAT_WHISPMYTARGETBINDING = "Whisper my target",
+	RCHAT_WHISPMYTARGETBINDING = "Susurra mi objetivo",
 
-	RCHAT_SAVMSGERRALREADYEXISTS = "Cannot save your message, this one already exists",
+	RCHAT_SAVMSGERRALREADYEXISTS = "No se puede guardar su mensaje, este ya existe",
 	RCHAT_RCHAT_AUTOMSG_NAME_DEFAULT_TEXT = "Example : ts3",
-	RCHAT_RCHAT_AUTOMSG_MESSAGE_DEFAULT_TEXT = "Write here the text which will be sent when you'll be using the auto message function",
-	RCHAT_RCHAT_AUTOMSG_MESSAGE_TIP1_TEXT = "Newlines will be automatically deleted",
-	RCHAT_RCHAT_AUTOMSG_MESSAGE_TIP2_TEXT = "This message will be sent when you'll validate the message \"!nameOfMessage\". (ex: |cFFFFFF!ts3|r)",
-	RCHAT_RCHAT_AUTOMSG_MESSAGE_TIP3_TEXT = "To send a message in a specified channel, add its switch at the begenning of the message (ex: |cFFFFFF/g1|r)",
-	RCHAT_RCHAT_AUTOMSG_NAME_HEADER = "Abbreviation of your message",
-	RCHAT_RCHAT_AUTOMSG_MESSAGE_HEADER = "Substitution message",
-	RCHAT_RCHAT_AUTOMSG_ADD_TITLE_HEADER = "New automated message",
-	RCHAT_RCHAT_AUTOMSG_EDIT_TITLE_HEADER = "Modify automated message",
-	RCHAT_RCHAT_AUTOMSG_ADD_AUTO_MSG = "Add",
-	RCHAT_RCHAT_AUTOMSG_EDIT_AUTO_MSG = "Edit",
-	RCHAT_SI_BINDING_NAME_RCHAT_SHOW_AUTO_MSG = "Automated messages",
-	RCHAT_RCHAT_AUTOMSG_REMOVE_AUTO_MSG = "Remove",
+	RCHAT_RCHAT_AUTOMSG_MESSAGE_DEFAULT_TEXT = "Escriba aquí el texto que se enviará cuando use la función de mensaje automático",
+	RCHAT_RCHAT_AUTOMSG_MESSAGE_TIP1_TEXT = "Las líneas nuevas se eliminarán automáticamente",
+	RCHAT_RCHAT_AUTOMSG_MESSAGE_TIP2_TEXT = "Este mensaje se enviará cuando valide el mensaje \"!nameOfMessage\". (ex: |cFFFFFF!ts3|r)",
+	RCHAT_RCHAT_AUTOMSG_MESSAGE_TIP3_TEXT = "Para enviar un mensaje en un canal específico, agregue su interruptor al comienzo del mensaje (ex: |cFFFFFF/g1|r)",
+	RCHAT_RCHAT_AUTOMSG_NAME_HEADER = "Abreviatura de su mensaje",
+	RCHAT_RCHAT_AUTOMSG_MESSAGE_HEADER = "Mensaje de sustitución",
+	RCHAT_RCHAT_AUTOMSG_ADD_TITLE_HEADER = "Nuevo mensaje automatizado",
+	RCHAT_RCHAT_AUTOMSG_EDIT_TITLE_HEADER = "Modificar mensaje automatizado",
+	RCHAT_RCHAT_AUTOMSG_ADD_AUTO_MSG = "Añadir",
+	RCHAT_RCHAT_AUTOMSG_EDIT_AUTO_MSG = "Editar",
+	RCHAT_SI_BINDING_NAME_RCHAT_SHOW_AUTO_MSG = "Mensajes automatizados",
+	RCHAT_RCHAT_AUTOMSG_REMOVE_AUTO_MSG = "Eliminar",
 
-	RCHAT_CLEARBUFFER = "Clear chat",
+	RCHAT_CLEARBUFFER = "Vacie Chat",
 }
 

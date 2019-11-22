@@ -2,7 +2,7 @@
 [LIST]
 [*] Starting to modularize the code.
 [*] Split out the spam filtering to its own file.
-[*] Reinstalled the old spanish language strings (where available).
+[*] Reinstalled the old spanish language strings (where available). Added missing spanish translations using Google Translate.
 [*] Use LibSFUtils functions to handle localization strings
 [*] Renamed addon to avoid conflicting with pChat during development (so I can still use pChat in the beginning stages).
 [*] Removed embedded libraries. The following libraries now need to be installed separately: LibAddonMenu, LibMediaProvider-1.0, LibMainMenu, and libChat2

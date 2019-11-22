@@ -56,7 +56,7 @@ rChat_localization_strings["en"] = {
 	RCHAT_CARRIAGERETURNTT = "Player names and chat texts are separated by a newline.",
 
 	RCHAT_USEESOCOLORS = "Use ESO colors",
-	RCHAT_USEESOCOLORSTT = "Use colors set in social settings instead pChat ones",
+	RCHAT_USEESOCOLORSTT = "Use colors set in social settings instead rChat ones",
 
 	RCHAT_DIFFFORESOCOLORS = "Difference between ESO colors",
 	RCHAT_DIFFFORESOCOLORSTT = "If using ESO colors and Use two colors option, you can adjust brightness difference between player name and message displayed",
@@ -106,7 +106,7 @@ rChat_localization_strings["en"] = {
 	RCHAT_ADDCHANNELANDTARGETTOHISTORYTT = "Switch the channel when using arrow keys to match the channel previously used.",
 
 	RCHAT_URLHANDLING = "Detect and make URLs linkable",
-	RCHAT_URLHANDLINGTT = "If a URL starting with http(s):// is linked in chat pChat will detect it and you'll be able to click on it to directly go on the concerned link with your system browser",
+	RCHAT_URLHANDLINGTT = "If a URL starting with http(s):// is linked in chat rChat will detect it and you'll be able to click on it to directly go on the concerned link with your system browser",
 
 	RCHAT_ENABLECOPY = "Enable copy",
 	RCHAT_ENABLECOPYTT = "Enable copy with a right click on text - Also enable the channel switch with a left click. Disable this option if you got problems to display links in chat",
@@ -147,7 +147,7 @@ rChat_localization_strings["en"] = {
 
 	-- Apparence
 
-	RCHAT_APPARENCEMH = "Chat window settings",
+	RCHAT_APPEARANCEMH = "Chat window settings",
 
 	RCHAT_WINDOWDARKNESS = "Chat window transparency",
 	RCHAT_WINDOWDARKNESSTT = "Increase the darkening of the chat window",
@@ -187,19 +187,19 @@ rChat_localization_strings["en"] = {
 	RCHAT_RESTORECHATH = "Restore chat",
 
 	RCHAT_RESTOREONRELOADUI = "After a ReloadUI",
-	RCHAT_RESTOREONRELOADUITT = "After reloading game with a ReloadUI(), pChat will restore your chat and its history",
+	RCHAT_RESTOREONRELOADUITT = "After reloading game with a ReloadUI(), rChat will restore your chat and its history",
 
 	RCHAT_RESTOREONLOGOUT = "After a LogOut",
-	RCHAT_RESTOREONLOGOUTTT = "After a logoff, pChat will restore your chat and its history if you login in the allotted time set under",
+	RCHAT_RESTOREONLOGOUTTT = "After a logoff, rChat will restore your chat and its history if you login in the allotted time set under",
 
 	RCHAT_RESTOREONAFK = "After being kicked",
-	RCHAT_RESTOREONAFKTT = "After being kicked from game after inactivity, flood or a network disconnect, pChat will restore your chat and its history if you login in the allotted time set under",
+	RCHAT_RESTOREONAFKTT = "After being kicked from game after inactivity, flood or a network disconnect, rChat will restore your chat and its history if you login in the allotted time set under",
 
 	RCHAT_RESTOREONQUIT = "After leaving game",
-	RCHAT_RESTOREONQUITTT = "After leaving game, pChat will restore your chat and its history if you login in the allotted time set under",
+	RCHAT_RESTOREONQUITTT = "After leaving game, rChat will restore your chat and its history if you login in the allotted time set under",
 
 	RCHAT_TIMEBEFORERESTORE = "Maximum time for restoring chat",
-	RCHAT_TIMEBEFORERESTORETT = "After this time (in hours), pChat will not attempt to restore the chat",
+	RCHAT_TIMEBEFORERESTORETT = "After this time (in hours), rChat will not attempt to restore the chat",
 
 	RCHAT_RESTORESYSTEM = "Restore System Messages",
 	RCHAT_RESTORESYSTEMTT = "Restore System Messages (Such as login notifications or add ons messages) when chat is restored",

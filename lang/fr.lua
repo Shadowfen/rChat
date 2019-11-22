@@ -115,7 +115,7 @@ rChat_localization_strings["fr"] = {
     RCHAT_ADDCHANNELANDTARGETTOHISTORYTT = "Switcher de canal automatiquement lors de l'utilisation des flèches haut/bas du clavier pour faire correspondre les messages au canal précédemment utilisé.",
             
     RCHAT_URLHANDLING = "Détecter et rendre les URL cliquables",
-    RCHAT_URLHANDLINGTT = "Si une URL commençant par http(s):// est linkée dans le Chat, pChat la détectera et cliquer sur celle-ci lancera votre navigateur internet sur la page en question",
+    RCHAT_URLHANDLINGTT = "Si une URL commençant par http(s):// est linkée dans le Chat, rChat la détectera et cliquer sur celle-ci lancera votre navigateur internet sur la page en question",
             
     RCHAT_ENABLECOPY = "Activer la copie",
     RCHAT_ENABLECOPYTT = "Active la copie du chat par clic droit sur le texte - Active également le changement d'un canal en cliquant sur le message. Vous pouvez désactiver cette option si vous rencontrez des problèmes pour afficher les liens dans le chat",
@@ -155,7 +155,7 @@ rChat_localization_strings["fr"] = {
             
 -- Apparence            
             
-    RCHAT_APPARENCEMH = "Apparence de la fenêtre de chat",
+    RCHAT_APPEARANCEMH = "Apparence de la fenêtre de chat",
                 
     RCHAT_WINDOWDARKNESS = "Transparence de la fenêtre de chat",
     RCHAT_WINDOWDARKNESSTT = "Augmenter l'assombrissement de la fenêtre de chat",
@@ -195,19 +195,19 @@ rChat_localization_strings["fr"] = {
     RCHAT_RESTORECHATH = "Restaurer le chat",
             
     RCHAT_RESTOREONRELOADUI = "Après un ReloadUI",
-    RCHAT_RESTOREONRELOADUITT = "Après avoir rechargé le jeu par la commande ReloadUI(), pChat restaurera le chat et son historique",
+    RCHAT_RESTOREONRELOADUITT = "Après avoir rechargé le jeu par la commande ReloadUI(), rChat restaurera le chat et son historique",
                             
     RCHAT_RESTOREONLOGOUT = "Après une déconnexion",
-    RCHAT_RESTOREONLOGOUTTT = "Après avoir déconnecté son personnage, pChat restaurera le chat et son historique",
+    RCHAT_RESTOREONLOGOUTTT = "Après avoir déconnecté son personnage, rChat restaurera le chat et son historique",
                             
     RCHAT_RESTOREONAFK = "Après un éjection du jeu",
-    RCHAT_RESTOREONAFKTT = "Après avoir été déconnecté suite à une inactivité, pChat restaurera le chat et son historique si vous vous reconnectez dans le laps de temps défini ci-dessous",
+    RCHAT_RESTOREONAFKTT = "Après avoir été déconnecté suite à une inactivité, rChat restaurera le chat et son historique si vous vous reconnectez dans le laps de temps défini ci-dessous",
                             
     RCHAT_RESTOREONQUIT = "Après avoir quitté le jeu",
-    RCHAT_RESTOREONQUITTT = "Après avoir quitté le jeu, pChat restaurera le chat et son historique",
+    RCHAT_RESTOREONQUITTT = "Après avoir quitté le jeu, rChat restaurera le chat et son historique",
                             
     RCHAT_TIMEBEFORERESTORE = "Temps maximum pour la restauration du chat",
-    RCHAT_TIMEBEFORERESTORETT = "Passé ce délai (en heures), pChat ne tentera pas de restaurer le chat",
+    RCHAT_TIMEBEFORERESTORETT = "Passé ce délai (en heures), rChat ne tentera pas de restaurer le chat",
                             
     RCHAT_RESTORESYSTEM = "Restaurer les messages système",
     RCHAT_RESTORESYSTEMTT = "Restaurer les msssages système (notifications de connexions et messages d'addon) lorsque le chat est rechargé",

@@ -41,9 +41,9 @@ rChat_localization_strings["de"] = {
     RCHAT_Tab12 = "Select Chat Tab 12",
     
     -- 9.3.6.24 Additions
-    RCHAT_CHATTABH = "Chat Tab Settings",
-    RCHAT_enableChatTabChannel = "Enable Chat Tab Last Used Channel",
-    RCHAT_enableChatTabChannelT = "Enable chat tabs to remember the last used channel, it will become the default until you opt to use a different one in that tab.",
+    RCHAT_CHATTABH = "Einstellungen der Registerkarte Chat",
+    RCHAT_enableChatTabChannel = "Aktiviere Chat Tab Letzter verwendeter Kanal",
+    RCHAT_enableChatTabChannelT = "Wenn Sie die Chat-Registerkarten aktivieren, um den zuletzt verwendeten Kanal zu speichern, wird dies zur Standardeinstellung, bis Sie sich dafür entscheiden, einen anderen in dieser Registerkarte zu verwenden.",
     RCHAT_enableWhisperTab = "Enable Redirect Whisper",
     RCHAT_enableWhisperTabT = "Enable Redirect Whisper to a specific tab.",
 
@@ -127,7 +127,7 @@ rChat_localization_strings["de"] = {
     RCHAT_ADDCHANNELANDTARGETTOHISTORYTT = "Der Kanal wird beim Verwenden der Pfeiltasten zum zuletzt gewählten Reiter wechseln.",
         
     RCHAT_URLHANDLING = "Erkenne URL\'s und mache sie verwendbar",
-    RCHAT_URLHANDLINGTT = "Wenn eine URL mit http(s):// anfängt, wird pChat diese Links erkennen. Klicke auf diese Links um die Adresse in deinem Browser aufzurufen.",
+    RCHAT_URLHANDLINGTT = "Wenn eine URL mit http(s):// anfängt, wird rChat diese Links erkennen. Klicke auf diese Links um die Adresse in deinem Browser aufzurufen.",
         
     RCHAT_ENABLECOPY = "Kopie/Chat Kanal Wechsel aktivieren",
     RCHAT_ENABLECOPYTT = "Aktivieren Sie das Kopieren von Text mit einem Rechtsklick.\nDies ermöglicht ebenfalls den Chat Kanal-Wechsel mit einem Linksklick.\n\nDeaktivieren Sie diese Option, wenn Sie Probleme mit der Anzeige von Links im Chat haben.",
@@ -167,7 +167,7 @@ rChat_localization_strings["de"] = {
         
 -- Apparence        
         
-    RCHAT_APPARENCEMH = "Chatfenster Aussehen",
+    RCHAT_APPEARANCEMH = "Chatfenster Aussehen",
                 
     RCHAT_TABWARNING = "Neue Nachricht Warnung",
     RCHAT_TABWARNINGTT = "Legen Sie die Farbe für die Warnmeldung im Chat Reiter fest.",
@@ -207,19 +207,19 @@ rChat_localization_strings["de"] = {
     RCHAT_RESTORECHATH = "Chat wiederherstellen",
                 
     RCHAT_RESTOREONRELOADUI = "Nach ReloadUI",
-    RCHAT_RESTOREONRELOADUITT = "Nach dem Neuladen der Benutzeroberfläche (/reloadui) wird pChat den vorherigen Chat + Historie wieder herstellen. Sie können somit Ihre vorherige Konversation wieder aufnehmen.",
+    RCHAT_RESTOREONRELOADUITT = "Nach dem Neuladen der Benutzeroberfläche (/reloadui) wird rChat den vorherigen Chat + Historie wieder herstellen. Sie können somit Ihre vorherige Konversation wieder aufnehmen.",
                 
     RCHAT_RESTOREONLOGOUT = "Nach LogOut",
-    RCHAT_RESTOREONLOGOUTTT = "Nach dem Ausloggen wird pChat den vorherigen Chat + Historie wieder herstellen. Sie können somit Ihre vorherige Konversation wieder aufnehmen.\nAchtung: Dies wird nur passieren, wenn Sie sich in der unten eingestellten 'Maximale Zeit für Wiederherstellung' erneut anmelden!",
+    RCHAT_RESTOREONLOGOUTTT = "Nach dem Ausloggen wird rChat den vorherigen Chat + Historie wieder herstellen. Sie können somit Ihre vorherige Konversation wieder aufnehmen.\nAchtung: Dies wird nur passieren, wenn Sie sich in der unten eingestellten 'Maximale Zeit für Wiederherstellung' erneut anmelden!",
                 
     RCHAT_RESTOREONAFK = "Nach Kick (z.B. Inaktivität)",
-    RCHAT_RESTOREONAFKTT = "Nachdem Sie vom Spiel rausgeschmissen wurden, z.B. durch Inaktivität, Senden zuvieler Nachrichten oder einer Netzwerk Trennung, wird pChat den Chat + Historie wieder herstellen. Sie können somit Ihre vorherige Konversation wieder aufnehmen.\nAchtung: Dies wird nur passieren, wenn Sie sich in der unten eingestellten 'Maximale Zeit für Wiederherstellung' erneut anmelden!",
+    RCHAT_RESTOREONAFKTT = "Nachdem Sie vom Spiel rausgeschmissen wurden, z.B. durch Inaktivität, Senden zuvieler Nachrichten oder einer Netzwerk Trennung, wird rChat den Chat + Historie wieder herstellen. Sie können somit Ihre vorherige Konversation wieder aufnehmen.\nAchtung: Dies wird nur passieren, wenn Sie sich in der unten eingestellten 'Maximale Zeit für Wiederherstellung' erneut anmelden!",
                 
     RCHAT_RESTOREONQUIT = "Nach dem Verlassen",
-    RCHAT_RESTOREONQUITTT = "Wenn Sie das Spiel selbstständig verlassen, wird pChat den Chat + Historie wieder herstellen. Sie können somit Ihre vorherige Konversation wieder aufnehmen.\nAchtung: Dies wird nur passieren, wenn Sie sich in der unten eingestellten 'Maximale Zeit für Wiederherstellung' erneut anmelden!",
+    RCHAT_RESTOREONQUITTT = "Wenn Sie das Spiel selbstständig verlassen, wird rChat den Chat + Historie wieder herstellen. Sie können somit Ihre vorherige Konversation wieder aufnehmen.\nAchtung: Dies wird nur passieren, wenn Sie sich in der unten eingestellten 'Maximale Zeit für Wiederherstellung' erneut anmelden!",
                 
     RCHAT_TIMEBEFORERESTORE = "Maximale Zeit für Wiederherstellung",
-    RCHAT_TIMEBEFORERESTORETT = "NACH dieser Zeit (in Stunden), wird pChat nicht mehr versuchen, den Chat wieder herzustellen",
+    RCHAT_TIMEBEFORERESTORETT = "NACH dieser Zeit (in Stunden), wird rChat nicht mehr versuchen, den Chat wieder herzustellen",
                 
     RCHAT_RESTORESYSTEM = "Systemnachrichten wiederherstellen",
     RCHAT_RESTORESYSTEMTT = "Stelle auch Systemnachrichten wieder her (z.B. Login Nachrichten, Addon Nachrichten) wenn der Chat + Historie wiederhergestellt werden",

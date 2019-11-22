@@ -1,6 +1,6 @@
 <Bindings>
 	<Layer name="SI_KEYBINDINGS_LAYER_GENERAL">
-		<Category name="pChat">
+		<Category name="rChat">
 			<Action name="RCHAT_SWITCH_TAB">
 				<Down>rChat_SwitchToNextTab()</Down>
 			</Action>

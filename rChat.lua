@@ -37,21 +37,45 @@ local defaults = {
 	addChannelAndTargetToHistory = true,
 	urlHandling = true,
 	enablecopy = true,
-    -- ----
+    -- ---- Message Settings - End
+    
+    -- ---- Timestamp Settings
 	showTimestamp = true,
 	timestampcolorislcol = false,
 	timestampFormat = "HH:m",
+    -- colors["timestamp"]
+    -- ---- Timestamp Settings - End
+    
+    -- ---- Guild Settings
 	guildTags = {},
 	officertag = {},
 	switchFor = {},
 	officerSwitchFor = {},
 	formatguild = {},
-	defaultchannel = CHAT_CHANNEL_GUILD_1,
-	soundforincwhisps = SOUNDS.NEW_NOTIFICATION,
+    -- color[] stuff here too
+    -- ---- Guild Settings - End
+    
+    -- ---- Chat Tab Settings
 	enableChatTabChannel = true,
+	defaultchannel = CHAT_CHANNEL_GUILD_1,
+	defaultTab = 1,
+	defaultTabName = "",
+    -- ---- Chat Tab Settings - End
+
+    -- ---- Whisper Settings
+	-- enableWhisperTab = false,
+	soundforincwhisps = SOUNDS.NEW_NOTIFICATION,
+	notifyIM = false,
+    -- ---- Whisper Settings
+
+    -- ---- Party Settings
 	enablepartyswitch = true,
-	enableWhisperTab = false,
 	groupLeader = false,
+    -- colours["groupleader"]
+    -- colours["groupleader1"]
+	groupNames = 1,
+    -- ---- Party Settings - End
+    
     -- ---- Chat Window Settings specific options
 	chatMinimizedAtLaunch = false,
 	chatMinimizedInMenus = false,
@@ -59,22 +83,26 @@ local defaults = {
 	windowDarkness = 6,
 	fonts = "ESO Standard Font",
     -- colours["tabwarning"]
-    -- ----
-	chatSyncConfig = true,
+    -- ---- Chat Window Settings specific options - End
+    
+    -- ---- Restore Options
 	restoreOnReloadUI = true,
 	restoreOnLogOut = true,
+	restoreOnAFK = true,        -- kicked
+	timeBeforeRestore = 2,
 	restoreOnQuit = false,
-	restoreOnAFK = true,
 	restoreSystem = true,
 	restoreSystemOnly = false,
 	restoreWhisps = true,
 	restoreTextEntryHistoryAtLogOutQuit = false,
-	timeBeforeRestore = 2,
-	notifyIM = false,
-	nicknames = "",
-	defaultTab = 1,
-	defaultTabName = "",
-	groupNames = 1,
+    -- ---- Restore Options - End
+    
+    -- ---- Sync Settings
+	chatSyncConfig = true,
+    -- localPlayer
+	chatConfSync = {},  -- not LAM
+    -- ---- Sync Settings - End
+    
     -- ---- Anti Spam specific options
 	-- guildRecruitProtect = false,
 	spamGracePeriod = 5,
@@ -82,8 +110,12 @@ local defaults = {
 	floodGracePeriod = 30,
 	lookingForProtect = false,
 	wantToProtect = false,
+	nicknames = "",
+    -- ---- Anti Spam specific options - End
+    
     -- ----
 	colours = {
+        -- chat colors
 		[2*CHAT_CHANNEL_SAY] = "|cFFFFFF", -- say Left
 		[2*CHAT_CHANNEL_SAY + 1] = "|cFFFFFF", -- say Right
 		[2*CHAT_CHANNEL_YELL] = "|cE974D8", -- yell Left
@@ -94,6 +126,7 @@ local defaults = {
 		[2*CHAT_CHANNEL_PARTY + 1] = "|cA1DAF7", -- group Right
 		[2*CHAT_CHANNEL_WHISPER_SENT] = "|c7E57B5", -- tell out Left
 		[2*CHAT_CHANNEL_WHISPER_SENT + 1] = "|c7E57B5", -- tell out Right
+        -- other colors
 		[2*CHAT_CHANNEL_EMOTE] = "|cA5A5A5", -- emote Left
 		[2*CHAT_CHANNEL_EMOTE + 1] = "|cA5A5A5", -- emote Right
 		[2*CHAT_CHANNEL_MONSTER_SAY] = "|c879B7D", -- npc Left
@@ -104,6 +137,7 @@ local defaults = {
 		[2*CHAT_CHANNEL_MONSTER_WHISPER + 1] = "|c879B7D", -- npc whisper Right
 		[2*CHAT_CHANNEL_MONSTER_EMOTE] = "|c879B7D", -- npc emote Left
 		[2*CHAT_CHANNEL_MONSTER_EMOTE + 1] = "|c879B7D", -- npc emote Right
+        -- guild colors
 		[2*CHAT_CHANNEL_GUILD_1] = "|c94E193", -- guild Left
 		[2*CHAT_CHANNEL_GUILD_1 + 1] = "|cC3F0C2", -- guild Right
 		[2*CHAT_CHANNEL_GUILD_2] = "|c94E193",
@@ -124,6 +158,7 @@ local defaults = {
 		[2*CHAT_CHANNEL_OFFICER_4 + 1] = "|cC3F0C2",
 		[2*CHAT_CHANNEL_OFFICER_5] = "|cC3F0C2",
 		[2*CHAT_CHANNEL_OFFICER_5 + 1] = "|cC3F0C2",
+        -- other colors (zone)
 		[2*CHAT_CHANNEL_ZONE] = "|cCEB36F", -- zone Left
 		[2*CHAT_CHANNEL_ZONE + 1] = "|cB0A074", -- zone Right
 		[2*CHAT_CHANNEL_ZONE_LANGUAGE_1] = "|cCEB36F", -- EN zone Left
@@ -134,13 +169,13 @@ local defaults = {
 		[2*CHAT_CHANNEL_ZONE_LANGUAGE_3 + 1] = "|cB0A074", -- DE zone Right
 		[2*CHAT_CHANNEL_ZONE_LANGUAGE_4] = "|cCEB36F", -- JP zone Left
 		[2*CHAT_CHANNEL_ZONE_LANGUAGE_4 + 1] = "|cB0A074", -- JP zone Right
+        -- misc
 		["timestamp"] = "|c8F8F8F", -- timestamp
 		["tabwarning"] = "|c76BCC3", -- tab Warning ~ "Azure" (ZOS default)
 		["groupleader"] = "|cC35582", -- 
 		["groupleader1"] = "|c76BCC3", -- 
 	},
 	-- Not LAM
-	chatConfSync = {},
 }
 
 -- SV
@@ -770,7 +805,7 @@ local function InitAutomatedMessages()
 	RCHAT_AUTOMSG_SCENE:AddFragment(TITLE_FRAGMENT)
 	
 	-- Set Title
-	ZO_CreateStringId("SI_RCHAT_AUTOMSG_TITLE", ADDON_NAME)	
+	ZO_CreateStringId("SI_RCHAT_AUTOMSG_TITLE",  rChat.name)	
 	RCHAT_AUTOMSG_TITLE_FRAGMENT = ZO_SetTitleFragment:New(SI_RCHAT_AUTOMSG_TITLE)
 	RCHAT_AUTOMSG_SCENE:AddFragment(RCHAT_AUTOMSG_TITLE_FRAGMENT)
 	
@@ -4241,7 +4276,7 @@ local function BuildLAMPanel()
 				tooltip = L(RCHAT_USEESOCOLORSTT),
 				getFunc = function() return db.useESOcolors end,
 				setFunc = function(newValue) db.useESOcolors = newValue end,
-				width = "full",
+				width = "half",
 				default = defaults.useESOcolors,
 			},
 			{-- LAM Option Difference Between ESO Colors
@@ -4253,7 +4288,7 @@ local function BuildLAMPanel()
 				step = 1,
 				getFunc = function() return db.diffforESOcolors end,
 				setFunc = function(newValue) db.diffforESOcolors = newValue end,
-				width = "full",
+				width = "half",
 				default = defaults.diffforESOcolors,
 				disabled = function() return not db.useESOcolors end,
 			},
@@ -4301,7 +4336,7 @@ local function BuildLAMPanel()
 				name = L(RCHAT_GEOCHANNELSFORMAT),
 				tooltip = L(RCHAT_GEOCHANNELSFORMATTT),
 				choices = {L("RCHAT_GROUPNAMESCHOICE", 1), L("RCHAT_GROUPNAMESCHOICE", 2), L("RCHAT_GROUPNAMESCHOICE", 3)}, -- Same as group.
-				width = "full",
+				width = "half",
 				default = defaults.geoChannelsFormat,
 				getFunc = function() return L("RCHAT_GROUPNAMESCHOICE", db.geoChannelsFormat) end,
 				setFunc = function(choice)
@@ -4324,7 +4359,7 @@ local function BuildLAMPanel()
 				tooltip = L(RCHAT_DISABLEBRACKETSTT),
 				getFunc = function() return db.disableBrackets end,
 				setFunc = function(newValue) db.disableBrackets = newValue end,
-				width = "full",
+				width = "half",
 				default = defaults.disableBrackets,
 			},
 			{--Target History
@@ -4472,7 +4507,7 @@ local function BuildLAMPanel()
 				default = ConvertHexToRGBAPacked(defaults.colours["groupleader"]),
 				disabled = function() return not db.groupLeader end,
 			},
-			{-- Group Leader Coor 2
+			{-- Group Leader Color 2
 				type = "colorpicker",
 				name = L(RCHAT_GROUPLEADERCOLOR1),
 				tooltip = L(RCHAT_GROUPLEADERCOLOR1TT),
@@ -4541,7 +4576,7 @@ local function BuildLAMPanel()
 	} -- Mouse
 	optionsData[#optionsData + 1] = {
 		type = "submenu",
-		name = L(RCHAT_APPARENCEMH),
+		name = L(RCHAT_APPEARANCEMH),
 		controls = {
 			{--	New Message Color
 				type = "colorpicker",
@@ -5396,26 +5431,6 @@ local function BuildLAMPanel()
 
 	
 	
-	--[[
-	index = index + 1
-	optionsTable[index] = {
-			type = "header",
-			name = L(RCHAT_DEBUGH),
-			width = "full",
-	}
-	
-	index = index + 1
-	optionsTable[index] = {
-			type = "checkbox",
-			name = L(RCHAT_DEBUG),
-			tooltip = L(RCHAT_DEBUGTT),
-			getFunc = function() return db.debug end,
-			setFunc = function(newValue) db.debug = newValue end,
-			width = "full",
-			default = defaults.debug,
-	},
-	]]--
-	
 	LAM:RegisterOptionControls("rChatOptions", optionsData)
 	
 end
@@ -5603,20 +5618,20 @@ local function OnPlayerActivated()
 		-- registerIgnoreAdd = message for EVENT_IGNORE_ADDED, registerIgnoreRemove = message for EVENT_IGNORE_REMOVED
 		-- registerGroupTypeChanged = message for EVENT_GROUP_TYPE_CHANGED
 		-- All those events outputs to the ChatSystem
-		RCHATLC:registerFormat(FormatMessage, ADDON_NAME)
+		RCHATLC:registerFormat(FormatMessage,  rChat.name)
 		
 		if not RCHATLC.manager.registerFriendStatus then
-			RCHATLC:registerFriendStatus(OnFriendPlayerStatusChanged, ADDON_NAME)
+			RCHATLC:registerFriendStatus(OnFriendPlayerStatusChanged, rChat.name)
 		end
 		
-		RCHATLC:registerIgnoreAdd(OnIgnoreAdded, ADDON_NAME)
-		RCHATLC:registerIgnoreRemove(OnIgnoreRemoved, ADDON_NAME)
-		RCHATLC:registerGroupMemberLeft(OnGroupMemberLeft, ADDON_NAME)
-		RCHATLC:registerGroupTypeChanged(OnGroupTypeChanged, ADDON_NAME)
+		RCHATLC:registerIgnoreAdd(OnIgnoreAdded, rChat.name)
+		RCHATLC:registerIgnoreRemove(OnIgnoreRemoved, rChat.name)
+		RCHATLC:registerGroupMemberLeft(OnGroupMemberLeft, rChat.name)
+		RCHATLC:registerGroupTypeChanged(OnGroupTypeChanged, rChat.name)
 		
 		isAddonInitialized = true
 		
-		EVENT_MANAGER:UnregisterForEvent(ADDON_NAME, EVENT_PLAYER_ACTIVATED)
+		EVENT_MANAGER:UnregisterForEvent(rChat.name, EVENT_PLAYER_ACTIVATED)
 		
 	end
 	
@@ -5755,7 +5770,7 @@ end
 local function OnAddonLoaded(_, addonName)
 
 	--Protect
-	if addonName == ADDON_NAME then
+	if addonName == rChat.name then
 		
 		-- Char name
 		rChatData.localPlayer = GetUnitName("player")
@@ -5850,23 +5865,23 @@ local function OnAddonLoaded(_, addonName)
 		ZO_CreateStringId("SI_BINDING_NAME_TAB_11", L(RCHAT_Tab11))
 		ZO_CreateStringId("SI_BINDING_NAME_TAB_12", L(RCHAT_Tab12))
 		-- Register OnSelfJoinedGuild with EVENT_GUILD_SELF_JOINED_GUILD
-		EVENT_MANAGER:RegisterForEvent(ADDON_NAME, EVENT_GUILD_SELF_JOINED_GUILD, OnSelfJoinedGuild)
+		EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_GUILD_SELF_JOINED_GUILD, OnSelfJoinedGuild)
 
 		-- Register OnSelfLeftGuild with EVENT_GUILD_SELF_LEFT_GUILD
-		EVENT_MANAGER:RegisterForEvent(ADDON_NAME, EVENT_GUILD_SELF_LEFT_GUILD, OnSelfLeftGuild)
+		EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_GUILD_SELF_LEFT_GUILD, OnSelfLeftGuild)
 		
 		-- Because ChatSystem is loaded after EVENT_ADDON_LOADED triggers, we use 1st EVENT_PLAYER_ACTIVATED wich is run bit after
-		EVENT_MANAGER:RegisterForEvent(ADDON_NAME, EVENT_PLAYER_ACTIVATED, OnPlayerActivated)
+		EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_PLAYER_ACTIVATED, OnPlayerActivated)
 		
 		-- Whisp my target
-		EVENT_MANAGER:RegisterForEvent(ADDON_NAME, EVENT_RETICLE_TARGET_CHANGED, OnReticleTargetChanged)
+		EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_RETICLE_TARGET_CHANGED, OnReticleTargetChanged)
 		
 		-- Party switches
-		EVENT_MANAGER:RegisterForEvent(ADDON_NAME, EVENT_GROUP_MEMBER_JOINED, OnGroupMemberJoined)
-		EVENT_MANAGER:RegisterForEvent(ADDON_NAME, EVENT_GROUP_MEMBER_LEFT, OnGroupMemberLeft)
+		EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_GROUP_MEMBER_JOINED, OnGroupMemberJoined)
+		EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_GROUP_MEMBER_LEFT, OnGroupMemberLeft)
 		
 		-- Unregisters
-		EVENT_MANAGER:UnregisterForEvent(ADDON_NAME, EVENT_ADD_ON_LOADED)
+		EVENT_MANAGER:UnregisterForEvent(rChat.name, EVENT_ADD_ON_LOADED)
 		
 		isAddonLoaded = true
 		
@@ -5907,4 +5922,4 @@ function rChat_GetChannelColors(channel, from)
 	return GetChannelColors(channel, from)
 end
 
-EVENT_MANAGER:RegisterForEvent(ADDON_NAME, EVENT_ADD_ON_LOADED, OnAddonLoaded)
+EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_ADD_ON_LOADED, OnAddonLoaded)
