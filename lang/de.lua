@@ -249,6 +249,9 @@ rChat_localization_strings["de"] = {
     RCHAT_WANTTOPROTECT = "Ignoriere Handelsnachrichten ",
     RCHAT_WANTTOPROTECTTT = "Ignoriert Nachrichten von Spielern, die etwas handeln oder ver-/kaufen möchten",
                     
+	RCHAT_GUILDPROTECT = "Ignore Guild Recruiting messages",
+	RCHAT_GUILDPROTECTTT = "Ignore messages from players promoting Guild memberships",
+
     RCHAT_SPAMGRACEPERIOD = "Anti-Flood temporär deaktivieren",
     RCHAT_SPAMGRACEPERIODTT = "Wenn Sie selber eine Gruppe suchen, einen Handel oder Ver-/Kauf über den Chat kommunizieren, wird der Anti-Flood Schutz temporär aufgehoben.\nDiese Einstellung legt die Minuten fest, nachdem der Anti-Flood Schutz wieder aktiviert wird.",
                     

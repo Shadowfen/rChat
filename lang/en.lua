@@ -229,6 +229,9 @@ rChat_localization_strings["en"] = {
 	RCHAT_WANTTOPROTECT = "Ignore Commercial messages",
 	RCHAT_WANTTOPROTECTTT = "Ignore messages from players looking to buy, sell or trade",
 
+	RCHAT_GUILDPROTECT = "Ignore Guild Recruiting messages",
+	RCHAT_GUILDPROTECTTT = "Ignore messages from players promoting Guild memberships",
+
 	RCHAT_SPAMGRACEPERIOD = "Temporarily stopping the spam",
 	RCHAT_SPAMGRACEPERIODTT = "When you make yourself a research group message or trade, spam temporarily disables the function you have overridden the time to have an answer. It reactivates automatically after a period that can be set (in minutes)",
 

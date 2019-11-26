@@ -238,6 +238,9 @@ rChat_localization_strings["fr"] = {
     RCHAT_WANTTOPROTECT = "Ignorer les messages de commerce",
     RCHAT_WANTTOPROTECTTT = "Ignorer les messages de joueurs cherchant à acheter, vendre ou échanger",
                             
+	RCHAT_GUILDPROTECT = "Ignore Guild Recruiting messages",
+	RCHAT_GUILDPROTECTTT = "Ignore messages from players promoting Guild memberships",
+
     RCHAT_SPAMGRACEPERIOD = "Arrêt temporaire de l'anti-spam",
     RCHAT_SPAMGRACEPERIODTT = "Lorsque vous effectuez vous-même un message de recherche de groupe, ou de commerce, l'anti-spam désactive temporairement la fonction que vous avez outrepassée le temps d'avoir une réponse. Il se réactive automatiquement au bout d'un délai que vous pouvez fixer (en minutes)",
 

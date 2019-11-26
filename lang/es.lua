@@ -239,6 +239,9 @@ rChat_localization_strings["es"] = {
 	RCHAT_WANTTOPROTECT = "No haga caso de mensajes comerciales",
 	RCHAT_WANTTOPROTECTTT = "No haga caso de los mensajes de los jugadores que buscan comprar, venta o canje",
 
+	RCHAT_GUILDPROTECT = "Ignore Guild Recruiting messages",
+	RCHAT_GUILDPROTECTTT = "Ignore messages from players promoting Guild memberships",
+
 	RCHAT_SPAMGRACEPERIOD = "Detener temporalmente el correo no deseado",
 	RCHAT_SPAMGRACEPERIODTT = "Cuando te haces un mensaje de grupo de investigación, o el comercio, el spam desactiva temporalmente la función que ha anulado el tiempo para tener una respuesta. Se reactiva automáticamente después de un período que se puede conectar (en minutos)",
 

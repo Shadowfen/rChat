@@ -6,6 +6,20 @@ local SF = LibSFUtils
 -- been stuffed in rChat table so that we can get to them from here.
 -- Readdress this properly.
 
+local spammableChannels = {}
+spammableChannels[CHAT_CHANNEL_ZONE_LANGUAGE_1 + 1] = true
+spammableChannels[CHAT_CHANNEL_ZONE_LANGUAGE_2 + 1] = true
+spammableChannels[CHAT_CHANNEL_ZONE_LANGUAGE_3 + 1] = true
+spammableChannels[CHAT_CHANNEL_ZONE_LANGUAGE_4 + 1] = true
+spammableChannels[CHAT_CHANNEL_SAY + 1] = true
+spammableChannels[CHAT_CHANNEL_YELL + 1] = true
+spammableChannels[CHAT_CHANNEL_ZONE + 1] = true
+spammableChannels[CHAT_CHANNEL_EMOTE + 1] = true
+
+local function IsSpammableChannel(chanCode)
+    if chanCode == nil then return nil end
+    return spammableChannels[chanCode + 1]
+end
 
 -- Return true/false if text is a flood
 local function SpamFlood(from, text, chanCode)
@@ -35,24 +49,11 @@ local function SpamFlood(from, text, chanCode)
                         -- TODO: Find a characterchannel func
                         
                         -- CHAT_CHANNEL_SAY = 0 == nil in lua, will broke the array, so use RCHAT_CHANNEL_SAY
-                        local spamChanCode = chanCode
-                        if spamChanCode == CHAT_CHANNEL_SAY then
-                            spamChanCode = RCHAT_CHANNEL_SAY
-                        end
-                        
-                        local spammableChannels = {}
-                        spammableChannels[CHAT_CHANNEL_ZONE_LANGUAGE_1] = true
-                        spammableChannels[CHAT_CHANNEL_ZONE_LANGUAGE_2] = true
-                        spammableChannels[CHAT_CHANNEL_ZONE_LANGUAGE_3] = true
-                        spammableChannels[CHAT_CHANNEL_ZONE_LANGUAGE_4] = true
-                        spammableChannels[RCHAT_CHANNEL_SAY] = true
-                        spammableChannels[CHAT_CHANNEL_YELL] = true
-                        spammableChannels[CHAT_CHANNEL_ZONE] = true
-                        spammableChannels[CHAT_CHANNEL_EMOTE] = true
                         
                         -- spammableChannels[spamChanCode] = true if our message was sent in a spammable channel
                         -- spammableChannels[db.LineStrings[previousLine].channel] = return true if previous message was sent in a spammable channel
-                        if spammableChannels[spamChanCode] and spammableChannels[db.LineStrings[previousLine].channel] then
+                        
+                        if IsSpammableChannel(spamChanCode) and IsSpammableChannel(db.LineStrings[previousLine].channel) then
                             -- Spam
                             --CHAT_SYSTEM:Zo_AddMessage("Spam detected ( " .. text ..  " )")
                             return true
@@ -94,7 +95,7 @@ local function SpamLookingFor(text)
 	
 	for _, spamString in ipairs(spamStrings) do
 		if string.find(text, spamString) then
-			--CHAT_SYSTEM:Zo_AddMessage("spamLookingFor:" .. text .." ;spamString=" .. spamString)
+			CHAT_SYSTEM:Zo_AddMessage("spamLookingFor:" .. text .." ;spamString=" .. spamString)
 			return true
 		end
 	end
@@ -112,11 +113,13 @@ local function SpamWantTo(text)
 		-- Item Handler
 		if string.find(text, "|H(.-):item:(.-)|h(.-)|h") then
 			-- Match
-			--CHAT_SYSTEM:Zo_AddMessage("WT detected ( " .. text .. " )")
+			CHAT_SYSTEM:Zo_AddMessage("WT detected ( " .. text .. " )")
 			return true
+            
+        -- Werewolf Bite
 		elseif string.find(text, "[Ww][Ww][%s]+[Bb][Ii][Tt][Ee]") then
 			-- Match
-			--CHAT_SYSTEM:Zo_AddMessage("WT WW Bite detected ( " .. text .. " )")
+			CHAT_SYSTEM:Zo_AddMessage("WT WW Bite detected ( " .. text .. " )")
 			return true
 		end
 	
@@ -135,30 +138,14 @@ local function SpamGuildRecruit(text, chanCode)
 	-- 2nd is text len, they're generally long ones
 	-- Then, presence of certain words
 	
-	--CHAT_SYSTEM:Zo_AddMessage("GR analizis")
-	
-	local spamChanCode = chanCode
-	if spamChanCode == CHAT_CHANNEL_SAY then
-		spamChanCode = RCHAT_CHANNEL_SAY
-	end
-	
-	local spammableChannels = {}
-	spammableChannels[CHAT_CHANNEL_ZONE_LANGUAGE_1] = true
-	spammableChannels[CHAT_CHANNEL_ZONE_LANGUAGE_2] = true
-	spammableChannels[CHAT_CHANNEL_ZONE_LANGUAGE_3] = true
-	spammableChannels[CHAT_CHANNEL_ZONE_LANGUAGE_4] = true
-	spammableChannels[RCHAT_CHANNEL_SAY] = true
-	spammableChannels[CHAT_CHANNEL_YELL] = true
-	spammableChannels[CHAT_CHANNEL_ZONE] = true
-	spammableChannels[CHAT_CHANNEL_EMOTE] = true
-	
 	local spamStrings = {
 		["[Ll]ooking [Ff]or ([Nn]ew+) [Mm]embers"] = 5, -- looking for (new) members
 		["%d%d%d\+"] = 5, -- 398+
 		["%d%d%d\/500"] = 5, -- 398/500
 		["gilde"] = 1, -- 398/500
-		["guild"] = 1, -- 398/500
+		["[Gg]uild"] = 1, -- 398/500
 		["[Tt][Ee][Aa][Mm][Ss][Pp][Ee][Aa][Kk]"] = 1,
+		["[Dd][Ii][Ss][Cc][Oo][Rr][Dd]"] = 1,
 	}
 	
 	--[[
@@ -185,54 +172,47 @@ Russian guild Daggerfall Bandits is looking for new members! We are the biggest 
 	-- Our note. Per default, each message get its heuristic level to 0
 	local guildHeuristics = 0
 	
-	-- spammableChannels[db.LineStrings[previousLine].channel] = return true if previous message was sent in a spammable channel
-	if spammableChannels[spamChanCode] then
+	if IsSpammableChannel(spamChanCode) then
+        CHAT_SYSTEM:Zo_AddMessage("Guild Recruiting analysis: <"..text..">")
 		
 		local textLen = string.len(text)
-		local text300 = (string.len(text) > 300) -- 50
-		local text250 = (string.len(text) > 250) -- 40
-		local text200 = (string.len(text) > 200) -- 30
-		local text150 = (string.len(text) > 150) -- 20
-		local text100 = (string.len(text) > 100) -- 10
-		local text30  = (string.len(text) > 30)  -- 0
-		
+        
 		-- 30 chars are needed to make a phrase of guild recruitment. If recruiter spam in SMS, rChat won't handle it.
-		if text30 then
-			
-			-- Each message can possibly be a spam, let's wrote our checklist
-			--CHAT_SYSTEM:Zo_AddMessage("GR Len ( " .. textLen .. " )")
-			
-			if text300 then
-				guildHeuristics = 50
-			elseif text250 then
-				guildHeuristics = 40
-			elseif text200 then
-				guildHeuristics = 30
-			elseif text150 then
-				guildHeuristics = 20
-			elseif text100 then
-				guildHeuristics = 10
-			end
-			
-			-- Still to do
-			
-			for spamString, value in ipairs(spamStrings) do
-				if string.find(text, spamString) then
-					--CHAT_SYSTEM:Zo_AddMessage(spamString)
-					guildHeuristics = guildHeuristics + value
-				end
-			end
-			
-			if guildHeuristics > 60 then
-				--CHAT_SYSTEM:Zo_AddMessage("GR : true (score=" .. guildHeuristics .. ")")
-				return true
-			end
-		
-		end
+
+        if textLen <= 30 then return end
+        
+        -- Each message can possibly be a spam, let's write our checklist
+        CHAT_SYSTEM:Zo_AddMessage("GR Len ( " .. textLen .. " )")
+        
+        if textLen > 300 then
+            guildHeuristics = 50
+        elseif textLen > 250 then
+            guildHeuristics = 40
+        elseif textLen > 200 then
+            guildHeuristics = 30
+        elseif textLen > 150 then
+            guildHeuristics = 20
+        elseif textLen > 100 then
+            guildHeuristics = 10
+        end
+        
+        -- Still to do
+        for spamString, value in ipairs(spamStrings) do
+            if string.find(text, spamString) then
+                CHAT_SYSTEM:Zo_AddMessage(spamString)
+                guildHeuristics = guildHeuristics + value
+            end
+        end
+        
+        if guildHeuristics > 60 then
+            CHAT_SYSTEM:Zo_AddMessage("GR : true (score=" .. guildHeuristics .. ")")
+            return true
+        end
+    
+        CHAT_SYSTEM:Zo_AddMessage("GR : false (score=" .. guildHeuristics .. ")")
 	
 	end
 	
-	--CHAT_SYSTEM:Zo_AddMessage("GR : false (score=" .. guildHeuristics .. ")")
 	return false
 	
 end
@@ -267,7 +247,7 @@ local function IsSpamEnabledForCategory(category)
 				return true
 			else
 			
-				--CHAT_SYSTEM:Zo_AddMessage("lookingForProtect is temporary disabled since " .. rChat.spamTempLookingForStopTimestamp)
+				CHAT_SYSTEM:Zo_AddMessage("lookingForProtect is temporary disabled since " .. rChat.spamTempLookingForStopTimestamp)
 				
 				-- AntiSpam is disabled .. since -/+ grace time ?
 				if GetTimeStamp() - rChatData.spamTempLookingForStopTimestamp > (db.spamGracePeriod * 60) then
@@ -303,14 +283,14 @@ local function IsSpamEnabledForCategory(category)
 			end
 		end
 		
-		--CHAT_SYSTEM:Zo_AddMessage("wantToProtect disabled")
+		CHAT_SYSTEM:Zo_AddMessage("wantToProtect disabled")
 		-- AntiSpam is disabled
 		return false
 	
 	-- Join my Awesome guild
 	elseif category == "GuildRecruit" then
 		-- Enabled in Options?
-		if db.guildRecruitProtect then
+		if db.guildProtect then
 			-- Enabled in reality?
 			if rChatData.spamGuildRecruitEnabled then
 				-- AntiSpam is enabled
@@ -350,19 +330,21 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
 	
 	-- "I" or anyone do not flood
 	if IsSpamEnabledForCategory("Flood") then
-		if SpamFlood(from, text, chanCode) then return true end
+		if SpamFlood(from, text, chanCode) then 
+            CHAT_SYSTEM:Zo_AddMessage("Blocked flood msg")
+            return true end
 	end
 	
 	-- But "I" can have exceptions
 	if zo_strformat(SI_UNIT_NAME, from) == rChatData.localPlayer or from == GetDisplayName() then
 	
-		--CHAT_SYSTEM:Zo_AddMessage("I say something ( " .. text .. " )")
+		CHAT_SYSTEM:Zo_AddMessage("I saw something ( " .. text .. " )")
 		
 		if IsSpamEnabledForCategory("LookingFor") then
 			-- "I" can look for a group
 			if SpamLookingFor(text) then
 				
-				--CHAT_SYSTEM:Zo_AddMessage("I say a LF Message ( " .. text .. " )")
+				CHAT_SYSTEM:Zo_AddMessage("I saw a LF Message ( " .. text .. " )")
 				
 				-- If I break myself the rule, disable it few minutes
 				rChatData.spamTempLookingForStopTimestamp = GetTimeStamp()
@@ -375,29 +357,29 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
 			-- "I" can be a trader
 			if SpamWantTo(text) then
 				
-				--CHAT_SYSTEM:Zo_AddMessage("I say a WT Message ( " .. text .. " )")
+				CHAT_SYSTEM:Zo_AddMessage("I saw a WT Message ( " .. text .. " )")
 				
 				-- If I break myself the rule, disable it few minutes
 				rChatData.spamTempWantToStopTimestamp = GetTimeStamp()
 				rChatData.spamWantToStop = true
+                CHAT_SYSTEM:Zo_AddMessage("Blocked WTT")
 				
 			end
 		end
 		
-		--[[
 		if IsSpamEnabledForCategory("GuildRecruit") then
 			-- "I" can do some guild recruitment
 			if SpamGuildRecruit(text, chanCode) then
 				
-				--CHAT_SYSTEM:Zo_AddMessage("I say a GR Message ( " .. text .. " )")
+				CHAT_SYSTEM:Zo_AddMessage("I saw a GR Message ( " .. text .. " )")
 				
 				-- If I break myself the rule, disable it few minutes
 				rChatData.spamTempGuildRecruitStopTimestamp = GetTimeStamp()
 				rChatData.spamGuildRecruitStop = true
+                CHAT_SYSTEM:Zo_AddMessage("Blocked guild")
 				
 			end
 		end
-		]]--
 		
 		-- My message will be displayed in any case
 		return false
@@ -406,25 +388,36 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
 	
 	-- Spam
 	if IsSpamEnabledForCategory("Flood") then
-		if SpamFlood(from, text, chanCode) then return true end
+		if SpamFlood(from, text, chanCode) then 
+            CHAT_SYSTEM:Zo_AddMessage("Blocked flood 1")
+            return true 
+        end
 	end
 	
 	-- Looking For
 	if IsSpamEnabledForCategory("LookingFor") then
-		if SpamLookingFor(text) then return true end
+		if SpamLookingFor(text) then 
+            CHAT_SYSTEM:Zo_AddMessage("Blocked LFG 1")
+            return true 
+        end
+
 	end
 	
 	-- Want To
 	if IsSpamEnabledForCategory("WantTo") then
-		if SpamWantTo(text) then return true end
+		if SpamWantTo(text) then 
+            CHAT_SYSTEM:Zo_AddMessage("Blocked WTT 1")
+            return true 
+        end
 	end
 	
 	-- Guild Recruit
-	--[[
 	if IsSpamEnabledForCategory("GuildRecruit") then
-		if SpamGuildRecruit(text, chanCode) then return true end
+		if SpamGuildRecruit(text, chanCode) then  
+            CHAT_SYSTEM:Zo_AddMessage("Blocked GR 1")
+            return true 
+        end
 	end
-	]]--
 	
 	return false
 
