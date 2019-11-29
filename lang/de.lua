@@ -408,13 +408,6 @@ rChat_localization_strings["de"] = {
     RCHAT_NPCEMOTESCHAT = "NSC 'Emote' - Chat",
     RCHAT_NPCEMOTESCHATTT = "Legt die Farbe für 'Nicht-Spieler-Charakter-Emotes' im Chat fest.",
                         
--- Debug settings                        
-                        
-    RCHAT_DEBUGH = "Debug",
-                        
-    RCHAT_DEBUG = "Debug",
-    RCHAT_DEBUGTT = "Debug",
-
 -- Various strings not in panel settings
 
     RCHAT_COPYMESSAGECT = "Nachricht kopieren",

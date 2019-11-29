@@ -394,17 +394,7 @@ rChat_localization_strings["en"] = {
 	RCHAT_NPCEMOTESCHAT = "NPC Emotes - Chat",
 	RCHAT_NPCEMOTESCHATTT = "Set NPC chat color for NPC emotes",
 
-	-- Debug settings
-
-	RCHAT_DEBUGH = "Debug",
-
-	RCHAT_DEBUG = "Debug",
-	RCHAT_DEBUGTT = "Debug",
-
 	-- Various strings not in panel settings
-
-	RCHAT_UNDOCKTEXTENTRY = "Undock Text Entry",
-	RCHAT_REDOCKTEXTENTRY = "Redock Text Entry",
 
 	RCHAT_COPYXMLTITLE = "Copy text with Ctrl+C",
 	RCHAT_COPYXMLLABEL = "Copy text with Ctrl+C",

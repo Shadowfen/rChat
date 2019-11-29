@@ -398,17 +398,7 @@ rChat_localization_strings["es"] = {
 	RCHAT_NPCEMOTESCHAT = "PNJ Emoticones - Chat",
 	RCHAT_NPCEMOTESCHATTT = "Establece el color del mensaje para emoticones de PNJs",
 
-	-- Debug settings
-
-	RCHAT_DEBUGH = "Depuración",
-
-	RCHAT_DEBUG = "Depuración",
-	RCHAT_DEBUGTT = "Depuración",
-
 	-- Various strings not in panel settings
-
-	RCHAT_UNDOCKTEXTENTRY = "Undock Text Entry",
-	RCHAT_REDOCKTEXTENTRY = "Redock Text Entry",
 
 	RCHAT_COPYXMLTITLE = "Copie el texto con Ctrl + C",
 	RCHAT_COPYXMLLABEL = "Copie el texto con Ctrl + C",

@@ -1,17 +1,34 @@
 ﻿[COLOR="DeepSkyBlue"]1.0[/COLOR]
+[COLOR="MediumSlateBlue"]Breaking Changes[/COLOR]
 [LIST]
-[*] Starting to modularize the code.
-[*] Split out the spam filtering to its own file.
-[*] Reinstalled the old spanish language strings (where available). Added missing spanish translations using Google Translate.
-[*] Use LibSFUtils functions to handle localization strings
-[*] Renamed addon to avoid conflicting with pChat during development (so I can still use pChat in the beginning stages).
-[*] Removed embedded libraries. The following libraries now need to be installed separately: LibAddonMenu, LibMediaProvider-1.0, LibMainMenu, and libChat2
+[*] [COLOR="DarkOrange"]Now requires the libraries LibSFUtils, LibAddonMenu, LibMediaProvider-1.0, LibMainMenu, and libChat2 (note the lower case 'l') to be installed separately.[/COLOR]
+[/LIST]
+
+[COLOR="MediumSlateBlue"]Enhancements[/COLOR]
+[LIST]
+[*] Reimplemented the old spanish language strings. Added missing spanish translations using Google Translate.
 [*] Removed LibCustomTitles
+[*] Regroup option settings to make them (hopefully) easier to find.
+[*] Can filter out guild recruiting messages which include a guild link. Does not attempt to detect text-only guild recruiting.
+[*] Added more detection to the "looking for group/member" and "want to sell/buy/trade" messages in order to filter out more of them.
+[/LIST]
+
+[COLOR="MediumSlateBlue"]Bug Fixes[/COLOR]
+[LIST]
+[*] Updated chat code and data that had been copied out of ESO into the addon to comply with the current version of ESO.
+*] Removed embedded libraries. The inclusion of out-of-date libraries was causing random bugs in game that were not easily traceable back to the old libraries installed by pChat.
+[/LIST]
+
+[LIST]
+[*] Split out the spam filtering to its own file.
+[*] Use LibSFUtils functions to handle localization strings.
+[[*] Renamed addon to avoid conflicting with pChat during development (so I can still use pChat when I play in the beginning stages).
+[*] Forked rChat code from version 9.3.11.25 of pChat by DesertDwellers which has not been maintained in a while.
 [/LIST]
 
 -------------------------------------------------------------------------------
 
-Prior to this, you should look at the pChat addon (version 9.3.11.25) by DesertDwellers that this was based off of.
+[COLOR="DarkOrange"]Prior to this, you should look at the pChat addon (version 9.3.11.25) by DesertDwellers that this was based off of.[/COLOR]
 
 
 ## v9.3.11.25 ##
@@ -427,7 +444,7 @@ v 1.12
 
 v 1.11
 =======
-- API updated to last game version, Nota: Due to new ZOS feature "Link in Chat" breaking some functionalities, core functions (ZO_LinkHandler_OnLinkClicked, ZO_LinkHandler_OnLinkMouseUp) have been overwrited. Send a comment if you got any problem !
+- API updated to last game version, Note: Due to new ZOS feature "Link in Chat" breaking some functionalities, core functions (ZO_LinkHandler_OnLinkClicked, ZO_LinkHandler_OnLinkMouseUp) have been overwrited. Send a comment if you got any problem !
 - Added Party switch : When creating/joining a party, your channel switch to party, when leaving, it automatically get back to your default channel defined in options, activated by default
 - Corrected nil error at startup for users of "Prevent Chat Text fadding"
 - Corected bug which didn't included timestamps on copied strings

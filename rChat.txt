@@ -5,10 +5,12 @@
 ; You can read the full terms at https://account.elderscrollsonline.com/add-on-terms
 
 ## Title: rChat
-## Description: rChat overhaul the way text is displayed in the chatbox
+## Description: rChat overhauls the way text is displayed in the chatbox.
+      The rChat addon is based on the old pChat addon by DesertDweller.
+      You must not have both rChat and pChat enabled for a single character.
 ## Version: 1.0
 ## Author: Shadowfen
-## APIVersion: 100029
+## APIVersion: 100029 100030
 ## SavedVariables: RCHAT_OPTS
 ## AddOnVersion: 1
 ## DependsOn: LibSFUtils LibAddonMenu-2.0 LibMediaProvider-1.0 LibMainMenu libChat2

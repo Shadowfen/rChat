@@ -399,18 +399,8 @@ rChat_localization_strings["fr"] = {
     RCHAT_NPCEMOTESCHAT = "Emotes de PNJ - Message",
     RCHAT_NPCEMOTESCHATTT = "Définir la couleur du message pour les emotes de PNJ",
 
--- Debug settings
-
-    RCHAT_DEBUGH = "Debug",
-                                    
-    RCHAT_DEBUG = "Debug",
-    RCHAT_DEBUGTT = "Debug",
-
 -- Various strings not in panel settings
 
-    RCHAT_UNDOCKTEXTENTRY = "Détacher la zone de saisie",
-    RCHAT_REDOCKTEXTENTRY = "Réattacher la zone de saisie",
-                                
     RCHAT_COPYMESSAGECT = "Copier le message",
     RCHAT_COPYLINECT = "Copier la ligne",
     RCHAT_COPYDISCUSSIONCT = "Copier la discussion",

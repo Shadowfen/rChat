@@ -1,0 +1,45 @@
+[B][COLOR="DarkOrange"]Depends on the following (separately installed) libraries: LibSFUtils, LibAddonMenu, LibMediaProvider-1.0, LibMainMenu, and libChat2[/COLOR] (note the lower case 'l')[/B]
+
+rChat overhauls the way text is displayed in the chatbox. Fully customizable!
+
+[b]Features[/b]
+[COLOR="MediumSlateBlue"]Chat message enhancements[/COLOR]
+[list]
+[*] Redundant information like "says", "yells", et cetera are optionally removed, 
+[*] Character Name Rewrite - Choose to see the From names as account names, character names, or both. Customizable by guild.
+[*] Remove Brackets on Player Names, 
+[*] Timestamps - Show time stamps for messages. Choose 12 hour or 24 hour format.
+[*] Whisper Notification - A whisp : A sound. Visual Notification if you want it too.
+[*] Timestamps, From Info and Messages can be colorized as you like
+[*] Rename your Guilds Channels - Guild Tag or Officer one, each channel can be renamed
+[*] Party Leaders can have a separate color, 
+[*] Strip Colors to avoid Rainbow Messages, 
+[/list]
+
+[COLOR="MediumSlateBlue"]Chat Window enhancements[/COLOR]
+[list]
+[*] [b]Prevent chat text from fading[/b],
+[*] Chat history - No more chat wiped when you'll reloadUI. Also include a restore history when you logout, get kicked or disconnect.
+[*] Copy Text - You want to copy your chat ? Right click, and Ctrl+C
+[*] Set Text Fonts - 15 more fonts if you don't like the default one. You can also add fonts.
+[*] Chat window background - Can be darker or transparent
+[*] Resizing Chatbox 
+[*] Clear current tab, 
+[*] System Messages in the tab you have chosen, 
+[*] Set default channel & tab at login, 
+[*] Change Tab color, 
+[/list]
+
+[COLOR="MediumSlateBlue"]Other Features[/COLOR]
+[list]
+[*] Anti-Spam - Optionally filter out LFG/LFM messages, WTB/WTS/WTT messages, flooding, and [COLOR="Gold"](new)[/COLOR] guild recruiting messages. The anti-filtering necessarily works best with English language when abbreviated indicators are missing.
+[*] Automated messages system - store messages (like teamspeak info) to play into chat.
+[*] Automatic Group Switching - When you join a group, automatically enter the group channel. 
+[*] Keybinds to switch between tabs and toggle chat window, 
+[*] Auto switch channel when using arrow keys, 
+[*] Configurable switches for channels
+[*] Automatic rChat configuration between chars, 
+[*] French / German / Russian / [COLOR="Gold"](new)[/COLOR] Spanish Translations.
+[/list]
+
+[b]Based on: DesertDwellers' [URL="https://www.esoui.com/downloads/info93-pChat.html"]pChat[/URL][/b]

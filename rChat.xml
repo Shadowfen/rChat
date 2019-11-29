@@ -47,7 +47,7 @@
 				
 				<Control name="$(parent)Headers">
 					<Dimensions x="750" y="32" />
-					<Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="-250" offsetY="120"/>
+					<Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="-250" offsetY="30"/>
 					<Controls>
 						<Control name="$(parent)Name" inherits="ZO_SortHeader">
 							<OnInitialized>

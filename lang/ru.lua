@@ -384,13 +384,6 @@ rChat_localization_strings["ru"] = {
     RCHAT_NPCEMOTESCHAT = "NPC Emotes - Чaт",
     RCHAT_NPCEMOTESCHATTT = "Цвeт cooбщeний NPC в кaнaлe NPC emotes",
                     
--- Debug settings                    
-                    
-    RCHAT_DEBUGH        = "Debug",
-                    
-    RCHAT_DEBUG        = "Debug",
-    RCHAT_DEBUGTT    = "Debug",
-
 -- Various strings not in panel settings
 
     RCHAT_COPYXMLTITLE = "Кoпиpoвaть c Ctrl+C",
