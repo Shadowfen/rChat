@@ -1,16 +1,12 @@
 rChat = rChat or {}
 
+
 local SF = LibSFUtils
 local LMM = LibMainMenu
 
+rChat_AutomatedMsgs ={}
 
 local L = GetString
-
--- These require access to rChat.save and rChat.data (local vars in rChat.lua that have
--- been stuffed in rChat table so that we can get to them from here.
--- Readdress this properly.
-
-local MENU_CATEGORY_RCHAT = nil
 
 ZO_CreateStringId("RCHAT_AUTOMSG_NAME_DEFAULT_TEXT", L(RCHAT_RCHAT_AUTOMSG_NAME_DEFAULT_TEXT))
 ZO_CreateStringId("RCHAT_AUTOMSG_MESSAGE_DEFAULT_TEXT", L(RCHAT_RCHAT_AUTOMSG_MESSAGE_DEFAULT_TEXT))
@@ -26,8 +22,88 @@ ZO_CreateStringId("RCHAT_AUTOMSG_EDIT_AUTO_MSG", L(RCHAT_RCHAT_AUTOMSG_EDIT_AUTO
 ZO_CreateStringId("SI_BINDING_NAME_RCHAT_SHOW_AUTO_MSG", L(RCHAT_SI_BINDING_NAME_RCHAT_SHOW_AUTO_MSG))
 ZO_CreateStringId("RCHAT_AUTOMSG_REMOVE_AUTO_MSG", L(RCHAT_RCHAT_AUTOMSG_REMOVE_AUTO_MSG))
 
+-- These require access to rChat.save and rChat.data (local vars in rChat.lua that have
+-- been stuffed in rChat table so that we can get to them from here.
+-- Readdress this properly.
+-- When this file is loaded, most of the rChat stuff has not been initialized yet.
+-- So when we want access to .save or .data, we must do it when the function is 
+-- called, not when the file is loaded.
 
-rChat_AutomatedMsgs = {}
+-- Called by XML
+function rChat_HoverRowOfAutomatedMessages(control)
+    local rChatData = rChat.data
+    rChatData.autoMessagesShowKeybind = true
+    rChatData.automatedMessagesList:Row_OnMouseEnter(control)
+end
+
+-- Called by XML
+function rChat_ExitRowOfAutomatedMessages(control)
+    local rChatData = rChat.data
+    rChatData.autoMessagesShowKeybind = false
+    rChatData.automatedMessagesList:Row_OnMouseExit(control)
+end
+
+
+function rChat_AutomatedMsgs.FindSavedAutomatedMsg(name)
+    local dataList = rChat.save.automatedMessages
+    for index, data in pairs(dataList) do
+        if(data.name == name) then
+            return data, index
+        end
+    end
+end
+
+function rChat_AutomatedMsgs.FindAutomatedMsg(name)
+    local dataList = rChat.data.automatedMessagesList.list.data
+    for i = 1, #dataList do
+        local data = dataList[i].data
+        if(data.name == name) then
+            return data, index
+        end
+    end
+end
+
+
+function rChat_AutomatedMsgs.CleanAutomatedMessageList(dbs)
+    -- :RefreshData() adds dataEntry recursively, delete it to avoid overflow in SavedVars
+    for k, v in ipairs(dbs.automatedMessages) do
+        if v.dataEntry then
+            v.dataEntry = nil
+        end
+    end
+end
+
+function rChat_AutomatedMsgs.RemoveAutomatedMessage(dbs)
+    local data = ZO_ScrollList_GetData(WINDOW_MANAGER:GetMouseOverControl())
+    local _, index = rChat_AutomatedMsgs.FindSavedAutomatedMsg(data.name)
+    table.remove(dbs.automatedMessages, index)
+    
+    local rChatData = rChat.data
+    rChatData.automatedMessagesList:RefreshData()
+    rChat_AutomatedMsgs.CleanAutomatedMessageList(dbs)
+
+end
+
+
+--[[
+local MENU_CATEGORY_RCHAT = nil
+function rChat_ShowAutoMsg()
+    LMM:ToggleCategory(MENU_CATEGORY_RCHAT)
+end
+
+-- ---------------------------------------------------------------------------
+-- Global space functions called by bindings and XML
+
+function rChat_ShowAutoMsg()
+    LMM:ToggleCategory(MENU_CATEGORY_RCHAT)
+end
+
+-- Register Slash commands
+SLASH_COMMANDS["/msg"] = rChat_ShowAutoMsg
+-- ---------------------------------------------------------------------------
+
+
+
 local automatedMessagesList = rChat_AutomatedMsgs
 
 function automatedMessagesList:New(control)
@@ -101,27 +177,6 @@ function automatedMessagesList:FilterScrollList()
     end
 end
 
-local function GetDataByNameInSavedAutomatedMessages(name)
-    local db = rChat.save
-    local dataList = db.automatedMessages
-    for index, data in ipairs(dataList) do
-        if(data.name == name) then
-            return data, index
-        end
-    end
-end
-
-local function GetDataByNameInAutomatedMessages(name)
-    local rChatData = rChat.data
-    local dataList = rChatData.automatedMessagesList.list.data
-    for i = 1, #dataList do
-        local data = dataList[i].data
-        if(data.name == name) then
-            return data, index
-        end
-    end
-end
-
 local function SaveAutomatedMessage(name, message, isNew)
     local db = rChat.save   
     if db then
@@ -159,8 +214,8 @@ local function SaveAutomatedMessage(name, message, isNew)
                 table.insert(db.automatedMessages, {name = "!" .. name, message = message}) -- "data" variable is modified by ZO_ScrollList_CreateDataEntry and will crash eso if saved to savedvars
             else
                 
-                local data = GetDataByNameInAutomatedMessages(name)
-                local _, index = GetDataByNameInSavedAutomatedMessages(name)
+                local data = RAM.FindAutomatedMsg(name)
+                local _, index = RAM.FindSavedAutomatedMsg(name)
                 
                 data.message = message
                 db.automatedMessages[index].message = message
@@ -179,52 +234,7 @@ local function SaveAutomatedMessage(name, message, isNew)
 
 end
 
-local function CleanAutomatedMessageListForDB()
-    local db = rChat.save
-    -- :RefreshData() adds dataEntry recursively, delete it to avoid overflow in SavedVars
-    for k, v in ipairs(db.automatedMessages) do
-        if v.dataEntry then
-            v.dataEntry = nil
-        end
-    end
-end
 
-local function RemoveAutomatedMessage()
-    local db = rChat.save
-    local data = ZO_ScrollList_GetData(WINDOW_MANAGER:GetMouseOverControl())
-    local _, index = GetDataByNameInSavedAutomatedMessages(data.name)
-    table.remove(db.automatedMessages, index)
-    local rChatData = rChat.data
-    rChatData.automatedMessagesList:RefreshData()
-    CleanAutomatedMessageListForDB()
-
-end
-
-
--- ---------------------------------------------------------------------------
--- Global space functions called by bindings and XML
-
-function rChat_ShowAutoMsg()
-    LMM:ToggleCategory(MENU_CATEGORY_RCHAT)
-end
-
--- Register Slash commands
-SLASH_COMMANDS["/msg"] = rChat_ShowAutoMsg
-
-
--- Called by XML
-function rChat_HoverRowOfAutomatedMessages(control)
-    local rChatData = rChat.data
-    rChatData.autoMessagesShowKeybind = true
-    rChatData.automatedMessagesList:Row_OnMouseEnter(control)
-end
-
--- Called by XML
-function rChat_ExitRowOfAutomatedMessages(control)
-    local rChatData = rChat.data
-    rChatData.autoMessagesShowKeybind = false
-    rChatData.automatedMessagesList:Row_OnMouseExit(control)
-end
 
 -- Called by XML
 function rChat_BuildAutomatedMessagesDialog(control)
@@ -314,3 +324,4 @@ function rChat_BuildAutomatedMessagesDialog(control)
     })
 
 end
+--]]

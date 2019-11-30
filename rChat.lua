@@ -1,10 +1,11 @@
 
--- Registering librairies
+-- Registering libraries
 local LAM = LibAddonMenu2
 local LC2 = LibChat2
 local LMP = LibMediaProvider
 local LMM = LibMainMenu
 local SF = LibSFUtils
+local RAM = rChat_AutomatedMsgs
 
 local L = GetString
 
@@ -203,6 +204,7 @@ data : strings separated by ":"
 
 --local ChanInfoArray = ZO_ChatSystem_GetChannelInfo()
 
+-- used only by save and sync chat config
 rChatData.chatCategories = {
     CHAT_CATEGORY_SAY,
     CHAT_CATEGORY_YELL,
@@ -232,6 +234,7 @@ rChatData.chatCategories = {
     CHAT_CATEGORY_MONSTER_EMOTE,
 }
 
+-- used only in savetabcategories
 rChatData.guildCategories = {
     CHAT_CATEGORY_GUILD_1,
     CHAT_CATEGORY_GUILD_2,
@@ -245,6 +248,7 @@ rChatData.guildCategories = {
     CHAT_CATEGORY_OFFICER_5,
 }
 
+-- never used???
 rChatData.defaultChannels = {
     RCHAT_CHANNEL_NONE,
     CHAT_CHANNEL_ZONE,
@@ -335,7 +339,7 @@ local function CreateTimestamp(timeStr, formatStr)
 
 end
 
--- Format from name
+-- Format "From" name
 local function ConvertName(chanCode, from, isCS, fromDisplayName)
 
     local function DisplayWithOrWoBrackets(realFrom, displayed, linkType)
@@ -365,6 +369,7 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
             if rChatData.nicknames[new_from] then -- @UserID Nicknammed
                 db.LineStrings[db.lineNumber].rawFrom = rChatData.nicknames[new_from]
                 new_from = DisplayWithOrWoBrackets(new_from, rChatData.nicknames[new_from], DISPLAY_NAME_LINK_TYPE)
+                
             elseif db.formatguild[guildName] == 2 then -- Char
                 local _, characterName = GetGuildMemberCharacterInfo(guildId, GetGuildMemberIndexFromDisplayName(guildId, new_from))
                 characterName = zo_strformat(SI_UNIT_NAME, characterName)
@@ -374,6 +379,7 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
                 end
                 db.LineStrings[db.lineNumber].rawFrom = nickNamedName or characterName
                 new_from = DisplayWithOrWoBrackets(characterName, nickNamedName or characterName, CHARACTER_LINK_TYPE)
+                
             elseif db.formatguild[guildName] == 3 then -- Char@UserID
                 local _, characterName = GetGuildMemberCharacterInfo(guildId, GetGuildMemberIndexFromDisplayName(guildId, new_from))
                 characterName = zo_strformat(SI_UNIT_NAME, characterName)
@@ -387,6 +393,7 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
 
                 db.LineStrings[db.lineNumber].rawFrom = characterName
                 new_from = DisplayWithOrWoBrackets(new_from, characterName, DISPLAY_NAME_LINK_TYPE)
+                
             else
                 db.LineStrings[db.lineNumber].rawFrom = new_from
                 new_from = DisplayWithOrWoBrackets(new_from, new_from, DISPLAY_NAME_LINK_TYPE)
@@ -394,10 +401,10 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
 
         else
             -- Wisps with @ We can't guess characterName for those ones
-
-            if rChatData.nicknames[new_from] then -- @UserID Nicknammed
+            if rChatData.nicknames[new_from] then -- @UserID Nicknamed
                 db.LineStrings[db.lineNumber].rawFrom = rChatData.nicknames[new_from]
                 new_from = DisplayWithOrWoBrackets(new_from, rChatData.nicknames[new_from], DISPLAY_NAME_LINK_TYPE)
+                
             else
                 db.LineStrings[db.lineNumber].rawFrom = new_from
                 new_from = DisplayWithOrWoBrackets(new_from, new_from, DISPLAY_NAME_LINK_TYPE)
@@ -407,7 +414,6 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
 
     -- Geo chat, Group, Whisps with characterName
     else
-
         new_from = zo_strformat(SI_UNIT_NAME, new_from)
 
         local nicknamedFrom
@@ -470,21 +476,6 @@ end
 
 -- Register Slash commands
 SLASH_COMMANDS["/rchat.msg"] = rChat_ShowAutoMsg
-
-ZO_CreateStringId("RCHAT_AUTOMSG_NAME_DEFAULT_TEXT", L(RCHAT_RCHAT_AUTOMSG_NAME_DEFAULT_TEXT))
-ZO_CreateStringId("RCHAT_AUTOMSG_MESSAGE_DEFAULT_TEXT", L(RCHAT_RCHAT_AUTOMSG_MESSAGE_DEFAULT_TEXT))
-ZO_CreateStringId("RCHAT_AUTOMSG_MESSAGE_TIP1_TEXT", L(RCHAT_RCHAT_AUTOMSG_MESSAGE_TIP1_TEXT))
-ZO_CreateStringId("RCHAT_AUTOMSG_MESSAGE_TIP2_TEXT", L(RCHAT_RCHAT_AUTOMSG_MESSAGE_TIP2_TEXT))
-ZO_CreateStringId("RCHAT_AUTOMSG_MESSAGE_TIP3_TEXT", L(RCHAT_RCHAT_AUTOMSG_MESSAGE_TIP3_TEXT))
-ZO_CreateStringId("RCHAT_AUTOMSG_NAME_HEADER", L(RCHAT_RCHAT_AUTOMSG_NAME_HEADER))
-ZO_CreateStringId("RCHAT_AUTOMSG_MESSAGE_HEADER", L(RCHAT_RCHAT_AUTOMSG_MESSAGE_HEADER))
-ZO_CreateStringId("RCHAT_AUTOMSG_ADD_TITLE_HEADER", L(RCHAT_RCHAT_AUTOMSG_ADD_TITLE_HEADER))
-ZO_CreateStringId("RCHAT_AUTOMSG_EDIT_TITLE_HEADER", L(RCHAT_RCHAT_AUTOMSG_EDIT_TITLE_HEADER))
-ZO_CreateStringId("RCHAT_AUTOMSG_ADD_AUTO_MSG", L(RCHAT_RCHAT_AUTOMSG_ADD_AUTO_MSG))
-ZO_CreateStringId("RCHAT_AUTOMSG_EDIT_AUTO_MSG", L(RCHAT_RCHAT_AUTOMSG_EDIT_AUTO_MSG))
-ZO_CreateStringId("SI_BINDING_NAME_RCHAT_SHOW_AUTO_MSG", L(RCHAT_SI_BINDING_NAME_RCHAT_SHOW_AUTO_MSG))
-ZO_CreateStringId("RCHAT_AUTOMSG_REMOVE_AUTO_MSG", L(RCHAT_RCHAT_AUTOMSG_REMOVE_AUTO_MSG))
-
 
 
 
@@ -618,25 +609,6 @@ function automatedMessagesList:FilterScrollList()
     end
 end
 
-local function GetDataByNameInSavedAutomatedMessages(name)
-    local dataList = db.automatedMessages
-    for index, data in ipairs(dataList) do
-        if(data.name == name) then
-            return data, index
-        end
-    end
-end
-
-local function GetDataByNameInAutomatedMessages(name)
-    local dataList = rChatData.automatedMessagesList.list.data
-    for i = 1, #dataList do
-        local data = dataList[i].data
-        if(data.name == name) then
-            return data, index
-        end
-    end
-end
-
 local function SaveAutomatedMessage(name, message, isNew)
 
     if db then
@@ -673,8 +645,8 @@ local function SaveAutomatedMessage(name, message, isNew)
                 table.insert(db.automatedMessages, {name = "!" .. name, message = message}) -- "data" variable is modified by ZO_ScrollList_CreateDataEntry and will crash eso if saved to savedvars
             else
 
-                local data = GetDataByNameInAutomatedMessages(name)
-                local _, index = GetDataByNameInSavedAutomatedMessages(name)
+                local data = rChat_AutomatedMsgs.FindAutomatedMsg(name)
+                local _, index = rChat_AutomatedMsgs.FindSavedAutomatedMsg(name)
 
                 data.message = message
                 db.automatedMessages[index].message = message
@@ -690,25 +662,6 @@ local function SaveAutomatedMessage(name, message, isNew)
         end
 
     end
-
-end
-
-local function CleanAutomatedMessageListForDB()
-    -- :RefreshData() adds dataEntry recursively, delete it to avoid overflow in SavedVars
-    for k, v in ipairs(db.automatedMessages) do
-        if v.dataEntry then
-            v.dataEntry = nil
-        end
-    end
-end
-
-local function RemoveAutomatedMessage()
-
-    local data = ZO_ScrollList_GetData(WINDOW_MANAGER:GetMouseOverControl())
-    local _, index = GetDataByNameInSavedAutomatedMessages(data.name)
-    table.remove(db.automatedMessages, index)
-    rChatData.automatedMessagesList:RefreshData()
-    CleanAutomatedMessageListForDB()
 
 end
 
@@ -791,7 +744,7 @@ local function InitAutomatedMessages()
             name = L(RCHAT_AUTOMSG_REMOVE_AUTO_MSG),
             keybind = "UI_SHORTCUT_NEGATIVE",
             control = self,
-            callback = function(descriptor) RemoveAutomatedMessage() end,
+            callback = function(descriptor) rChat_AutomatedMsgs.RemoveAutomatedMessage(db) end,
             visible = function(descriptor)
                 if rChatData.autoMessagesShowKeybind then
                     return true
@@ -819,22 +772,11 @@ local function InitAutomatedMessages()
 
     rChatData.automatedMessagesList = automatedMessagesList:New(rChatXMLAutoMsg)
     rChatData.automatedMessagesList:RefreshData()
-    CleanAutomatedMessageListForDB()
+    rChat_AutomatedMsgs.CleanAutomatedMessageList(db)
+        
 
     rChatData.automatedMessagesList.keybindStripDescriptor = rChatData.autoMsgDescriptor
 
-end
-
--- Called by XML
-function rChat_HoverRowOfAutomatedMessages(control)
-    rChatData.autoMessagesShowKeybind = true
-    rChatData.automatedMessagesList:Row_OnMouseEnter(control)
-end
-
--- Called by XML
-function rChat_ExitRowOfAutomatedMessages(control)
-    rChatData.autoMessagesShowKeybind = false
-    rChatData.automatedMessagesList:Row_OnMouseExit(control)
 end
 
 -- Called by XML
@@ -2672,7 +2614,7 @@ local function StorelineNumber(rawTimestamp, rawFrom, text, chanCode, originalFr
 end
 
 -- WARNING : Since AddMessage is bypassed, this function and all its subfunctions DOES NOT CALL d() / Emitmessage() / AddMessage() or it will result an infinite loop and crash the game
--- Debug must call CHAT_SYSTEM:Zo_AddMessage() wich is backuped copy of CHAT_SYSTEM.AddMessage
+-- Debug must call CHAT_SYSTEM:Zo_AddMessage() wich is backed up copy of CHAT_SYSTEM.AddMessage
 local function FormatSysMessage(statusMessage)
 
     -- Display Timestamp if needed
@@ -3116,8 +3058,8 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName, origin
 
             message = message .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, linkedText)
             db.LineStrings[db.lineNumber].rawValue = db.LineStrings[db.lineNumber].rawValue .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, text)
+            
         else
-
             -- Used for Copy
             db.LineStrings[db.lineNumber].rawFrom = string.format(chatStrings.copyguild, gtag, db.LineStrings[db.lineNumber].rawFrom)
 
@@ -3451,9 +3393,6 @@ local function SaveChatConfig()
         local primeSettings = CHAT_SYSTEM.primaryContainer.settings
         local saveChar = {}
         
-        -- Rewrite the whole char tab
-        db.chatConfSync[rChatData.localPlayer] = saveChar
-
         -- Save Chat positions
         saveChar.relPoint = primeSettings.relPoint
         saveChar.x = primeSettings.x
@@ -3543,6 +3482,9 @@ local function SaveChatConfig()
 
         end
 
+        -- Rewrite the whole char tab
+        db.chatConfSync[rChatData.localPlayer] = saveChar
+
         db.chatConfSync.lastChar = saveChar
 
     end
@@ -3611,7 +3553,8 @@ local function SyncChatConfig(shouldSync, whichChar)
     -- Height / Width
     CHAT_SYSTEM.control:SetDimensions(newcfg.width, newcfg.height)
 
-    -- Save settings immediatly (to check, maybe call function which do this)
+    -- Save settings immediately (to check, maybe call function which do this)
+    local primeSettings = CHAT_SYSTEM.primaryContainer.settings
     primeSettings.height = newcfg.height
     primeSettings.point = newcfg.point
     primeSettings.relPoint = newcfg.relPoint
@@ -3907,15 +3850,6 @@ local function BuildLAMPanel()
                 width = "full",
                 default = defaults.delzonetags,
             },
-            {-- LAM Option Newline between name and message
-                type = "checkbox",
-                name = L(RCHAT_CARRIAGERETURN),
-                tooltip = L(RCHAT_CARRIAGERETURNTT),
-                getFunc = function() return db.carriageReturn end,
-                setFunc = function(newValue) db.carriageReturn = newValue end,
-                width = "full",
-                default = defaults.carriageReturn,
-            },
             {
                 type = "header",
                 name = SF.GetIconized(RCHAT_GEOCHANNELSFORMAT, SF.hex.superior),
@@ -3924,6 +3858,15 @@ local function BuildLAMPanel()
             {
                 type = "description",
                 text = "",
+            },
+            {-- LAM Option Newline between name and message
+                type = "checkbox",
+                name = L(RCHAT_CARRIAGERETURN),
+                tooltip = L(RCHAT_CARRIAGERETURNTT),
+                getFunc = function() return db.carriageReturn end,
+                setFunc = function(newValue) db.carriageReturn = newValue end,
+                width = "full",
+                default = defaults.carriageReturn,
             },
             {-- LAM Option Names Format
                 type = "dropdown",
@@ -3957,6 +3900,20 @@ local function BuildLAMPanel()
                 default = defaults.disableBrackets,
             },
             {
+                type = "editbox",
+                name = L(RCHAT_NICKNAMES),
+                tooltip = L(RCHAT_NICKNAMESTT),
+                isMultiline = true,
+                isExtraWide = true,
+                getFunc = function() return db.nicknames end,
+                setFunc = function(newValue)
+                    db.nicknames = newValue
+                    BuildNicknames(true) -- Rebuild the control if data is invalid
+                end,
+                width = "full",
+                default = defaults.nicknames,
+            },
+            {
                 type = "header",
                 name = SF.GetIconized(RCHAT_TIMESTAMPH, SF.hex.superior),
                 width = "full",
@@ -3975,16 +3932,6 @@ local function BuildLAMPanel()
                 default = defaults.showTimestamp,
             },
             {
-                type = "checkbox",
-                name = L(RCHAT_TIMESTAMPCOLORISLCOL),
-                tooltip = L(RCHAT_TIMESTAMPCOLORISLCOLTT),
-                getFunc = function() return db.timestampcolorislcol end,
-                setFunc = function(newValue) db.timestampcolorislcol = newValue end,
-                width = "full",
-                default = defaults.timestampcolorislcol,
-                disabled = function() return not db.showTimestamp end,
-            },
-            {
                 type = "editbox",
                 name = L(RCHAT_TIMESTAMPFORMAT),
                 tooltip = L(RCHAT_TIMESTAMPFORMATTT),
@@ -3995,13 +3942,26 @@ local function BuildLAMPanel()
                 disabled = function() return not db.showTimestamp end,
             },
             {
+                type = "checkbox",
+                name = L(RCHAT_TIMESTAMPCOLORISLCOL),
+                tooltip = L(RCHAT_TIMESTAMPCOLORISLCOLTT),
+                getFunc = function() return db.timestampcolorislcol end,
+                setFunc = function(newValue) db.timestampcolorislcol = newValue end,
+                width = "full",
+                default = defaults.timestampcolorislcol,
+                disabled = function() return not db.showTimestamp end,
+            },
+            {
                 type = "colorpicker",
                 name = L(RCHAT_TIMESTAMP),
                 tooltip = L(RCHAT_TIMESTAMPTT),
                 getFunc = function() return ConvertHexToRGBA(db.colours.timestamp) end,
                 setFunc = function(r, g, b) db.colours.timestamp = ConvertRGBToHex(r, g, b) end,
                 default = ConvertHexToRGBAPacked(defaults.colours.timestamp),
-                disabled = function() return not db.showTimestamp end,
+                disabled = function() 
+                    if not db.showTimestamp then return true end
+                    if db.timestampcolorislcol then return true end
+                    return false end,
             },
             {
                 type = "header",
@@ -4041,29 +4001,6 @@ local function BuildLAMPanel()
                 setFunc = function(newValue) db.urlHandling = newValue end,
                 width = "full",
                 default = defaults.urlHandling,
-            },
-            {-- Copy Chat
-                type = "checkbox",
-                name = L(RCHAT_ENABLECOPY),
-                tooltip = L(RCHAT_ENABLECOPYTT),
-                getFunc = function() return db.enablecopy end,
-                setFunc = function(newValue) db.enablecopy = newValue end,
-                width = "full",
-                default = defaults.enablecopy,
-            },--
-            {
-                type = "editbox",
-                name = L(RCHAT_NICKNAMES),
-                tooltip = L(RCHAT_NICKNAMESTT),
-                isMultiline = true,
-                isExtraWide = true,
-                getFunc = function() return db.nicknames end,
-                setFunc = function(newValue)
-                    db.nicknames = newValue
-                    BuildNicknames(true) -- Rebuild the control if data is invalid
-                end,
-                width = "full",
-                default = defaults.nicknames,
             },
         },
     }
@@ -4150,7 +4087,14 @@ local function BuildLAMPanel()
                                 db.defaultTab = getTabIdx(choice)
                             end,
             },
-            -- !!!!!need code for specific tab here
+            {-- New Message Color
+                type = "colorpicker",
+                name = L(RCHAT_TABWARNING),
+                tooltip = L(RCHAT_TABWARNINGTT),
+                getFunc = function() return ConvertHexToRGBA(db.colours["tabwarning"]) end,
+                setFunc = function(r, g, b) db.colours["tabwarning"] = ConvertRGBToHex(r, g, b) end,
+                default = ConvertHexToRGBAPacked(defaults.colours["tabwarning"]),
+            },
         },
     }
     -- Group Submenu
@@ -4166,41 +4110,6 @@ local function BuildLAMPanel()
                 setFunc = function(newValue) db.enablepartyswitch = newValue end,
                 width = "full",
                 default = defaults.enablepartyswitch,
-            },
-            {-- Group Leader
-                type = "checkbox",
-                name = L(RCHAT_GROUPLEADER),
-                tooltip = L(RCHAT_GROUPLEADERTT),
-                getFunc = function() return db.groupLeader end,
-                setFunc = function(newValue) db.groupLeader = newValue end,
-                width = "full",
-                default = defaults.groupLeader,
-            },
-            {-- Group Leader Color
-                type = "colorpicker",
-                name = L(RCHAT_GROUPLEADERCOLOR),
-                tooltip = L(RCHAT_GROUPLEADERCOLORTT),
-                getFunc = function() return ConvertHexToRGBA(db.colours["groupleader"]) end,
-                setFunc = function(r, g, b) db.colours["groupleader"] = ConvertRGBToHex(r, g, b) end,
-                default = ConvertHexToRGBAPacked(defaults.colours["groupleader"]),
-                disabled = function() return not db.groupLeader end,
-            },
-            {-- Group Leader Color 2
-                type = "colorpicker",
-                name = L(RCHAT_GROUPLEADERCOLOR1),
-                tooltip = L(RCHAT_GROUPLEADERCOLOR1TT),
-                getFunc = function() return ConvertHexToRGBA(db.colours["groupleader1"]) end,
-                setFunc = function(r, g, b) db.colours["groupleader1"] = ConvertRGBToHex(r, g, b) end,
-                default = ConvertHexToRGBAPacked(defaults.colours["groupleader1"]),
-                disabled = function()
-                        if not db.groupLeader then
-                            return true
-                        elseif db.useESOcolors then
-                            return true
-                        else
-                            return false
-                        end
-                    end,
             },
             {-- Group Names
                 type = "dropdown",
@@ -4223,6 +4132,43 @@ local function BuildLAMPanel()
                     end
 
                 end,
+            },
+            {-- Group Leader
+                type = "checkbox",
+                name = L(RCHAT_GROUPLEADER),
+                tooltip = L(RCHAT_GROUPLEADERTT),
+                getFunc = function() return db.groupLeader end,
+                setFunc = function(newValue) db.groupLeader = newValue end,
+                width = "full",
+                default = defaults.groupLeader,
+            },
+            {-- Group Leader Color
+                type = "colorpicker",
+                name = L(RCHAT_GROUPLEADERCOLOR),
+                tooltip = L(RCHAT_GROUPLEADERCOLORTT),
+                getFunc = function() return ConvertHexToRGBA(db.colours["groupleader"]) end,
+                setFunc = function(r, g, b) db.colours["groupleader"] = ConvertRGBToHex(r, g, b) end,
+                width = "half",
+                default = ConvertHexToRGBAPacked(defaults.colours["groupleader"]),
+                disabled = function() return not db.groupLeader end,
+            },
+            {-- Group Leader Color 2
+                type = "colorpicker",
+                name = L(RCHAT_GROUPLEADERCOLOR1),
+                tooltip = L(RCHAT_GROUPLEADERCOLOR1TT),
+                getFunc = function() return ConvertHexToRGBA(db.colours["groupleader1"]) end,
+                setFunc = function(r, g, b) db.colours["groupleader1"] = ConvertRGBToHex(r, g, b) end,
+                width = "half",
+                default = ConvertHexToRGBAPacked(defaults.colours["groupleader1"]),
+                disabled = function()
+                        if not db.groupLeader then
+                            return true
+                        elseif db.useESOcolors then
+                            return true
+                        else
+                            return false
+                        end
+                    end,
             },
         },
     }
@@ -4301,14 +4247,6 @@ local function BuildLAMPanel()
                 width = "full",
                 default = defaults.oneColour,
             },
-            {-- New Message Color
-                type = "colorpicker",
-                name = L(RCHAT_TABWARNING),
-                tooltip = L(RCHAT_TABWARNINGTT),
-                getFunc = function() return ConvertHexToRGBA(db.colours["tabwarning"]) end,
-                setFunc = function(r, g, b) db.colours["tabwarning"] = ConvertRGBToHex(r, g, b) end,
-                default = ConvertHexToRGBAPacked(defaults.colours["tabwarning"]),
-            },
             {-- Minimize at launch
                 type = "checkbox",
                 name = L(RCHAT_CHATMINIMIZEDATLAUNCH),
@@ -4351,6 +4289,15 @@ local function BuildLAMPanel()
                 default = defaults.fontChange,
                 warning = "ReloadUI"
             },
+            {-- Copy Chat
+                type = "checkbox",
+                name = L(RCHAT_ENABLECOPY),
+                tooltip = L(RCHAT_ENABLECOPYTT),
+                getFunc = function() return db.enablecopy end,
+                setFunc = function(newValue) db.enablecopy = newValue end,
+                width = "full",
+                default = defaults.enablecopy,
+            },--
         },
     } -- LAM Menu Whispers
     -- Whispers
@@ -4414,7 +4361,7 @@ local function BuildLAMPanel()
             },
         },
     }
-    -- LAM Menu Restore Chat
+    -- Restore Chat
     optionsData[#optionsData + 1] = {
         type = "submenu",
         name = SF.GetIconized(RCHAT_RESTORECHATH, SF.hex.bronze),
@@ -4425,17 +4372,8 @@ local function BuildLAMPanel()
                 tooltip = L(RCHAT_RESTOREONRELOADUITT),
                 getFunc = function() return db.restoreOnReloadUI end,
                 setFunc = function(newValue) db.restoreOnReloadUI = newValue end,
-                width = "full",
+                width = "half",
                 default = defaults.restoreOnReloadUI,
-            },
-            {-- LAM Option Restore: Logout
-                type = "checkbox",
-                name = L(RCHAT_RESTOREONLOGOUT),
-                tooltip = L(RCHAT_RESTOREONLOGOUTTT),
-                getFunc = function() return db.restoreOnLogOut end,
-                setFunc = function(newValue) db.restoreOnLogOut = newValue end,
-                width = "full",
-                default = defaults.restoreOnLogOut,
             },
             {-- LAM Option Restore: Kicked
                 type = "checkbox",
@@ -4443,8 +4381,26 @@ local function BuildLAMPanel()
                 tooltip = L(RCHAT_RESTOREONAFKTT),
                 getFunc = function() return db.restoreOnAFK end,
                 setFunc = function(newValue) db.restoreOnAFK = newValue end,
-                width = "full",
+                width = "half",
                 default = defaults.restoreOnAFK,
+            },
+            {-- LAM Option Restore: Logout
+                type = "checkbox",
+                name = L(RCHAT_RESTOREONLOGOUT),
+                tooltip = L(RCHAT_RESTOREONLOGOUTTT),
+                getFunc = function() return db.restoreOnLogOut end,
+                setFunc = function(newValue) db.restoreOnLogOut = newValue end,
+                width = "half",
+                default = defaults.restoreOnLogOut,
+            },
+            {-- LAM Option Restore: Leave
+                type = "checkbox",
+                name = L(RCHAT_RESTOREONQUIT),
+                tooltip = L(RCHAT_RESTOREONQUITTT),
+                getFunc = function() return db.restoreOnQuit end,
+                setFunc = function(newValue) db.restoreOnQuit = newValue end,
+                width = "half",
+                default = defaults.restoreOnQuit,
             },
             {-- LAM Option Restore: Hours
                 type = "slider",
@@ -4457,15 +4413,6 @@ local function BuildLAMPanel()
                 setFunc = function(newValue) db.timeBeforeRestore = newValue end,
                 width = "full",
                 default = defaults.timeBeforeRestore,
-            },
-            {-- LAM Option Restore: Leave
-                type = "checkbox",
-                name = L(RCHAT_RESTOREONQUIT),
-                tooltip = L(RCHAT_RESTOREONQUITTT),
-                getFunc = function() return db.restoreOnQuit end,
-                setFunc = function(newValue) db.restoreOnQuit = newValue end,
-                width = "full",
-                default = defaults.restoreOnQuit,
             },
             {-- LAM Option Restore: System Messages
                 type = "checkbox",
@@ -5574,9 +5521,9 @@ local function OnAddonLoaded(_, addonName)
     rChatData.localPlayer = GetUnitName("player")
 
     -- Saved variables
-    db = ZO_SavedVars:NewAccountWide(rChat.savedvar, rChat.sv_version, nil, defaults)
+    rChat.save = ZO_SavedVars:NewAccountWide(rChat.savedvar, rChat.sv_version, nil, defaults)
+    db = rChat.save
     save = db
-    rChat.save = db
 
     --LAM
     BuildLAM()
