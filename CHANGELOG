@@ -1,4 +1,9 @@
-﻿[COLOR="DeepSkyBlue"]1.0[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.0.1[/COLOR]
+[LIST]
+[*] Fix misspelled function name (error at 5065).
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.0[/COLOR]
 [COLOR="MediumSlateBlue"]Breaking Changes[/COLOR]
 [LIST]
 [*] [COLOR="DarkOrange"]Now requires the libraries LibSFUtils, LibAddonMenu, LibMediaProvider-1.0, LibMainMenu, and libChat2 (note the lower case 'l') to be installed separately.[/COLOR]

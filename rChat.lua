@@ -5062,7 +5062,7 @@ local function BuildLAMPanel()
                 getFunc = function() return db.switchFor[guildName] end,
                 setFunc = function(newValue)
                     db.switchFor[guildName] = newValue
-                    UpdateCharCorrespondanceTableSwitchs()
+                    UpdateCharCorrespondanceTableSwitches()
                     CHAT_SYSTEM:CreateChannelData()
                 end,
                 width = "full",
@@ -5077,7 +5077,7 @@ local function BuildLAMPanel()
                 getFunc = function() return db.officerSwitchFor[guildName] end,
                 setFunc = function(newValue)
                     db.officerSwitchFor[guildName] = newValue
-                    UpdateCharCorrespondanceTableSwitchs()
+                    UpdateCharCorrespondanceTableSwitches()
                     CHAT_SYSTEM:CreateChannelData()
                 end
             },
