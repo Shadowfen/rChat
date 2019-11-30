@@ -42,4 +42,19 @@ rChat overhauls the way text is displayed in the chatbox. Fully customizable!
 [*] French / German / Russian / [COLOR="Gold"](new)[/COLOR] Spanish Translations.
 [/list]
 
+[COLOR="MediumSlateBlue"]Key Bindings Available[/COLOR]
+[list]
+[*] Switch to next tab
+[*] Toggle Chat Window
+[*] Whisper at Target
+[*] Select Chat Tab 1-12 as current
+[*] Automated messages
+[/list]
+
+[COLOR="MediumSlateBlue"]Slash Commands[/COLOR]
+[list]
+[*] /rchat - Open the rChat Settings window
+[*] /rchat.msg - Open the rChat Automated Messages window
+[/list]
+
 [b]Based on: DesertDwellers' [URL="https://www.esoui.com/downloads/info93-pChat.html"]pChat[/URL][/b]
