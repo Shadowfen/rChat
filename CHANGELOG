@@ -1,4 +1,9 @@
-﻿[COLOR="DeepSkyBlue"]1.0.1[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.0.2[/COLOR]
+[LIST]
+[*] Fixed attributions for the pChat addon that rChat was forked from.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.0.1[/COLOR]
 [LIST]
 [*] Fix misspelled function name (error at 5065).
 [/LIST]
@@ -28,9 +33,9 @@
 [*] Split out the spam filtering to its own file.
 [*] Use LibSFUtils functions to handle localization strings.
 [[*] Renamed addon to avoid conflicting with pChat during development (so I can still use pChat when I play in the beginning stages).
-[*] Forked rChat code from version 9.3.11.25 of pChat by DesertDwellers which has not been maintained in a while.
+[*] Forked rChat code from version 9.3.11.25 of pChat by DesertDwellers, Ayantir, and Puddy which has not been maintained in a while.
 [/LIST]
 
 -------------------------------------------------------------------------------
 
-[COLOR="DarkOrange"]For changes prior to this, you should look at the [URL="https://www.esoui.com/downloads/info93-pChat.html"]pChat[/URL] addon (version 9.3.11.25) by DesertDwellers that this was based off of.[/COLOR]
+[COLOR="DarkOrange"]For changes prior to this, you should look at the [URL="https://www.esoui.com/downloads/info93-pChat.html"]pChat[/URL] addon (version 9.3.11.25) by DesertDwellers, Ayantir, and Puddy that this was based off of.[/COLOR]

@@ -106,30 +106,21 @@ SLASH_COMMANDS["/msg"] = rChat_ShowAutoMsg
 
 local automatedMessagesList = rChat_AutomatedMsgs
 
-function automatedMessagesList:New(control)
-    o = {} 
-    setmetatable(o, self)
-    self.__index = self
-    
-    ZO_SortFilterList.InitializeSortFilterList(o, control)
-    
-    local AutomatedMessagesSorterKeys = {
+function automatedMessagesList:Init(control)
+    ZO_SortFilterList.InitializeSortFilterList(self, control)
+
+    local AutomatedMessagesSorterKeys =
+    {
         ["name"] = {},
         ["message"] = {tiebreaker = "name"}
     }
-    
-    o.masterList = {}
-    ZO_ScrollList_AddDataType(o.list, 1, "rChatXMLAutoMsgRowTemplate", 32, 
-        function(control, data)  o:SetupEntry(control, data) end)
-    ZO_ScrollList_EnableHighlight(o.list, "ZO_ThinListHighlight")
-    o.sortFunction = function(listEntry1, listEntry2) 
-            return ZO_TableOrderingFunction(listEntry1.data, listEntry2.data, 
-                    o.currentSortKey, AutomatedMessagesSorterKeys, 
-                    o.currentSortOrder) 
-            end
-    --o:SetAlternateRowBackgrounds(true)
-    
-    return o
+
+    self.masterList = {}
+    ZO_ScrollList_AddDataType(self.list, 1, "rChatXMLAutoMsgRowTemplate", 32, function(control, data) self:SetupEntry(control, data) end)
+    ZO_ScrollList_EnableHighlight(self.list, "ZO_ThinListHighlight")
+    self.sortFunction = function(listEntry1, listEntry2) return ZO_TableOrderingFunction(listEntry1.data, listEntry2.data, self.currentSortKey, AutomatedMessagesSorterKeys, self.currentSortOrder) end
+
+    return self
 end
 
 function automatedMessagesList:SetupEntry(control, data)

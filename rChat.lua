@@ -186,7 +186,6 @@ local rChatData = rChat.data
 -- Used for rChat LinkHandling
 local RCHAT_LINK = "p"
 local RCHAT_URL_CHAN = 97
-local RCHAT_CHANNEL_SAY = 98
 local RCHAT_CHANNEL_NONE = 99
 
 -- Init Automated Messages
@@ -247,27 +246,9 @@ rChatData.guildCategories = {
     CHAT_CATEGORY_OFFICER_4,
     CHAT_CATEGORY_OFFICER_5,
 }
-
--- never used???
-rChatData.defaultChannels = {
-    RCHAT_CHANNEL_NONE,
-    CHAT_CHANNEL_ZONE,
-    CHAT_CHANNEL_SAY,
-    CHAT_CHANNEL_GUILD_1,
-    CHAT_CHANNEL_GUILD_2,
-    CHAT_CHANNEL_GUILD_3,
-    CHAT_CHANNEL_GUILD_4,
-    CHAT_CHANNEL_GUILD_5,
-    CHAT_CHANNEL_OFFICER_1,
-    CHAT_CHANNEL_OFFICER_2,
-    CHAT_CHANNEL_OFFICER_3,
-    CHAT_CHANNEL_OFFICER_4,
-    CHAT_CHANNEL_OFFICER_5,
-}
-
 local chatStrings = {
     standard = "%s%s: |r%s%s%s|r", -- standard format: say, yell, group, npc, npc yell, npc whisper, zone
-    esostandart = "%s%s %s: |r%s%s%s|r", -- standard format: say, yell, group, npc, npc yell, npc whisper, zone with tag (except for monsters)
+    esostandard = "%s%s %s: |r%s%s%s|r", -- standard format: say, yell, group, npc, npc yell, npc whisper, zone with tag (except for monsters)
     esoparty = "%s%s%s: |r%s%s%s|r", -- standard format: party
     tellIn = "%s%s: |r%s%s%s|r", -- tell in
     tellOut = "%s-> %s: |r%s%s%s|r", -- tell out
@@ -479,7 +460,7 @@ SLASH_COMMANDS["/rchat.msg"] = rChat_ShowAutoMsg
 
 
 
-function automatedMessagesList:New(control)
+function automatedMessagesList:Init(control)
 
     ZO_SortFilterList.InitializeSortFilterList(self, control)
 
@@ -493,10 +474,8 @@ function automatedMessagesList:New(control)
     ZO_ScrollList_AddDataType(self.list, 1, "rChatXMLAutoMsgRowTemplate", 32, function(control, data) self:SetupEntry(control, data) end)
     ZO_ScrollList_EnableHighlight(self.list, "ZO_ThinListHighlight")
     self.sortFunction = function(listEntry1, listEntry2) return ZO_TableOrderingFunction(listEntry1.data, listEntry2.data, self.currentSortKey, AutomatedMessagesSorterKeys, self.currentSortOrder) end
-    --self:SetAlternateRowBackgrounds(true)
 
     return self
-
 end
 
 -- format ESO text to raw text
@@ -770,7 +749,7 @@ local function InitAutomatedMessages()
         db.automatedMessages = {}
     end
 
-    rChatData.automatedMessagesList = automatedMessagesList:New(rChatXMLAutoMsg)
+    rChatData.automatedMessagesList = automatedMessagesList:Init(rChatXMLAutoMsg)
     rChatData.automatedMessagesList:RefreshData()
     rChat_AutomatedMsgs.CleanAutomatedMessageList(db)
         
@@ -1370,11 +1349,11 @@ local function ShowCopyDialog(message)
 end
 
 -- Copy discussion
--- It will copy all text mark with the same chanCode
+-- It will copy all text marked with the same chanCode
 -- Todo : Whisps by person
 local function CopyDiscussion(chanNumber, numLine)
 
-    -- Args are passed as string trought LinkHandlerSystem
+    -- Args are passed as string through LinkHandlerSystem
     local numChanCode = tonumber(chanNumber)
     -- Whispers sent and received together
     if numChanCode == CHAT_CHANNEL_WHISPER_SENT then
@@ -2411,7 +2390,6 @@ local function RestoreChatMessagesFromHistory(wasReloadUI)
         while historyIndex <= #db.LineStrings do
             if db.LineStrings[historyIndex] then
                 local channelToRestore = db.LineStrings[historyIndex].channel
-                if channelToRestore == RCHAT_CHANNEL_SAY then channelToRestore = 0 end
 
                 if channelToRestore == CHAT_CHANNEL_SYSTEM and not db.restoreSystem then
                     table.remove(db.LineStrings, historyIndex)
@@ -2833,9 +2811,6 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName, origin
     local isSpam = rChat.SpamFilter(chanCode, from, text, isCS)
     if isSpam then return end
 
-    --local ChanInfoArray = ZO_ChatSystem_GetChannelInfo()
-    --local info = ChanInfoArray[chanCode]
-
     -- Init message with other addons stuff
     local message = DDSBeforeAll .. TextBeforeAll
 
@@ -2978,8 +2953,8 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName, origin
                 -- rChat Handler
                 zonetag = string.format("|H1:p:%s|h%s|h", chanCode, zonetag)
 
-                message = message .. string.format(chatStrings.esostandart, lcol, new_from, zonetag, carriageReturn, rcol, linkedText)
-                db.LineStrings[db.lineNumber].rawValue = db.LineStrings[db.lineNumber].rawValue .. string.format(chatStrings.esostandart, lcol, new_from, zonetag, carriageReturn, rcol, text)
+                message = message .. string.format(chatStrings.esostandard, lcol, new_from, zonetag, carriageReturn, rcol, linkedText)
+                db.LineStrings[db.lineNumber].rawValue = db.LineStrings[db.lineNumber].rawValue .. string.format(chatStrings.esostandard, lcol, new_from, zonetag, carriageReturn, rcol, text)
             end
         end
 
