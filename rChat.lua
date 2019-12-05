@@ -9,12 +9,24 @@ local RAM = rChat_AutomatedMsgs
 
 local L = GetString
 
+
 -- Init
 local isAddonLoaded         = false -- OnAddonLoaded() done
 local isAddonInitialized    = false
 
+local mention = {
+	mentionEnabled = false,
+	mentionStr = "",
+    colorizedMention = "",
+	soundEnabled = false,
+	soundIndex = 28,
+	colorEnabled = false,
+	color = "|cFFFFFF",
+}
+
 -- Default variables to push in SavedVars
 local defaults = {
+	mention = mention,
     -- ---- Message Settings
     showGuildNumbers = false,
     allGuildsSameColour = false,
@@ -246,6 +258,7 @@ rChatData.guildCategories = {
     CHAT_CATEGORY_OFFICER_4,
     CHAT_CATEGORY_OFFICER_5,
 }
+
 local chatStrings = {
     standard = "%s%s: |r%s%s%s|r", -- standard format: say, yell, group, npc, npc yell, npc whisper, zone
     esostandard = "%s%s %s: |r%s%s%s|r", -- standard format: say, yell, group, npc, npc yell, npc whisper, zone with tag (except for monsters)
@@ -1349,11 +1362,11 @@ local function ShowCopyDialog(message)
 end
 
 -- Copy discussion
--- It will copy all text marked with the same chanCode
+-- It will copy all text mark with the same chanCode
 -- Todo : Whisps by person
 local function CopyDiscussion(chanNumber, numLine)
 
-    -- Args are passed as string through LinkHandlerSystem
+    -- Args are passed as string trought LinkHandlerSystem
     local numChanCode = tonumber(chanNumber)
     -- Whispers sent and received together
     if numChanCode == CHAT_CHANNEL_WHISPER_SENT then
@@ -2253,7 +2266,7 @@ end
 -- WARNING : See FormatSysMessage()
 local function AddLinkHandlerToLine(text, chanCode, numLine)
 
-    local rawText = ReformatSysMessages(text) -- FUCK YOU
+    local rawText = ReformatSysMessages(text)
 
     local start = 1
     local rawTextlen = string.len(rawText)
@@ -2803,6 +2816,14 @@ local function GetChannelColors(channel, from)
 
 end
 
+local function mentioned(text)
+	if not db.mention.mentionEnabled then return false end
+	if string.find(text,db.mention.mentionStr) then
+		return true
+	end
+	return false
+end
+
 -- Executed when EVENT_CHAT_MESSAGE_CHANNEL triggers
 -- Formats the message
 local function FormatMessage(chanCode, from, text, isCS, fromDisplayName, originalFrom, originalText, DDSBeforeAll, TextBeforeAll, DDSBeforeSender, TextBeforeSender, TextAfterSender, DDSAfterSender, DDSBeforeText, TextBeforeText, TextAfterText, DDSAfterText)
@@ -2810,6 +2831,17 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName, origin
     -- Will calculate if this message is a spam
     local isSpam = rChat.SpamFilter(chanCode, from, text, isCS)
     if isSpam then return end
+    
+    -- Look for mentions
+    if mentioned(text) then
+    	if db.mention.colorEnabled then
+    		text = string.gsub(text, db.mention.mentionStr, db.mention.colorizedMention)
+    	end
+    	if db.mention.soundEnabled then
+    		-- play sound
+    		PlaySound(SOUNDS[db.mention.soundIndex])
+    	end
+    end
 
     -- Init message with other addons stuff
     local message = DDSBeforeAll .. TextBeforeAll
@@ -3937,6 +3969,92 @@ local function BuildLAMPanel()
                     if not db.showTimestamp then return true end
                     if db.timestampcolorislcol then return true end
                     return false end,
+            },
+            -- mention Section
+			{
+				type = "header",
+				name = SF.GetIconized(RCHAT_MENTION_NM, SF.hex.gold), -- or string id or function returning a string
+				width = "full", --or "half" (optional)
+			},
+			{
+				type = "checkbox",
+				name = GetString(RCHAT_MENTION_ENABLED),
+				getFunc = function() return db.mention.mentionEnabled end,
+				setFunc = function(value) db.mention.mentionEnabled = value end,
+				width = "full",
+			},
+            {
+                type = "editbox",
+                name = L(RCHAT_MENTIONSTR),
+                --tooltip = L(RCHAT_MENTIONSTRTT),
+                getFunc = function() return db.mention.mentionStr end,
+                setFunc = function(newValue) 
+                		if string.len(newValue) < 4 then 
+                			db.mention.mentionStr = ""
+                            db.mention.colorizedMention = ""
+                			return
+                		end
+                		if nil == string.find(newValue, "[%%%*%-%.%+%(%)%[%]%^%$%?]") then
+							db.mention.mentionStr = newValue
+                            if db.mention.colorEnabled then
+                                db.mention.colorizedMention = string.format("%s%s|r", db.mention.color,newValue)
+                            else
+                                db.mention.colorizedMention = newValue
+                            end
+						else
+							db.mention.mentionStr = newValue
+                            db.mention.colorizedMention = newValue
+						end
+					end,
+                width = "full",
+                default = defaults.mention.mentionStr,
+                disabled = function() return not db.mention.mentionEnabled end,
+            },
+			{
+				type = "checkbox",
+				name = GetString(RCHAT_SOUND_ENABLED),
+				getFunc = function() return db.mention.soundEnabled end,
+				setFunc = function(value) db.mention.soundEnabled = value end,
+				disabled = function() return not db.mention.mentionEnabled end,
+				width = "half",
+			},
+			{
+				type = "slider",
+				name = GetString(RCHAT_SOUND_INDEX),
+				min = 1, max = #rChat.soundChoices, step = 1,
+				getFunc = function() return db.mention.soundIndex end,
+				setFunc = function(value) db.mention.soundIndex = value; PlaySound(SOUNDS[rChat.soundChoices[value] ]) end,
+				width = "half",
+				disabled = function() return not db.mention.soundEnabled and not db.mention.mentionEnabled end,
+			},
+			{
+				type = "checkbox",
+				name = GetString(RCHAT_COLOR_ENABLED),
+				getFunc = function() return db.mention.colorEnabled end,
+				setFunc = function(value) db.mention.colorEnabled = value end,
+				disabled = function() return not db.mention.mentionEnabled end,
+				width = "half",
+			},
+            {-- Mention Color
+                type = "colorpicker",
+                name = L(RCHAT_MENTIONCOLOR),
+                --tooltip = L(RCHAT_MENTIONCOLORTT),
+                getFunc = function() return ConvertHexToRGBA(db.mention.color) end,
+                setFunc = function(r, g, b)
+                    db.mention.color = ConvertRGBToHex(r, g, b) 
+                    if not db.mention.mentionStr then 
+                        db.mention.mentionStr = "" 
+                        db.mention.colorizedMention = ""
+                    elseif db.mention.colorEnabled then
+                        db.mention.colorizedMention = string.format("%s%s|r", db.mention.color,
+                            db.mention.mentionStr)
+                    else
+                        db.mention.colorizedMention = db.mention.mentionStr
+                    end
+                end,
+                width = "half",
+                default = ConvertHexToRGBAPacked(defaults.mention.color),
+                disabled = function() return not db.mention.colorEnabled end,
             },
             {
                 type = "header",
@@ -5495,6 +5613,20 @@ local function OnAddonLoaded(_, addonName)
     -- Char name
     rChatData.localPlayer = GetUnitName("player")
 
+	-- manage saved variables
+	local aw, toon = SF.getAllSavedVars(rChat.savedvar, rChat.sv_version, defaults)
+    rChat.saved = SF.currentSavedVars(aw, toon)
+	SF.defaultMissing(rChat.saved.mention, mention)
+	
+	-- load sound keys to table
+	-- collect the keys
+	rChat.soundChoices = {}
+	local keys = rChat.soundChoices
+	for k in pairs(SOUNDS) do
+		keys[#keys+1] = k
+	end
+	table.sort(rChat.soundChoices)
+	
     -- Saved variables
     rChat.save = ZO_SavedVars:NewAccountWide(rChat.savedvar, rChat.sv_version, nil, defaults)
     db = rChat.save

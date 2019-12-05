@@ -430,5 +430,13 @@ rChat_localization_strings["es"] = {
 	RCHAT_RCHAT_AUTOMSG_REMOVE_AUTO_MSG = "Eliminar",
 
 	RCHAT_CLEARBUFFER = "Vacie Chat",
+
+    RCHAT_MENTION_NM = "Mention Notification",
+    RCHAT_MENTION_ENABLED = "Enable mention detection in chat",
+    RCHAT_MENTIONSTR = "String to look for in chat",
+    RCHAT_SOUND_ENABLED = "Enable sound notification",
+    RCHAT_SOUND_INDEX = "Which sound to play",
+    RCHAT_COLOR_ENABLED = "Enable color highlighting",
+    RCHAT_MENTIONCOLOR = "Highlight color to use",
 }
 

@@ -1,4 +1,9 @@
-﻿[COLOR="DeepSkyBlue"]1.0.2[/COLOR]
+﻿COLOR="DeepSkyBlue"]1.1[/COLOR]
+[LIST]
+[*] Added a way to look for a "mention" in chat and colorize it and/or play a sound. It is a preliminary version that can only look for a single piece of text (that is at least 4 characters long and does not contain any of the following characters: "%*-.+()[]^$?"). Also the string is case sensitive so "hello" will not match "Hello".
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.0.2[/COLOR]
 [LIST]
 [*] Fixed attributions for the pChat addon that rChat was forked from.
 [/LIST]

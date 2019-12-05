@@ -15,6 +15,7 @@ It also allows you to define and post automated messages in chat, and to copy me
 [*] Rename your Guilds Channels - Guild Tag or Officer one, each channel can be renamed
 [*] Group Leaders can have a separate color, 
 [*] Strip Colors from messages to avoid Rainbow Messages, 
+[*] Search for text in chat messages and highlight it with a different color or play a sound when it is found. [COLOR="Gold"](new)[/COLOR] 
 [/list]
 
 [COLOR="MediumSlateBlue"]Chat Window enhancements[/COLOR]
@@ -33,14 +34,14 @@ It also allows you to define and post automated messages in chat, and to copy me
 
 [COLOR="MediumSlateBlue"]Other Features[/COLOR]
 [list]
-[*] Anti-Spam - Optionally filter out LFG/LFM messages, WTB/WTS/WTT messages, flooding, and [COLOR="Gold"](new)[/COLOR] guild recruiting messages. (The anti-filtering necessarily works best with English language when abbreviated indicators are missing.)
+[*] Anti-Spam - Optionally filter out LFG/LFM messages, WTB/WTS/WTT messages, flooding, and guild recruiting messages. (The anti-filtering necessarily works best with English language when abbreviated indicators are missing.)
 [*] Automated messages system - store messages (like teamspeak or discord info) to play into chat.
 [*] Automatic Group Switching - When you join a group, automatically enter the group channel. 
 [*] Keybinds to switch between tabs and toggle chat window, 
 [*] Auto switch channel when using arrow keys, 
 [*] Configurable switches for channels
 [*] Automatic rChat configuration between chars, 
-[*] French / German / Russian / [COLOR="Gold"](new)[/COLOR] Spanish Translations.
+[*] French / German / Russian / Spanish Translations.
 [/list]
 
 [COLOR="MediumSlateBlue"]Key Bindings Available[/COLOR]

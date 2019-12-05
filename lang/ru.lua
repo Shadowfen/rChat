@@ -416,4 +416,12 @@ rChat_localization_strings["ru"] = {
     RCHAT_RCHAT_AUTOMSG_REMOVE_AUTO_MSG = "Удaлить",
 
     RCHAT_CLEARBUFFER = "Oчиcтить чaт",
+    
+    RCHAT_MENTION_NM = "Настройки для упоминаний",
+    RCHAT_MENTION_ENABLED = "Включить обнаружение упоминаний в чате",
+    RCHAT_MENTIONSTR = "Строка для поиска в чате",
+    RCHAT_SOUND_ENABLED = "Включить звуковое оповещение",
+    RCHAT_SOUND_INDEX = "Какой звук играть",
+    RCHAT_COLOR_ENABLED = "Включить цветную подсветку",
+    RCHAT_MENTIONCOLOR = "Выберите цвет для текста",
 }
