@@ -19,7 +19,7 @@ local mention = {
 	mentionStr = "",
     colorizedMention = "",
 	soundEnabled = false,
-	soundIndex = 28,
+	sound = L(RCHAT_SOUNDCHOICE,2),
 	colorEnabled = false,
 	color = "|cFFFFFF",
 }
@@ -186,6 +186,22 @@ local defaults = {
     -- Not LAM
 }
 
+local soundChoices = {
+    L("RCHAT_SOUNDCHOICE", 1),
+    L("RCHAT_SOUNDCHOICE", 2),
+    L("RCHAT_SOUNDCHOICE", 3),
+    L("RCHAT_SOUNDCHOICE", 4),
+}
+local soundMap = {
+    [L("RCHAT_SOUNDCHOICE", 1)] = SOUNDS.NONE,
+    [L("RCHAT_SOUNDCHOICE", 2)] = SOUNDS.NEW_NOTIFICATION,
+    [L("RCHAT_SOUNDCHOICE", 3)] = SOUNDS.DEFAULT_CLICK,
+    [L("RCHAT_SOUNDCHOICE", 4)] = SOUNDS.EDIT_CLICK,
+    [SOUNDS.NONE] = L("RCHAT_SOUNDCHOICE", 1),
+    [SOUNDS.NEW_NOTIFICATION] = L("RCHAT_SOUNDCHOICE", 2),
+    [SOUNDS.DEFAULT_CLICK] = L("RCHAT_SOUNDCHOICE", 3),
+    [SOUNDS.EDIT_CLICK] = L("RCHAT_SOUNDCHOICE", 4),
+}
 -- SV
 local save
 local db
@@ -3973,7 +3989,7 @@ local function BuildLAMPanel()
             -- mention Section
 			{
 				type = "header",
-				name = SF.GetIconized(RCHAT_MENTION_NM, SF.hex.gold), -- or string id or function returning a string
+				name = SF.GetIconized(RCHAT_MENTION_NM, SF.hex.superior), -- or string id or function returning a string
 				width = "full", --or "half" (optional)
 			},
 			{
@@ -4018,15 +4034,36 @@ local function BuildLAMPanel()
 				disabled = function() return not db.mention.mentionEnabled end,
 				width = "half",
 			},
-			{
-				type = "slider",
-				name = GetString(RCHAT_SOUND_INDEX),
-				min = 1, max = #rChat.soundChoices, step = 1,
-				getFunc = function() return db.mention.soundIndex end,
-				setFunc = function(value) db.mention.soundIndex = value; PlaySound(SOUNDS[rChat.soundChoices[value] ]) end,
-				width = "half",
-				disabled = function() return not db.mention.soundEnabled and not db.mention.mentionEnabled end,
-			},
+            {-- Mentions: Sound
+                type = "dropdown",
+                name = L(RCHAT_SOUND_INDEX),
+                choices = soundChoices,
+                width = "half",
+                default = defaults.mention.sound, --> SOUNDS.NEW_NOTIFICATION
+                getFunc = function()
+                    local retval = soundMap[db.mention.sound]
+                    if retval == nil then
+                        retval = L("RCHAT_SOUNDCHOICE", 2)
+                        db.mention.sound = soundMap[retval]
+                        return retval
+                    end
+                    return retval
+                end,
+                setFunc = function(choice)
+                    if not choice then -- default
+                         choice = defaults.mention.sound
+                    end
+                    local retval = soundMap[choice]
+                    if retval == nil then
+                        retval = defaults.mention.sound
+                        db.mention.sound = soundMap[retval]
+                        return retval
+                    end
+                    db.mention.sound = retval
+                    PlaySound(db.mention.sound)
+                    return retval
+                end,
+            },
 			{
 				type = "checkbox",
 				name = GetString(RCHAT_COLOR_ENABLED),
@@ -4403,44 +4440,35 @@ local function BuildLAMPanel()
                 name = L(RCHAT_SOUNDFORINCWHISPS),
                 tooltip = L(RCHAT_SOUNDFORINCWHISPSTT),
                 choices = {
-                    L("RCHAT_SOUNDFORINCWHISPSCHOICE", 1),
-                    L("RCHAT_SOUNDFORINCWHISPSCHOICE", 2),
-                    L("RCHAT_SOUNDFORINCWHISPSCHOICE", 3),
-                    L("RCHAT_SOUNDFORINCWHISPSCHOICE", 4),
+                    L("RCHAT_SOUNDCHOICE", 1),
+                    L("RCHAT_SOUNDCHOICE", 2),
+                    L("RCHAT_SOUNDCHOICE", 3),
+                    L("RCHAT_SOUNDCHOICE", 4),
                     },
                 width = "full",
                 default = defaults.soundforincwhisps, --> SOUNDS.NEW_NOTIFICATION
                 getFunc = function()
-                    if db.soundforincwhisps == SOUNDS.NONE then
-                        return L("RCHAT_SOUNDFORINCWHISPSCHOICE", 1)
-                    elseif db.soundforincwhisps == SOUNDS.NEW_NOTIFICATION then
-                        return L("RCHAT_SOUNDFORINCWHISPSCHOICE", 2)
-                    elseif db.soundforincwhisps == SOUNDS.DEFAULT_CLICK then
-                        return L("RCHAT_SOUNDFORINCWHISPSCHOICE", 3)
-                    elseif db.soundforincwhisps == SOUNDS.EDIT_CLICK then
-                        return L("RCHAT_SOUNDFORINCWHISPSCHOICE", 4)
-                    else
-                        return L("RCHAT_SOUNDFORINCWHISPSCHOICE", 2)
+                    local retval = soundMap[db.soundforincwhisps]
+                    if retval == nil then
+                        retval = L("RCHAT_SOUNDCHOICE", 2)
+                        db.soundforincwhisps = soundMap[retval]
+                        return retval
                     end
+                    return retval
                 end,
                 setFunc = function(choice)
-                    if choice == L("RCHAT_SOUNDFORINCWHISPSCHOICE", 1) then
-                        db.soundforincwhisps = SOUNDS.NONE
-                        PlaySound(SOUNDS.NONE)
-                    elseif choice == L("RCHAT_SOUNDFORINCWHISPSCHOICE", 2) then
-                        db.soundforincwhisps = SOUNDS.NEW_NOTIFICATION
-                        PlaySound(SOUNDS.NEW_NOTIFICATION)
-                    elseif choice == L("RCHAT_SOUNDFORINCWHISPSCHOICE", 3) then
-                        db.soundforincwhisps = SOUNDS.DEFAULT_CLICK
-                        PlaySound(SOUNDS.DEFAULT_CLICK)
-                    elseif choice == L("RCHAT_SOUNDFORINCWHISPSCHOICE", 4) then
-                        db.soundforincwhisps = SOUNDS.EDIT_CLICK
-                        PlaySound(SOUNDS.EDIT_CLICK)
-                    else
-                        -- When clicking on LAM default button
-                        db.soundforincwhisps = defaults.soundforincwhisps
+                    if not choice then -- default
+                         choice = defaults.soundforincwhisps
                     end
-
+                    local retval = soundMap[choice]
+                    if retval == nil then
+                        retval = defaults.soundforincwhisps
+                        db.soundforincwhisps = soundMap[retval]
+                        return retval
+                    end
+                    db.soundforincwhisps = retval
+                    PlaySound(db.soundforincwhisps)
+                    return retval
                 end,
             },
             {-- -- LAM Option Whisper: Visual Notification

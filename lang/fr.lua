@@ -182,10 +182,10 @@ rChat_localization_strings["fr"] = {
     RCHAT_SOUNDFORINCWHISPS = "Son pour les chuchotements reçus",
     RCHAT_SOUNDFORINCWHISPSTT = "Choisir le son qui sera joué lors des chuchotements reçus",
             
-    RCHAT_SOUNDFORINCWHISPSCHOICE1 = "Aucun",
-    RCHAT_SOUNDFORINCWHISPSCHOICE2 = "Notification",
-    RCHAT_SOUNDFORINCWHISPSCHOICE3 = "Clic",
-    RCHAT_SOUNDFORINCWHISPSCHOICE4 = "Ecriture",
+    RCHAT_SOUNDCHOICE1 = "Aucun",
+    RCHAT_SOUNDCHOICE2 = "Notification",
+    RCHAT_SOUNDCHOICE3 = "Clic",
+    RCHAT_SOUNDCHOICE4 = "Ecriture",
             
     RCHAT_NOTIFYIM = "Notifier visuellement",
     RCHAT_NOTIFYIMTT = "Si vous manquez un chuchottement, une notification apparaitra dans le coin supérieur droit du chat vous permettant d'accéder rapidement à celui-ci. De plus si votre chat est minimisé à ce moment, une notification dans la barre réduite apparaîtra",

@@ -177,10 +177,10 @@ rChat_localization_strings["en"] = {
 	RCHAT_NOTIFYIM = "Visual notification",
 	RCHAT_NOTIFYIMTT = "If you miss a whisp, a notification will appear in the top right corner of the chat allowing you to quickly access to it. Plus, if your chat was minimized at that time, a notification will be displayed in the minibar",
 
-	RCHAT_SOUNDFORINCWHISPSCHOICE1 = "None",
-	RCHAT_SOUNDFORINCWHISPSCHOICE2 = "Notification",
-	RCHAT_SOUNDFORINCWHISPSCHOICE3 = "Click",
-	RCHAT_SOUNDFORINCWHISPSCHOICE4 = "Write",
+	RCHAT_SOUNDCHOICE1 = "None",
+	RCHAT_SOUNDCHOICE2 = "Notification",
+	RCHAT_SOUNDCHOICE3 = "Click",
+	RCHAT_SOUNDCHOICE4 = "Write",
 
 	-- Restore chat settings
 

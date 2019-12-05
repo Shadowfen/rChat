@@ -197,10 +197,10 @@ rChat_localization_strings["de"] = {
     RCHAT_NOTIFYIM = "Visuelle Hinweise anzeigen",
     RCHAT_NOTIFYIMTT = "Wenn Sie eine Flüsternachricht verpassen, wird eine Meldung in der oberen rechten Ecke des Chat-Fenster angezeigt. Wenn Sie auf diese Meldung klicken werden Sie direkt zur Flüsternachricht im Chat gebracht.\nWar Ihr Chat zum Zeitpunkt des Nachrichteneinganges minimiert, wird in der Chat Mini-Leiste ebenfalls eine Benachrichtigung angezeigt.",
         
-    RCHAT_SOUNDFORINCWHISPSCHOICE0 = "-KEIN TON-",
-    RCHAT_SOUNDFORINCWHISPSCHOICE1 = "Benachrichtigung",
-    RCHAT_SOUNDFORINCWHISPSCHOICE2 = "Klicken",
-    RCHAT_SOUNDFORINCWHISPSCHOICE3 = "Schreiben",
+    RCHAT_SOUNDCHOICE1 = "-KEIN TON-",
+    RCHAT_SOUNDCHOICE2 = "Benachrichtigung",
+    RCHAT_SOUNDCHOICE3 = "Klicken",
+    RCHAT_SOUNDCHOICE4 = "Schreiben",
         
 -- Restore chat settings        
         

@@ -187,10 +187,10 @@ rChat_localization_strings["es"] = {
 	RCHAT_NOTIFYIM = "Notificación visual",
 	RCHAT_NOTIFYIMTT = "Si pierde un susurro, aparecerá una notificación en la esquina superior derecha del chat que le permitirá acceder rápidamente a él. Además, si su chat se minimizó en ese momento, se mostrará una notificación en el minibar",
 
-	RCHAT_SOUNDFORINCWHISPSCHOICE1 = "Ninguno",
-	RCHAT_SOUNDFORINCWHISPSCHOICE2 = "Notificación",
-	RCHAT_SOUNDFORINCWHISPSCHOICE3 = "Clic",
-	RCHAT_SOUNDFORINCWHISPSCHOICE4 = "Escritura",
+	RCHAT_SOUNDCHOICE1 = "Ninguno",
+	RCHAT_SOUNDCHOICE2 = "Notificación",
+	RCHAT_SOUNDCHOICE3 = "Clic",
+	RCHAT_SOUNDCHOICE4 = "Escritura",
 
 	-- Restore chat settings
 
