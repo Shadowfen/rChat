@@ -3,7 +3,7 @@
 local LAM = LibAddonMenu2
 local LC2 = LibChat2
 local LMP = LibMediaProvider
-local LMM = LibMainMenu
+local LMM = LibMainMenu     -- used by automessages
 local SF = LibSFUtils
 local RAM = rChat_AutomatedMsgs
 
@@ -14,19 +14,19 @@ local L = GetString
 local isAddonLoaded         = false -- OnAddonLoaded() done
 local isAddonInitialized    = false
 
-local mention = {
+local defmention = {
 	mentionEnabled = false,
 	mentionStr = "",
     colorizedMention = "",
 	soundEnabled = false,
-	sound = L(RCHAT_SOUNDCHOICE,2),
+	sound = SOUNDS.NEW_NOTIFICATION,
 	colorEnabled = false,
 	color = "|cFFFFFF",
 }
 
 -- Default variables to push in SavedVars
 local defaults = {
-	mention = mention,
+	mention = defmention,
     -- ---- Message Settings
     showGuildNumbers = false,
     allGuildsSameColour = false,
@@ -186,22 +186,6 @@ local defaults = {
     -- Not LAM
 }
 
-local soundChoices = {
-    L("RCHAT_SOUNDCHOICE", 1),
-    L("RCHAT_SOUNDCHOICE", 2),
-    L("RCHAT_SOUNDCHOICE", 3),
-    L("RCHAT_SOUNDCHOICE", 4),
-}
-local soundMap = {
-    [L("RCHAT_SOUNDCHOICE", 1)] = SOUNDS.NONE,
-    [L("RCHAT_SOUNDCHOICE", 2)] = SOUNDS.NEW_NOTIFICATION,
-    [L("RCHAT_SOUNDCHOICE", 3)] = SOUNDS.DEFAULT_CLICK,
-    [L("RCHAT_SOUNDCHOICE", 4)] = SOUNDS.EDIT_CLICK,
-    [SOUNDS.NONE] = L("RCHAT_SOUNDCHOICE", 1),
-    [SOUNDS.NEW_NOTIFICATION] = L("RCHAT_SOUNDCHOICE", 2),
-    [SOUNDS.DEFAULT_CLICK] = L("RCHAT_SOUNDCHOICE", 3),
-    [SOUNDS.EDIT_CLICK] = L("RCHAT_SOUNDCHOICE", 4),
-}
 -- SV
 local save
 local db
@@ -480,12 +464,12 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
 end
 
 -- Also called by bindings
-function rChat_ShowAutoMsg()
+function rChat.ShowAutoMsg()
     LMM:ToggleCategory(MENU_CATEGORY_RCHAT)
 end
 
 -- Register Slash commands
-SLASH_COMMANDS["/rchat.msg"] = rChat_ShowAutoMsg
+SLASH_COMMANDS["/rchat.msg"] = rChat.ShowAutoMsg
 
 
 
@@ -1562,7 +1546,7 @@ local function SetSwitchToNextBinding()
 end
 
 -- Can be called by Bindings
-function rChat_SwitchToNextTab()
+function rChat.SwitchToNextTab()
 
     local hasSwitched
 
@@ -1602,6 +1586,7 @@ function rChat_SwitchToNextTab()
     end
 
 end
+
 --**** Issue
 local function SetDefaultTab(tabToSet)
 
@@ -1617,7 +1602,7 @@ local function SetDefaultTab(tabToSet)
     end
 end
 
-function rChat_ChangeTab(tabToSet)
+function rChat.ChangeTab(tabToSet)
     if type(tabToSet)~="number" then return end
     local container=CHAT_SYSTEM.primaryContainer if not container then return end
     if tabToSet<1 or tabToSet>#container.windows then return end
@@ -2019,7 +2004,7 @@ local function AddLinkHandlerToStringWithoutDDS(textToCheck, numLine, chanCode)
 
     while stillToParse do
 
-        -- Prevent infinit loops while its still in beta
+        -- Prevent infinite loops while its still in beta
         if preventLoopsCol > 10 then
             stillToParse = false
             CHAT_SYSTEM:Zo_AddMessage("rChat triggered an infinite LinkHandling loop in its copy system with last message : " .. textToCheck .. " -- rChat")
@@ -2115,7 +2100,7 @@ local function AddLinkHandlerToString(textToCheck, numLine, chanCode)
 
     while stillToParseDDS do
 
-        -- Prevent infinit loops while its still in beta
+        -- Prevent infinite loops while its still in beta
         if preventLoopsDDS > 20 then
             stillToParseDDS = false
             CHAT_SYSTEM:Zo_AddMessage("rChat triggered an infinite DDS loop in its copy system with last message : " .. textToCheck .. " -- rChat")
@@ -2188,7 +2173,7 @@ local function AddLinkHandlerToString(textToCheck, numLine, chanCode)
 end
 
 -- Reformat Colored Sysmessages to the correct format
--- Bad format = |[cC]XXXXXXblablabla[,|[cC]XXXXXXblablabla,(...)] with facultative |r
+-- Bad format = |[cC]XXXXXXblablabla[,|[cC]XXXXXXblablabla,(...)] with optional |r
 -- Good format : "|c%x%x%x%x%x%x(.-)|r"
 -- WARNING : See FormatSysMessage()
 -- TODO : Handle LinkHandler + Malformatted strings , such as : "|c87B7CC|c87B7CCUpdated: |H0:achievement:68:5252:0|h|h (Artisanat)."
@@ -2202,6 +2187,9 @@ local function ReformatSysMessages(text)
 
     rawSys = rawSys:gsub("||([Cc])", "%1") -- | is the escape char for |, so if an user type |c it will be sent as ||c by the game which will lead to an infinite loading screen because xxxxx||xxxxxx is a lua pattern operator and few gsub will broke the code
 
+    -- First destroy tags with nothing inside
+    rawSys = string.gsub(rawSys, "|[cC]%x%x%x%x%x%x|[rR]", "")
+
     --Search for Color tags
     startColSys, endColSys = string.find(rawSys, "|[cC]%x%x%x%x%x%x", 1)
     _, count = string.gsub(rawSys, "|[cC]%x%x%x%x%x%x", "")
@@ -2210,9 +2198,6 @@ local function ReformatSysMessages(text)
     if startColSys then
         -- Found X tag
         -- Searching for |r after tag color
-
-        -- First destroy tags with nothing inside
-        rawSys = string.gsub(rawSys, "|[cC]%x%x%x%x%x%x|[rR]", "")
 
         _, countR = string.gsub(rawSys, "|[cC]%x%x%x%x%x%x(.-)|[rR]", "")
 
@@ -2236,7 +2221,7 @@ local function ReformatSysMessages(text)
             lastR = string.match(rawSys, "^.*()|r")
 
             -- |r tag found
-            if lastR ~= nil then
+            if lastR ~= nil and lastTag ~= nil then
                 if lastTag > lastR then
                     rawSys = rawSys .. "|r"
                 end
@@ -2267,12 +2252,9 @@ local function ReformatSysMessages(text)
         end
 
     end
-    -- Added |u search
-    startColSys, endColSys = string.find(rawSys, "|u%-?%d+%%?:%-?%d+%%?:.-:|u",1)
-    -- if found
-    if startColSys then
-        rawSys = string.gsub(rawSys,"|u%-?%d+%%?:%-?%d+%%?:.-:|u","")
-    end
+    
+    -- |u search (strip out hard padding)
+    rawSys = string.gsub(rawSys,"|u%-?%d+%%?:%-?%d+%%?:(.-):|u","%1")
 
     return rawSys
 
@@ -2307,7 +2289,7 @@ local function AddLinkHandlerToLine(text, chanCode, numLine)
         end
 
         -- Handling Colors, search for color tag
-        local startcol, endcol = string.find(rawText, "|[cC]%x%x%x%x%x%x(.-)|r", start)
+        local startcol, endcol = string.find(rawText, "|[cC]%x%x%x%x%x%x(.-)|[rR]", start)
 
         -- Not Found
         if startcol == nil then
@@ -2349,6 +2331,7 @@ end
 -- Split lines using CRLF for function addLinkHandlerToLine
 -- WARNING : See FormatSysMessage()
 local function AddLinkHandler(text, chanCode, numLine)
+    if not text then return end
 
     -- Some Addons output multiple lines into a message
     -- Split the entire string with CRLF, cause LinkHandler don't support CRLF
@@ -2443,7 +2426,9 @@ local function RestoreChatMessagesFromHistory(wasReloadUI)
                             for tabIndex=1, #CHAT_SYSTEM.containers[containerIndex].windows do
                                 if IsChatContainerTabCategoryEnabled(CHAT_SYSTEM.containers[containerIndex].id, tabIndex, category) then
                                     if not db.chatConfSync[rChatData.localPlayer].tabs[tabIndex].notBefore or db.LineStrings[historyIndex].rawTimestamp > db.chatConfSync[rChatData.localPlayer].tabs[tabIndex].notBefore then
-                                        CHAT_SYSTEM.containers[containerIndex]:AddEventMessageToWindow(CHAT_SYSTEM.containers[containerIndex].windows[tabIndex], AddLinkHandler(db.LineStrings[historyIndex].rawValue, channelToRestore, historyIndex), category)
+                                    	if db.LineStrings[historyIndex].rawValue then
+                                        	CHAT_SYSTEM.containers[containerIndex]:AddEventMessageToWindow(CHAT_SYSTEM.containers[containerIndex].windows[tabIndex], AddLinkHandler(db.LineStrings[historyIndex].rawValue, channelToRestore, historyIndex), category)
+                                        end
                                     end
                                 end
                             end
@@ -2855,7 +2840,7 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName, origin
     	end
     	if db.mention.soundEnabled then
     		-- play sound
-    		PlaySound(SOUNDS[db.mention.soundIndex])
+    		SF.PlaySound(db.mention.sound)
     	end
     end
 
@@ -3020,7 +3005,7 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName, origin
 
         --PlaySound
         if db.soundforincwhisps then
-            PlaySound(db.soundforincwhisps)
+            SF.PlaySound(db.soundforincwhisps)
         end
 
         -- Used for Copy
@@ -4035,36 +4020,36 @@ local function BuildLAMPanel()
 				width = "half",
 			},
             {-- Mentions: Sound
-                type = "dropdown",
-                name = L(RCHAT_SOUND_INDEX),
-                choices = soundChoices,
+                type = "slider",
+                name = GetString(RCHAT_SOUND_INDEX),
+                min = 1, max = SF.numSounds(), step = 1,
+                getFunc = function() 
+                    if type(db.mention.sound) == "string" then
+                        return SF.getSoundIndex(db.mention.sound)
+                    end
+                    return SF.getSoundIndex(defaults.mention.sound)
+                end,
+                setFunc = function(value) 
+                    db.mention.sound = SF.getSound(value)
+                    local ctrl = WINDOW_MANAGER:GetControlByName("RCHAT_MENTION_SOUND")
+                    if ctrl ~= nil then
+                        --CHAT_SYSTEM:Zo_AddMessage("found RCHAT_MENTION_SOUND")
+                        ctrl.data.text = SF.ColorText(db.mention.sound, SF.hex.normal)
+                    end
+                    SF.PlaySound(db.mention.sound) 
+                end,
                 width = "half",
-                default = defaults.mention.sound, --> SOUNDS.NEW_NOTIFICATION
-                getFunc = function()
-                    local retval = soundMap[db.mention.sound]
-                    if retval == nil then
-                        retval = L("RCHAT_SOUNDCHOICE", 2)
-                        db.mention.sound = soundMap[retval]
-                        return retval
-                    end
-                    return retval
-                end,
-                setFunc = function(choice)
-                    if not choice then -- default
-                         choice = defaults.mention.sound
-                    end
-                    local retval = soundMap[choice]
-                    if retval == nil then
-                        retval = defaults.mention.sound
-                        db.mention.sound = soundMap[retval]
-                        return retval
-                    end
-                    db.mention.sound = retval
-                    PlaySound(db.mention.sound)
-                    return retval
-                end,
+                disabled = function() return not db.mention.mentionEnabled end,
+                default = defaults.mention.sound,
             },
-			{
+            {
+                type = "description",
+                title = L(RCHAT_SOUND_NAME),
+                text = SF.ColorText(db.mention.sound, SF.hex.normal),
+                disable = false,
+                reference = "RCHAT_MENTION_SOUND",
+            },
+			{ -- Mention color enabled
 				type = "checkbox",
 				name = GetString(RCHAT_COLOR_ENABLED),
 				getFunc = function() return db.mention.colorEnabled end,
@@ -4435,41 +4420,43 @@ local function BuildLAMPanel()
         type = "submenu",
         name = SF.GetIconized(RCHAT_IMH, SF.hex.bronze),
         controls = {
-            {-- LAM Option Whispers: Sound
-                type = "dropdown",
+			{
+				type = "checkbox",
+				name = GetString(RCHAT_WHISPSOUND_ENABLED),
+				getFunc = function() return db.whispsoundEnabled end,
+				setFunc = function(value) db.whispsoundEnabled = value end,
+				disabled = function() return not db.whispsoundEnabled end,
+				width = "half",
+			},
+            {-- Whispers: Sound
+                type = "slider",
                 name = L(RCHAT_SOUNDFORINCWHISPS),
                 tooltip = L(RCHAT_SOUNDFORINCWHISPSTT),
-                choices = {
-                    L("RCHAT_SOUNDCHOICE", 1),
-                    L("RCHAT_SOUNDCHOICE", 2),
-                    L("RCHAT_SOUNDCHOICE", 3),
-                    L("RCHAT_SOUNDCHOICE", 4),
-                    },
-                width = "full",
-                default = defaults.soundforincwhisps, --> SOUNDS.NEW_NOTIFICATION
-                getFunc = function()
-                    local retval = soundMap[db.soundforincwhisps]
-                    if retval == nil then
-                        retval = L("RCHAT_SOUNDCHOICE", 2)
-                        db.soundforincwhisps = soundMap[retval]
-                        return retval
+                min = 1, max = SF.numSounds(), step = 1,
+                getFunc = function() 
+                    if type(db.soundforincwhisps) == "string" then
+                        return SF.getSoundIndex(db.soundforincwhisps)
                     end
-                    return retval
+                    return SF.getSoundIndex(db.soundforincwhisps)
                 end,
-                setFunc = function(choice)
-                    if not choice then -- default
-                         choice = defaults.soundforincwhisps
+                setFunc = function(value) 
+                    db.soundforincwhisps = SF.getSound(value)
+                    local descCtrl = WINDOW_MANAGER:GetControlByName("RCHAT_WHISP_SOUND")
+                    if descCtrl ~= nil then
+                        --CHAT_SYSTEM:Zo_AddMessage("found RCHAT_WHISP_SOUND")
+                        descCtrl.data.text = SF.ColorText(db.soundforincwhisps, SF.hex.normal)
                     end
-                    local retval = soundMap[choice]
-                    if retval == nil then
-                        retval = defaults.soundforincwhisps
-                        db.soundforincwhisps = soundMap[retval]
-                        return retval
-                    end
-                    db.soundforincwhisps = retval
-                    PlaySound(db.soundforincwhisps)
-                    return retval
+                    SF.PlaySound(db.soundforincwhisps) 
                 end,
+                width = "half",
+                --disabled = function() return not db.mention.mentionEnabled end,
+                default = defaults.soundforincwhisps,
+            },
+            {
+                type = "description",
+                title = L(RCHAT_SOUND_NAME),
+                reference = "RCHAT_WHISP_SOUND",
+                text = SF.ColorText(db.soundforincwhisps, SF.hex.normal),
             },
             {-- -- LAM Option Whisper: Visual Notification
                 type = "checkbox",
@@ -5646,15 +5633,6 @@ local function OnAddonLoaded(_, addonName)
     rChat.saved = SF.currentSavedVars(aw, toon)
 	SF.defaultMissing(rChat.saved.mention, mention)
 	
-	-- load sound keys to table
-	-- collect the keys
-	rChat.soundChoices = {}
-	local keys = rChat.soundChoices
-	for k in pairs(SOUNDS) do
-		keys[#keys+1] = k
-	end
-	table.sort(rChat.soundChoices)
-	
     -- Saved variables
     rChat.save = ZO_SavedVars:NewAccountWide(rChat.savedvar, rChat.sv_version, nil, defaults)
     db = rChat.save
@@ -5772,7 +5750,7 @@ local function OnAddonLoaded(_, addonName)
 end
 
 --Handled by keybind
-function rChat_ToggleChat()
+function rChat.ToggleChat()
 
     if CHAT_SYSTEM:IsMinimized() then
         CHAT_SYSTEM:Maximize()
@@ -5783,7 +5761,7 @@ function rChat_ToggleChat()
 end
 
 -- Called by bindings
-function rChat_WhispMyTarget()
+function rChat.WhispMyTarget()
     if targetToWhisp then
         CHAT_SYSTEM:StartTextEntry(nil, CHAT_CHANNEL_WHISPER, targetToWhisp)
     end

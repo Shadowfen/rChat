@@ -87,19 +87,16 @@ end
 
 --[[
 local MENU_CATEGORY_RCHAT = nil
-function rChat_ShowAutoMsg()
-    LMM:ToggleCategory(MENU_CATEGORY_RCHAT)
-end
 
 -- ---------------------------------------------------------------------------
 -- Global space functions called by bindings and XML
 
-function rChat_ShowAutoMsg()
+function rChat.ShowAutoMsg()
     LMM:ToggleCategory(MENU_CATEGORY_RCHAT)
 end
 
 -- Register Slash commands
-SLASH_COMMANDS["/msg"] = rChat_ShowAutoMsg
+SLASH_COMMANDS["/msg"] = rChat.ShowAutoMsg
 -- ---------------------------------------------------------------------------
 
 

@@ -8,7 +8,7 @@
 ## Description: rChat overhauls the way text is displayed in the chatbox.
       The rChat addon is based on the old pChat addon by DesertDweller.
       You must not have both rChat and pChat enabled for a single character.
-## Version: 1.1
+## Version: 1.2
 ## Author: Shadowfen
 ## APIVersion: 100029 100030
 ## SavedVariables: RCHAT_OPTS

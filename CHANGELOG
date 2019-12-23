@@ -1,11 +1,23 @@
-﻿[[COLOR="DeepSkyBlue"]1.1.1[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.2.1[/COLOR]
+[LIST]
+[*] Fixed a nil error reported by Akopian Atrebates.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.2[/COLOR]
+[LIST]
+[*] Revised choices for sound notifications for both mentions and whispers so that you have more than four sounds to choose from. (Note that some of the Zenimax sounds are so subtle that they are easily overlooked, and there are two separate "No_sound" settings though I forget what their names are.) As a note, you can put your mouse cursor on the sound slider in settings and then you can 
+    use the mouse wheel to advance up or down the slider as you like.
+[*] Worked on a fix for a nil error in Restore Chat that ZoLatKam reported.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.1.1[/COLOR]
 [LIST]
 [*] Fixed sound notifications failure to work with mentions (reported by SneakyWitchTheif)
 [*] Fixed sound choice definitions for German translation.
 [*] Changed color of Mention Notification header to match the colors of the other sections under Messages Settings.
 [/LIST]
 
-COLOR="DeepSkyBlue"]1.1[/COLOR]
+[COLOR="DeepSkyBlue"]1.1[/COLOR]
 [LIST]
 [*] Added a way to look for a "mention" in chat and colorize it and/or play a sound. It is a preliminary version that can only look for a single piece of text (that is at least 4 characters long and does not contain any of the following characters: "%*-.+()[]^$?"). Also the string is case sensitive so "hello" will not match "Hello".
 [/LIST]

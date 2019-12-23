@@ -187,11 +187,6 @@ rChat_localization_strings["es"] = {
 	RCHAT_NOTIFYIM = "Notificación visual",
 	RCHAT_NOTIFYIMTT = "Si pierde un susurro, aparecerá una notificación en la esquina superior derecha del chat que le permitirá acceder rápidamente a él. Además, si su chat se minimizó en ese momento, se mostrará una notificación en el minibar",
 
-	RCHAT_SOUNDCHOICE1 = "Ninguno",
-	RCHAT_SOUNDCHOICE2 = "Notificación",
-	RCHAT_SOUNDCHOICE3 = "Clic",
-	RCHAT_SOUNDCHOICE4 = "Escritura",
-
 	-- Restore chat settings
 
 	RCHAT_RESTORECHATH = "Restaurar chat",
@@ -431,12 +426,13 @@ rChat_localization_strings["es"] = {
 
 	RCHAT_CLEARBUFFER = "Vacie Chat",
 
-    RCHAT_MENTION_NM = "Mention Notification",
-    RCHAT_MENTION_ENABLED = "Enable mention detection in chat",
-    RCHAT_MENTIONSTR = "String to look for in chat",
-    RCHAT_SOUND_ENABLED = "Enable sound notification",
-    RCHAT_SOUND_INDEX = "Which sound to play",
-    RCHAT_COLOR_ENABLED = "Enable color highlighting",
-    RCHAT_MENTIONCOLOR = "Highlight color to use",
+    RCHAT_MENTION_NM = "Notificación de menciones",
+    RCHAT_MENTION_ENABLED = "Habilitar la detección de menciones en el chat",
+    RCHAT_MENTIONSTR = "Texto para buscar en el chat",
+    RCHAT_SOUND_ENABLED = "Habilitar notificación con sonido",
+    RCHAT_SOUND_INDEX = "Que sonido tocar",
+    RCHAT_COLOR_ENABLED = "Activar resaltado con color",
+    RCHAT_MENTIONCOLOR = "Color de resaltado para usar",
+    RCHAT_SOUND_NAME = "Nombre del sonido actual",
 }
 

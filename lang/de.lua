@@ -197,11 +197,6 @@ rChat_localization_strings["de"] = {
     RCHAT_NOTIFYIM = "Visuelle Hinweise anzeigen",
     RCHAT_NOTIFYIMTT = "Wenn Sie eine Flüsternachricht verpassen, wird eine Meldung in der oberen rechten Ecke des Chat-Fenster angezeigt. Wenn Sie auf diese Meldung klicken werden Sie direkt zur Flüsternachricht im Chat gebracht.\nWar Ihr Chat zum Zeitpunkt des Nachrichteneinganges minimiert, wird in der Chat Mini-Leiste ebenfalls eine Benachrichtigung angezeigt.",
         
-    RCHAT_SOUNDCHOICE1 = "-KEIN TON-",
-    RCHAT_SOUNDCHOICE2 = "Benachrichtigung",
-    RCHAT_SOUNDCHOICE3 = "Klicken",
-    RCHAT_SOUNDCHOICE4 = "Schreiben",
-        
 -- Restore chat settings        
         
     RCHAT_RESTORECHATH = "Chat wiederherstellen",
@@ -442,11 +437,12 @@ rChat_localization_strings["de"] = {
     RCHAT_CLEARBUFFER = "Chatverlauf löschen",
 
 
-    RCHAT_MENTION_NM = "Mention Notification",
-    RCHAT_MENTION_ENABLED = "Enable mention detection in chat",
-    RCHAT_MENTIONSTR = "String to look for in chat",
-    RCHAT_SOUND_ENABLED = "Enable sound notification",
-    RCHAT_SOUND_INDEX = "Which sound to play",
-    RCHAT_COLOR_ENABLED = "Enable color highlighting",
-    RCHAT_MENTIONCOLOR = "Highlight color to use",
+    RCHAT_MENTION_NM = "Erwähnungen Benachrichtigung",
+    RCHAT_MENTION_ENABLED = "Aktivieren Sie die Erwähnung Anerkennung im Chat",
+    RCHAT_MENTIONSTR = "Zeichenfolge, nach der im Chat gesucht werden soll",
+    RCHAT_SOUND_ENABLED = "Aktivieren Sie die Tonbenachrichtigung",
+    RCHAT_SOUND_INDEX = "Welchen Sound soll ich spielen?",
+    RCHAT_COLOR_ENABLED = "Aktivieren Sie Hervorhebung mit Farbe",
+    RCHAT_MENTIONCOLOR = "Hervorheben mit welcher Farbe",
+    RCHAT_SOUND_NAME = "Name des aktuellen Sounds",
 }

@@ -177,11 +177,6 @@ rChat_localization_strings["en"] = {
 	RCHAT_NOTIFYIM = "Visual notification",
 	RCHAT_NOTIFYIMTT = "If you miss a whisp, a notification will appear in the top right corner of the chat allowing you to quickly access to it. Plus, if your chat was minimized at that time, a notification will be displayed in the minibar",
 
-	RCHAT_SOUNDCHOICE1 = "None",
-	RCHAT_SOUNDCHOICE2 = "Notification",
-	RCHAT_SOUNDCHOICE3 = "Click",
-	RCHAT_SOUNDCHOICE4 = "Write",
-
 	-- Restore chat settings
 
 	RCHAT_RESTORECHATH = "Restore chat",
@@ -435,5 +430,6 @@ rChat_localization_strings["en"] = {
     RCHAT_SOUND_INDEX = "Which sound to play",
     RCHAT_COLOR_ENABLED = "Enable color highlighting",
     RCHAT_MENTIONCOLOR = "Highlight color to use",
+    RCHAT_SOUND_NAME = "Name of current Sound",
     
 }

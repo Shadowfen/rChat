@@ -182,11 +182,6 @@ rChat_localization_strings["fr"] = {
     RCHAT_SOUNDFORINCWHISPS = "Son pour les chuchotements reçus",
     RCHAT_SOUNDFORINCWHISPSTT = "Choisir le son qui sera joué lors des chuchotements reçus",
             
-    RCHAT_SOUNDCHOICE1 = "Aucun",
-    RCHAT_SOUNDCHOICE2 = "Notification",
-    RCHAT_SOUNDCHOICE3 = "Clic",
-    RCHAT_SOUNDCHOICE4 = "Ecriture",
-            
     RCHAT_NOTIFYIM = "Notifier visuellement",
     RCHAT_NOTIFYIMTT = "Si vous manquez un chuchottement, une notification apparaitra dans le coin supérieur droit du chat vous permettant d'accéder rapidement à celui-ci. De plus si votre chat est minimisé à ce moment, une notification dans la barre réduite apparaîtra",
             
@@ -432,11 +427,12 @@ rChat_localization_strings["fr"] = {
 
     RCHAT_CLEARBUFFER = "Effacer le chat",
 
-    RCHAT_MENTION_NM = "Mention Notification",
-    RCHAT_MENTION_ENABLED = "Enable mention detection in chat",
-    RCHAT_MENTIONSTR = "String to look for in chat",
-    RCHAT_SOUND_ENABLED = "Enable sound notification",
-    RCHAT_SOUND_INDEX = "Which sound to play",
-    RCHAT_COLOR_ENABLED = "Enable color highlighting",
-    RCHAT_MENTIONCOLOR = "Highlight color to use",
+    RCHAT_MENTION_NM = "Notification de mention",
+    RCHAT_MENTION_ENABLED = "Activer la détection des mentions dans le chat",
+    RCHAT_MENTIONSTR = "Texte à rechercher dans le chat",
+    RCHAT_SOUND_ENABLED = "Activer la notification avec le son",
+    RCHAT_SOUND_INDEX = "Quel son jouer",
+    RCHAT_COLOR_ENABLED = "Activer la surbrillance avec la couleur",
+    RCHAT_MENTIONCOLOR = "Couleur à utiliser pour la mise en évidence",
+    RCHAT_SOUND_NAME = "Nom du son actuel",
 }
