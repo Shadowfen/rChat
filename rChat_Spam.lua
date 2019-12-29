@@ -263,7 +263,7 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
     
     -- But "I" can have other exceptions (useful for testing)
     local isMe = false
-    if zo_strformat(SI_UNIT_NAME, from) == rChatData.localPlayer or from == GetDisplayName() then
+    if zo_strformat(SI_UNIT_NAME, from) == GetUnitName("player") or from == GetDisplayName() then
         -- I'm allowed to do spammable things
         isMe = true
         --CHAT_SYSTEM:Zo_AddMessage("I saw something ( " .. text .. " )")

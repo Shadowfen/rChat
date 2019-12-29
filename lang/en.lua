@@ -171,6 +171,7 @@ rChat_localization_strings["en"] = {
 
 	RCHAT_IMH = "Whispers",
 
+	RCHAT_WHISPSOUND_ENABLED = "Enable sound for whispers",
 	RCHAT_SOUNDFORINCWHISPS = "Sound for incoming whisps",
 	RCHAT_SOUNDFORINCWHISPSTT = "Choose sound wich will be played when you receive a whisp",
 

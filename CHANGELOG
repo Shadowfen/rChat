@@ -1,5 +1,12 @@
-﻿[COLOR="DeepSkyBlue"]1.2.1[/COLOR]
+﻿[COLOR="DeepSkyBlue"]Unreleased[/COLOR]
 [LIST]
+[*] Provided translations for the new string "Enable sound for whispers" in supported languages. (Thank you Google Translate.)
+[*] Split the Zenimax code that was copied from the game (and sometimes modified) out into its own file to make it easier to keep track of and to update when we get new game patches/releases.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.2.1[/COLOR]
+[LIST]
+[*] Fixed a settings error which disabled whisper sound notifications.
 [*] Fixed a nil error reported by Akopian Atrebates.
 [/LIST]
 

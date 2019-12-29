@@ -5,7 +5,7 @@ local LC2 = LibChat2
 local LMP = LibMediaProvider
 local LMM = LibMainMenu     -- used by automessages
 local SF = LibSFUtils
-local RAM = rChat_AutomatedMsgs
+local RAM = rChat.AutoMsg
 
 local L = GetString
 
@@ -27,6 +27,7 @@ local defmention = {
 -- Default variables to push in SavedVars
 local defaults = {
 	mention = defmention,
+    
     -- ---- Message Settings
     showGuildNumbers = false,
     allGuildsSameColour = false,
@@ -72,7 +73,7 @@ local defaults = {
     -- ---- Chat Tab Settings - End
 
     -- ---- Whisper Settings
-    -- enableWhisperTab = false,
+    whispsoundEnabled = false,
     soundforincwhisps = SOUNDS.NEW_NOTIFICATION,
     notifyIM = false,
     -- ---- Whisper Settings
@@ -187,7 +188,6 @@ local defaults = {
 }
 
 -- SV
-local save
 local db
 local targetToWhisp
 
@@ -199,9 +199,6 @@ local rChatData = rChat.data
 local RCHAT_LINK = "p"
 local RCHAT_URL_CHAN = 97
 local RCHAT_CHANNEL_NONE = 99
-
--- Init Automated Messages
-local automatedMessagesList = ZO_SortFilterList:Subclass()
 
 -- Backuping AddMessage for internal debug - AVOID DOING A CHAT_SYSTEM:AddMessage() in rChat, it can cause recursive calls
 CHAT_SYSTEM.Zo_AddMessage = CHAT_SYSTEM.AddMessage
@@ -465,20 +462,27 @@ end
 
 -- Also called by bindings
 function rChat.ShowAutoMsg()
-    LMM:ToggleCategory(MENU_CATEGORY_RCHAT)
+    if RAM then
+        RAM.ShowAutoMsg(MENU_CATEGORY_RCHAT)
+    else
+        CHAT_SYSTEM.Zo_AddMessage("[rChat] Automated Message System is not enabled")
+    end
 end
 
 -- Register Slash commands
 SLASH_COMMANDS["/rchat.msg"] = rChat.ShowAutoMsg
 
+-- ------------------------------------------------------
+-- Automated Messages
+local automatedMessagesList = ZO_SortFilterList:Subclass()
 
-
+-- Init Automated Messages
 function automatedMessagesList:Init(control)
 
+	--ZO_SortFilterList.Initialize(self, control)
     ZO_SortFilterList.InitializeSortFilterList(self, control)
-
-    local AutomatedMessagesSorterKeys =
-    {
+    --self:SetAlternateRowBackgrounds(true)
+    local SortKeys = {
         ["name"] = {},
         ["message"] = {tiebreaker = "name"}
     }
@@ -486,14 +490,14 @@ function automatedMessagesList:Init(control)
     self.masterList = {}
     ZO_ScrollList_AddDataType(self.list, 1, "rChatXMLAutoMsgRowTemplate", 32, function(control, data) self:SetupEntry(control, data) end)
     ZO_ScrollList_EnableHighlight(self.list, "ZO_ThinListHighlight")
-    self.sortFunction = function(listEntry1, listEntry2) return ZO_TableOrderingFunction(listEntry1.data, listEntry2.data, self.currentSortKey, AutomatedMessagesSorterKeys, self.currentSortOrder) end
+    self.sortFunction = function(listEntry1, listEntry2) return ZO_TableOrderingFunction(listEntry1.data, listEntry2.data, self.currentSortKey, SortKeys, self.currentSortOrder) end
 
     return self
 end
 
 -- format ESO text to raw text
 -- IE : Transforms LinkHandlers into their displayed value
-local function FormatRawText(text)
+function rChat.FormatRawText(text)
 
     -- Strip colors from chat
     local newtext = string.gsub(text, "|[cC]%x%x%x%x%x%x", ""):gsub("|r", "")
@@ -562,7 +566,7 @@ function automatedMessagesList:SetupEntry(control, data)
     control.name = GetControl(control, "Name")
     control.message = GetControl(control, "Message")
 
-    local messageTrunc = FormatRawText(data.message)
+    local messageTrunc = rChat.FormatRawText(data.message)
     if string.len(messageTrunc) > 53 then
         messageTrunc = string.sub(messageTrunc, 1, 53) .. " .."
     end
@@ -601,7 +605,8 @@ function automatedMessagesList:FilterScrollList()
     end
 end
 
-local function SaveAutomatedMessage(name, message, isNew)
+-- Uses:  db, db.automatedMessages, rChatData.automatedMessagesList
+function rChat.SaveAutomatedMessage(name, message, isNew)
 
     if db then
 
@@ -637,8 +642,8 @@ local function SaveAutomatedMessage(name, message, isNew)
                 table.insert(db.automatedMessages, {name = "!" .. name, message = message}) -- "data" variable is modified by ZO_ScrollList_CreateDataEntry and will crash eso if saved to savedvars
             else
 
-                local data = rChat_AutomatedMsgs.FindAutomatedMsg(name)
-                local _, index = rChat_AutomatedMsgs.FindSavedAutomatedMsg(name)
+                local data = RAM.FindAutomatedMsg(name)
+                local _, index = RAM.FindSavedAutomatedMsg(name)
 
                 data.message = message
                 db.automatedMessages[index].message = message
@@ -658,7 +663,9 @@ local function SaveAutomatedMessage(name, message, isNew)
 end
 
 -- Init Automated messages, build the scene and handle array of automated strings
-local function InitAutomatedMessages()
+-- Uses:  rChat.name, MENU_CATEGORY_RCHAT, rChatData.autoMessagesShowKeybind, 
+--   db.automatedMessages, rChatData.automatedMessagesList 
+function rChat.InitAutomatedMessages()
 
     -- Create Scene
     RCHAT_AUTOMSG_SCENE = ZO_Scene:New("rChatAutomatedMessagesScene", SCENE_MANAGER)
@@ -686,15 +693,13 @@ local function InitAutomatedMessages()
     SCENE_MANAGER:AddSceneGroup("rChatSceneGroup", ZO_SceneGroup:New("rChatAutomatedMessagesScene"))
 
     -- Its infos
-    RCHAT_MAIN_MENU_CATEGORY_DATA =
-    {
+    RCHAT_MAIN_MENU_CATEGORY_DATA = {
         binding = "RCHAT_SHOW_AUTO_MSG",
         categoryName = RCHAT_SHOW_AUTO_MSG,
         normal = "EsoUI/Art/MainMenu/menuBar_champion_up.dds",
         pressed = "EsoUI/Art/MainMenu/menuBar_champion_down.dds",
         highlight = "EsoUI/Art/MainMenu/menuBar_champion_over.dds",
     }
-
     MENU_CATEGORY_RCHAT = LMM:AddCategory(RCHAT_MAIN_MENU_CATEGORY_DATA)
 
     local iconData = {
@@ -706,11 +711,10 @@ local function InitAutomatedMessages()
         highlight = "EsoUI/Art/MainMenu/menuBar_champion_over.dds",
         },
     }
-
     -- Register the group and add the buttons (we cannot all AddRawScene, only AddSceneGroup, so we emulate both functions).
     LMM:AddSceneGroup(MENU_CATEGORY_RCHAT, "rChatSceneGroup", iconData)
 
-    rChatData.autoMsgDescriptor = {
+    local autoMsgDescriptor = {
         alignment = KEYBIND_STRIP_ALIGN_CENTER,
         {
             name = L(RCHAT_AUTOMSG_ADD_AUTO_MSG),
@@ -723,7 +727,9 @@ local function InitAutomatedMessages()
             name = L(RCHAT_AUTOMSG_EDIT_AUTO_MSG),
             keybind = "UI_SHORTCUT_SECONDARY",
             control = self,
-            callback = function(descriptor) ZO_Dialogs_ShowDialog("RCHAT_AUTOMSG_EDIT_MSG", nil, {mainTextParams = {functionName}}) end,
+            callback = function(descriptor) 
+                    ZO_Dialogs_ShowDialog("RCHAT_AUTOMSG_EDIT_MSG", nil, {mainTextParams = {functionName}})
+                end,
             visible = function(descriptor)
                 if rChatData.autoMessagesShowKeybind then
                     return true
@@ -736,7 +742,7 @@ local function InitAutomatedMessages()
             name = L(RCHAT_AUTOMSG_REMOVE_AUTO_MSG),
             keybind = "UI_SHORTCUT_NEGATIVE",
             control = self,
-            callback = function(descriptor) rChat_AutomatedMsgs.RemoveAutomatedMessage(db) end,
+            callback = function(descriptor) RAM.RemoveAutomatedMessage(db) end,
             visible = function(descriptor)
                 if rChatData.autoMessagesShowKeybind then
                     return true
@@ -747,13 +753,13 @@ local function InitAutomatedMessages()
         },
     }
 
-    rChatData.rChatAutomatedMessagesScene = SCENE_MANAGER:GetScene("rChatAutomatedMessagesScene")
-    rChatData.rChatAutomatedMessagesScene:RegisterCallback("StateChange", function(oldState, newState)
+    local autoMessagesScene = SCENE_MANAGER:GetScene("rChatAutomatedMessagesScene")
+    autoMessagesScene:RegisterCallback("StateChange", function(oldState, newState)
         if newState == SCENE_SHOWING then
-            KEYBIND_STRIP:AddKeybindButtonGroup(rChatData.autoMsgDescriptor)
+            KEYBIND_STRIP:AddKeybindButtonGroup(autoMsgDescriptor)
         elseif newState == SCENE_HIDDEN then
-            if KEYBIND_STRIP:HasKeybindButtonGroup(rChatData.autoMsgDescriptor) then
-                KEYBIND_STRIP:RemoveKeybindButtonGroup(rChatData.autoMsgDescriptor)
+            if KEYBIND_STRIP:HasKeybindButtonGroup(autoMsgDescriptor) then
+                KEYBIND_STRIP:RemoveKeybindButtonGroup(autoMsgDescriptor)
             end
         end
     end)
@@ -764,101 +770,19 @@ local function InitAutomatedMessages()
 
     rChatData.automatedMessagesList = automatedMessagesList:Init(rChatXMLAutoMsg)
     rChatData.automatedMessagesList:RefreshData()
-    rChat_AutomatedMsgs.CleanAutomatedMessageList(db)
+    RAM.CleanAutomatedMessageList(db)
         
 
-    rChatData.automatedMessagesList.keybindStripDescriptor = rChatData.autoMsgDescriptor
+    rChatData.automatedMessagesList.keybindStripDescriptor = autoMsgDescriptor
 
 end
 
 -- Called by XML
-function rChat_BuildAutomatedMessagesDialog(control)
-
-    local function AddDialogSetup(dialog, data)
-
-        local name = GetControl(dialog, "NameEdit")
-        local message = GetControl(dialog, "MessageEdit")
-
-        name:SetText("")
-        message:SetText("")
-        name:SetEditEnabled(true)
-
-    end
-
-    ZO_Dialogs_RegisterCustomDialog("RCHAT_AUTOMSG_SAVE_MSG",
-    {
-        customControl = control,
-        setup = AddDialogSetup,
-        title =
-        {
-            text = RCHAT_AUTOMSG_ADD_TITLE_HEADER,
-        },
-        buttons =
-        {
-            [1] =
-            {
-                control  = GetControl(control, "Request"),
-                text     = RCHAT_AUTOMSG_ADD_AUTO_MSG,
-                callback = function(dialog)
-                    local name = GetControl(dialog, "NameEdit"):GetText()
-                    local message = GetControl(dialog, "MessageEdit"):GetText()
-                    if(name ~= "") and (message ~= "") then
-                        SaveAutomatedMessage(name, message, true)
-                    end
-                end,
-            },
-            [2] =
-            {
-                control = GetControl(control, "Cancel"),
-                text = SI_DIALOG_CANCEL,
-            }
-        }
-    })
-
-    local function EditDialogSetup(dialog)
-        local data = ZO_ScrollList_GetData(WINDOW_MANAGER:GetMouseOverControl())
-        local name = GetControl(dialog, "NameEdit")
-        local edit = GetControl(dialog, "MessageEdit")
-
-
-        name:SetText(data.name)
-        name:SetEditEnabled(false)
-        edit:SetText(data.message)
-        edit:TakeFocus()
-
-    end
-
-    ZO_Dialogs_RegisterCustomDialog("RCHAT_AUTOMSG_EDIT_MSG",
-    {
-        customControl = control,
-        setup = EditDialogSetup,
-        title =
-        {
-            text = RCHAT_AUTOMSG_EDIT_TITLE_HEADER,
-        },
-        buttons =
-        {
-            [1] =
-            {
-                control  = GetControl(control, "Request"),
-                text     = RCHAT_AUTOMSG_EDIT_AUTO_MSG,
-                callback = function(dialog)
-                    local name = GetControl(dialog, "NameEdit"):GetText()
-                    local message = GetControl(dialog, "MessageEdit"):GetText()
-                    if(name ~= "") and (message ~= "") then
-                        SaveAutomatedMessage(name, message, false)
-                    end
-                end,
-            },
-            [2] =
-            {
-                control = GetControl(control, "Cancel"),
-                text = SI_DIALOG_CANCEL,
-            }
-        }
-    })
-
+function rChat_BuildAutomatedMessagesDialog(control, saveFunc)
+    RAM.BuildAutomatedMessagesDialog(control, saveFunc)
 end
+
+
 -- **************************************************************************
 -- Chat Tab Functions
 -- **************************************************************************
@@ -887,6 +811,7 @@ local function getTabIdx (tabName)
     return tabIdx
 end
 
+--[[
 -- Rewrite of a core function
 function CHAT_SYSTEM.textEntry:AddCommandHistory(text)
 
@@ -895,20 +820,20 @@ function CHAT_SYSTEM.textEntry:AddCommandHistory(text)
     local rewritedText = text
 
     -- Don't add the switch when chat is restored
-    if db.addChannelAndTargetToHistory and isAddonInitialized then
+    if db and db.addChannelAndTargetToHistory and isAddonInitialized then
 
         local switch = CHAT_SYSTEM.switchLookup[0]
 
         -- It's a message
         switch = CHAT_SYSTEM.switchLookup[currentChannel]
         -- Below code suspected issue fix under comment - Bug ticket 2253 6/12/2018
-        --[[
+        -- [ [
                 rewritedText = string.format("%s ", switch)
         if currentTarget then
             rewritedText = string.format("%s%s ", rewritedText, currentTarget)
         end
         rewritedText = string.format("%s%s", rewritedText, text)
-        ]]--
+        ] ] --
         -- New code for bug ticket 2253 6/12/2018
         if switch ~= nil then
             rewritedText = string.format("%s ", switch)
@@ -992,6 +917,7 @@ function CHAT_SYSTEM.textEntry:GetText()
     return text
 
 end
+--]]
 
 -- Change ChatWindow Darkness by modifying its <Center> & <Edge>.
 -- Originally defined in virtual object ZO_ChatContainerTemplate in sharedchatsystem.xml
@@ -1217,6 +1143,7 @@ function rChat_TryToJumpToIm(isMinimized)
 
 end
 
+--[[
 -- Rewrite of a core function, if user click on the scroll to bottom button, Hide IM notification
 -- Todo: Hide IM when user manually scroll to the bottom
 function ZO_ChatSystem_ScrollToBottom(control)
@@ -1226,6 +1153,7 @@ function ZO_ChatSystem_ScrollToBottom(control)
     control.container:ScrollToBottom()
 
 end
+--]]
 
 -- Set copied text into text entry, if possible
 local function CopyToTextEntry(message)
@@ -1811,6 +1739,7 @@ local function ChangeChatFont(change)
 
 end
 
+--[[
 -- Rewrite of a core function
 function CHAT_SYSTEM:UpdateTextEntryChannel()
 
@@ -1853,6 +1782,7 @@ function CHAT_SYSTEM:UpdateTextEntryChannel()
     end
 
 end
+--]]
 
 -- Change guild channel names in entry box
 local function UpdateCharCorrespondanceTableChannelNames()
@@ -2393,6 +2323,7 @@ local function RestoreChatMessagesFromHistory(wasReloadUI)
 
     -- Restore Chat
     local lastInsertionWas = 0
+    local localPlayer = GetUnitName("player")
 
     if db.LineStrings then
 
@@ -2425,7 +2356,7 @@ local function RestoreChatMessagesFromHistory(wasReloadUI)
 
                             for tabIndex=1, #CHAT_SYSTEM.containers[containerIndex].windows do
                                 if IsChatContainerTabCategoryEnabled(CHAT_SYSTEM.containers[containerIndex].id, tabIndex, category) then
-                                    if not db.chatConfSync[rChatData.localPlayer].tabs[tabIndex].notBefore or db.LineStrings[historyIndex].rawTimestamp > db.chatConfSync[rChatData.localPlayer].tabs[tabIndex].notBefore then
+                                    if not db.chatConfSync[localPlayer].tabs[tabIndex].notBefore or db.LineStrings[historyIndex].rawTimestamp > db.chatConfSync[localPlayer].tabs[tabIndex].notBefore then
                                     	if db.LineStrings[historyIndex].rawValue then
                                         	CHAT_SYSTEM.containers[containerIndex]:AddEventMessageToWindow(CHAT_SYSTEM.containers[containerIndex].windows[tabIndex], AddLinkHandler(db.LineStrings[historyIndex].rawValue, channelToRestore, historyIndex), category)
                                         end
@@ -2519,8 +2450,8 @@ local function RestoreChatHistory()
             -- restore TextEntry and Chat
             RestoreChatMessagesFromHistory(false)
         end
-
-        rChatData.messagesHaveBeenRestorated = true
+        rChat_ZOS.messagesWereRestored = true
+        --rChatData.messagesHaveBeenRestorated = true
 
         local indexMessages = #rChatData.cachedMessages
         if indexMessages > 0 then
@@ -2534,7 +2465,8 @@ local function RestoreChatHistory()
         db.lastWasQuit = false
         db.lastWasAFK = true
     else
-        rChatData.messagesHaveBeenRestorated = true
+        rChat_ZOS.messagesWereRestored = true
+        --rChatData.messagesHaveBeenRestorated = true
     end
 
 end
@@ -2592,7 +2524,7 @@ local function StorelineNumber(rawTimestamp, rawFrom, text, chanCode, originalFr
     rawText = StripDDStags(rawText)
 
     -- Used to translate LinkHandlers
-    rawText = FormatRawText(rawText)
+    rawText = rChat.FormatRawText(rawText)
 
     -- Store CopyMessage
     db.LineStrings[db.lineNumber].rawMessage = rawText
@@ -2607,7 +2539,7 @@ end
 
 -- WARNING : Since AddMessage is bypassed, this function and all its subfunctions DOES NOT CALL d() / Emitmessage() / AddMessage() or it will result an infinite loop and crash the game
 -- Debug must call CHAT_SYSTEM:Zo_AddMessage() wich is backed up copy of CHAT_SYSTEM.AddMessage
-local function FormatSysMessage(statusMessage)
+function rChat.FormatSysMessage(statusMessage)
 
     -- Display Timestamp if needed
     local function ShowTimestamp()
@@ -3133,6 +3065,7 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName, origin
 
 end
 
+--[[
 -- Rewrite of core function
 function CHAT_SYSTEM:AddMessage(text)
 
@@ -3267,7 +3200,7 @@ local CHANNEL_ORDERING_WEIGHT = {
     [CHAT_CATEGORY_ZONE_JAPANESE] = 120,
     [CHAT_CATEGORY_SYSTEM] = 130,
 }
-
+--]]
 local function FilterComparator(left, right)
     local leftPrimaryCategory = left.channels[1]
     local rightPrimaryCategory = right.channels[1]
@@ -3286,6 +3219,7 @@ local function FilterComparator(left, right)
     return false
 end
 
+--[[
 -- Copy of a core data
 -- (CHAT_CATEGORY_SYSTEM is commented out)
 local SKIP_CHANNELS = {
@@ -3379,7 +3313,7 @@ function CHAT_OPTIONS:InitializeFilterButtons(dialogControl)
         count = count + 1
     end
 end
-
+--]]
 -- use the built-in channel info, just add a field to it
 -- (so we don't have to rewrite it)
 local function ModifyChannelInfo()
@@ -3491,7 +3425,7 @@ local function SaveChatConfig()
         end
 
         -- Rewrite the whole char tab
-        db.chatConfSync[rChatData.localPlayer] = saveChar
+        db.chatConfSync[GetUnitName("player")] = saveChar
 
         db.chatConfSync.lastChar = saveChar
 
@@ -3502,12 +3436,13 @@ end
 -- Save Chat Tabs config when user changes it
 local function SaveTabsCategories()
 
+    local localPlayer = GetUnitName("player")
     for numTab in ipairs (CHAT_SYSTEM.primaryContainer.windows) do
 
         for _, category in ipairs (rChatData.guildCategories) do
             local isEnabled = IsChatContainerTabCategoryEnabled(1, numTab, category)
-            if db.chatConfSync[rChatData.localPlayer].tabs[numTab] then
-                db.chatConfSync[rChatData.localPlayer].tabs[numTab].enabledCategories[category] = isEnabled
+            if db.chatConfSync[localPlayer].tabs[numTab] then
+                db.chatConfSync[localPlayer].tabs[numTab].enabledCategories[category] = isEnabled
             else
                 SaveChatConfig()
             end
@@ -3789,6 +3724,7 @@ end
 -- *********************************************************************************
 -- Character Sync
 local function SyncCharacterSelectChoices()
+    local localPlayer = GetUnitName("player")
     -- Sync Character Select
     rChatData.chatConfSyncChoices = {}
     if db.chatConfSync then
@@ -3798,7 +3734,7 @@ local function SyncCharacterSelectChoices()
             end
         end
     else
-        table.insert(rChatData.chatConfSyncChoices, rChatData.localPlayer)
+        table.insert(rChatData.chatConfSyncChoices, localPlayer)
     end
 end
 
@@ -3811,7 +3747,7 @@ local function BuildLAMPanel()
 
     -- Used to reset colors to default value, lam need a formatted array
     -- LAM Message Settings
-
+    local localPlayer = GetUnitName("player")
     local fontsDefined = LMP:List('font')
 
     local function ConvertHexToRGBAPacked(colourString)
@@ -3827,13 +3763,13 @@ local function BuildLAMPanel()
             end
         end
     else
-        table.insert(rChatData.chatConfSyncChoices, rChatData.localPlayer)
+        table.insert(rChatData.chatConfSyncChoices, localPlayer)
     end
 
     -- CHAT_SYSTEM.primaryContainer.windows doesn't exists yet at OnAddonLoaded. So using the rChat reference.
     local arrayTab = {}
-    if db.chatConfSync and db.chatConfSync[rChatData.localPlayer] and db.chatConfSync[rChatData.localPlayer].tabs then
-        for numTab, data in pairs (db.chatConfSync[rChatData.localPlayer].tabs) do
+    if db.chatConfSync and db.chatConfSync[localPlayer] and db.chatConfSync[localPlayer].tabs then
+        for numTab, data in pairs (db.chatConfSync[localPlayer].tabs) do
             table.insert(arrayTab, numTab)
         end
     else
@@ -3965,7 +3901,7 @@ local function BuildLAMPanel()
                 tooltip = L(RCHAT_TIMESTAMPTT),
                 getFunc = function() return ConvertHexToRGBA(db.colours.timestamp) end,
                 setFunc = function(r, g, b) db.colours.timestamp = ConvertRGBToHex(r, g, b) end,
-                default = ConvertHexToRGBAPacked(defaults.colours.timestamp),
+                default = ConvertHexToRGBAPacked(defaults.colours["timestamp"]),
                 disabled = function() 
                     if not db.showTimestamp then return true end
                     if db.timestampcolorislcol then return true end
@@ -4207,7 +4143,10 @@ local function BuildLAMPanel()
                 name = L(RCHAT_TABWARNING),
                 tooltip = L(RCHAT_TABWARNINGTT),
                 getFunc = function() return ConvertHexToRGBA(db.colours["tabwarning"]) end,
-                setFunc = function(r, g, b) db.colours["tabwarning"] = ConvertRGBToHex(r, g, b) end,
+                setFunc = function(r, g, b) 
+                    db.colours["tabwarning"] = ConvertRGBToHex(r, g, b) 
+                    rChat_ZOS.tabwarning_color = db.colours["tabwarning"]
+                    end,
                 default = ConvertHexToRGBAPacked(defaults.colours["tabwarning"]),
             },
         },
@@ -4307,7 +4246,7 @@ local function BuildLAMPanel()
                 tooltip = L(RCHAT_CHATSYNCCONFIGIMPORTFROMTT),
                 choices = rChatData.chatConfSyncChoices,
                 width = "full",
-                getFunc = function() return rChatData.localPlayer end,
+                getFunc = function() return GetUnitName("player") end,
                 setFunc = function(choice)
                     SyncChatConfig(true, choice)
                 end,
@@ -4425,7 +4364,7 @@ local function BuildLAMPanel()
 				name = GetString(RCHAT_WHISPSOUND_ENABLED),
 				getFunc = function() return db.whispsoundEnabled end,
 				setFunc = function(value) db.whispsoundEnabled = value end,
-				disabled = function() return not db.whispsoundEnabled end,
+				--disabled = function() return not db.whispsoundEnabled end,
 				width = "half",
 			},
             {-- Whispers: Sound
@@ -5341,6 +5280,7 @@ end
 -- Revert category settings
 local function RevertCategories(guildName)
 
+    local localPlayer = GetUnitName("player")
     -- Old GuildId
     local oldIndex = rChatData.guildIndexes[guildName]
     -- old Total Guilds
@@ -5366,15 +5306,15 @@ local function RevertCategories(guildName)
             end
 
             -- New Guild color for Guild #X is the old #X+1
-            SetChatCategoryColor(CHAT_CATEGORY_GUILD_1 + iGuilds - 1, db.chatConfSync[rChatData.localPlayer].colors[CHAT_CATEGORY_GUILD_1 + iGuilds].red, db.chatConfSync[rChatData.localPlayer].colors[CHAT_CATEGORY_GUILD_1 + iGuilds].green, db.chatConfSync[rChatData.localPlayer].colors[CHAT_CATEGORY_GUILD_1 + iGuilds].blue)
+            SetChatCategoryColor(CHAT_CATEGORY_GUILD_1 + iGuilds - 1, db.chatConfSync[localPlayer].colors[CHAT_CATEGORY_GUILD_1 + iGuilds].red, db.chatConfSync[localPlayer].colors[CHAT_CATEGORY_GUILD_1 + iGuilds].green, db.chatConfSync[localPlayer].colors[CHAT_CATEGORY_GUILD_1 + iGuilds].blue)
             -- New Officer color for Guild #X is the old #X+1
-            SetChatCategoryColor(CHAT_CATEGORY_OFFICER_1 + iGuilds - 1, db.chatConfSync[rChatData.localPlayer].colors[CHAT_CATEGORY_OFFICER_1 + iGuilds].red, db.chatConfSync[rChatData.localPlayer].colors[CHAT_CATEGORY_OFFICER_1 + iGuilds].green, db.chatConfSync[rChatData.localPlayer].colors[CHAT_CATEGORY_OFFICER_1 + iGuilds].blue)
+            SetChatCategoryColor(CHAT_CATEGORY_OFFICER_1 + iGuilds - 1, db.chatConfSync[localPlayer].colors[CHAT_CATEGORY_OFFICER_1 + iGuilds].red, db.chatConfSync[localPlayer].colors[CHAT_CATEGORY_OFFICER_1 + iGuilds].green, db.chatConfSync[localPlayer].colors[CHAT_CATEGORY_OFFICER_1 + iGuilds].blue)
 
             -- Restore tab config previously set.
             for numTab in ipairs (CHAT_SYSTEM.primaryContainer.windows) do
-                if db.chatConfSync[rChatData.localPlayer].tabs[numTab] then
-                    SetChatContainerTabCategoryEnabled(1, numTab, (CHAT_CATEGORY_GUILD_1 + iGuilds - 1), db.chatConfSync[rChatData.localPlayer].tabs[numTab].enabledCategories[CHAT_CATEGORY_GUILD_1 + iGuilds])
-                    SetChatContainerTabCategoryEnabled(1, numTab, (CHAT_CATEGORY_OFFICER_1 + iGuilds - 1), db.chatConfSync[rChatData.localPlayer].tabs[numTab].enabledCategories[CHAT_CATEGORY_OFFICER_1 + iGuilds])
+                if db.chatConfSync[localPlayer].tabs[numTab] then
+                    SetChatContainerTabCategoryEnabled(1, numTab, (CHAT_CATEGORY_GUILD_1 + iGuilds - 1), db.chatConfSync[localPlayer].tabs[numTab].enabledCategories[CHAT_CATEGORY_GUILD_1 + iGuilds])
+                    SetChatContainerTabCategoryEnabled(1, numTab, (CHAT_CATEGORY_OFFICER_1 + iGuilds - 1), db.chatConfSync[localPlayer].tabs[numTab].enabledCategories[CHAT_CATEGORY_OFFICER_1 + iGuilds])
                 end
             end
 
@@ -5560,11 +5500,12 @@ end
 
 -- Save a category color for guild chat, set by ChatSystem at launch + when user change manually
 local function SaveChatCategoriesColors(category, r, g, b)
-    if db.chatConfSync[rChatData.localPlayer] then
-        if db.chatConfSync[rChatData.localPlayer].colors[category] == nil then
-            db.chatConfSync[rChatData.localPlayer].colors[category] = {}
+    local localPlayer = GetUnitName("player")
+    if db.chatConfSync[localPlayer] then
+        if db.chatConfSync[localPlayer].colors[category] == nil then
+            db.chatConfSync[localPlayer].colors[category] = {}
         end
-        db.chatConfSync[rChatData.localPlayer].colors[category] = { red = r, green = g, blue = b }
+        db.chatConfSync[localPlayer].colors[category] = { red = r, green = g, blue = b }
     end
 end
 
@@ -5619,24 +5560,57 @@ local function ChatSystemShowOptions(tabIndex)
 
 end
 
+local function xfer(source, dest)
+    if source then 
+        dest = dest or {}
+        
+        for k, v in pairs(source) do
+            if k ~= GetWorldName() then
+                if type(v) == "table" then
+                    dest[k] = xfer(v)
+                else
+                    dest[k] = v
+                end
+                source[k] = nil
+            end
+        end
+        
+        return dest
+    end
+    return nil
+end
+
+local function clearSV(savedVars)
+    for key, value in pairs(savedVars) do
+        if key ~= "version" and type(value) ~= "function" then
+            savedVars[key] = nil
+        end
+    end
+end
+
+-- loads saved variables for the account, returns the current
+-- applicable settings
+local function loadSavedVars(savedvar, sv_version, defaults)
+    
+    local save = ZO_SavedVars:NewAccountWide(savedvar, sv_version, nil, defaults)
+	SF.defaultMissing(save.mention, mention)
+	
+    return save
+end
+
 -- Please note that some things are delayed in OnPlayerActivated() because Chat isn't ready when this function triggers
 local function OnAddonLoaded(_, addonName)
 
     --Protect
     if addonName ~= rChat.name then return end
 
-    -- Char name
-    rChatData.localPlayer = GetUnitName("player")
-
-	-- manage saved variables
-	local aw, toon = SF.getAllSavedVars(rChat.savedvar, rChat.sv_version, defaults)
-    rChat.saved = SF.currentSavedVars(aw, toon)
-	SF.defaultMissing(rChat.saved.mention, mention)
-	
     -- Saved variables
-    rChat.save = ZO_SavedVars:NewAccountWide(rChat.savedvar, rChat.sv_version, nil, defaults)
+    rChat.save = loadSavedVars(rChat.savedvar, rChat.sv_version, defaults)	
     db = rChat.save
-    save = db
+    
+    rChat_ZOS.cachedMessages = rChatData.cachedMessages
+    rChat_ZOS.FormatSysMessage = rChat.FormatSysMessage
+    rChat_ZOS.tabwarning_color = db.colours.tabwarning
 
     --LAM
     BuildLAM()
@@ -5670,7 +5644,7 @@ local function OnAddonLoaded(_, addonName)
     ChangeChatFont()
 
     -- Automated messages
-    InitAutomatedMessages()
+    rChat.InitAutomatedMessages()
 
     -- Resize, must be loaded before CHAT_SYSTEM is set
     CHAT_SYSTEM.maxContainerWidth, CHAT_SYSTEM.maxContainerHeight = GuiRoot:GetDimensions()

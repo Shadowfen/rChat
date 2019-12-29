@@ -1,10 +1,10 @@
 rChat = rChat or {}
 
+rChat.AutoMsg = {}
 
 local SF = LibSFUtils
 local LMM = LibMainMenu
-
-rChat_AutomatedMsgs ={}
+local RAM = rChat.AutoMsg
 
 local L = GetString
 
@@ -30,21 +30,21 @@ ZO_CreateStringId("RCHAT_AUTOMSG_REMOVE_AUTO_MSG", L(RCHAT_RCHAT_AUTOMSG_REMOVE_
 -- called, not when the file is loaded.
 
 -- Called by XML
-function rChat_HoverRowOfAutomatedMessages(control)
+function RAM.HoverRow(control)
     local rChatData = rChat.data
     rChatData.autoMessagesShowKeybind = true
     rChatData.automatedMessagesList:Row_OnMouseEnter(control)
 end
 
 -- Called by XML
-function rChat_ExitRowOfAutomatedMessages(control)
+function RAM.ExitRow(control)
     local rChatData = rChat.data
     rChatData.autoMessagesShowKeybind = false
     rChatData.automatedMessagesList:Row_OnMouseExit(control)
 end
 
 
-function rChat_AutomatedMsgs.FindSavedAutomatedMsg(name)
+function RAM.FindSavedAutomatedMsg(name)
     local dataList = rChat.save.automatedMessages
     for index, data in pairs(dataList) do
         if(data.name == name) then
@@ -53,7 +53,7 @@ function rChat_AutomatedMsgs.FindSavedAutomatedMsg(name)
     end
 end
 
-function rChat_AutomatedMsgs.FindAutomatedMsg(name)
+function RAM.FindAutomatedMsg(name)
     local dataList = rChat.data.automatedMessagesList.list.data
     for i = 1, #dataList do
         local data = dataList[i].data
@@ -64,7 +64,7 @@ function rChat_AutomatedMsgs.FindAutomatedMsg(name)
 end
 
 
-function rChat_AutomatedMsgs.CleanAutomatedMessageList(dbs)
+function RAM.CleanAutomatedMessageList(dbs)
     -- :RefreshData() adds dataEntry recursively, delete it to avoid overflow in SavedVars
     for k, v in ipairs(dbs.automatedMessages) do
         if v.dataEntry then
@@ -73,17 +73,100 @@ function rChat_AutomatedMsgs.CleanAutomatedMessageList(dbs)
     end
 end
 
-function rChat_AutomatedMsgs.RemoveAutomatedMessage(dbs)
+function RAM.RemoveAutomatedMessage(dbs)
     local data = ZO_ScrollList_GetData(WINDOW_MANAGER:GetMouseOverControl())
-    local _, index = rChat_AutomatedMsgs.FindSavedAutomatedMsg(data.name)
+    local _, index = RAM.FindSavedAutomatedMsg(data.name)
     table.remove(dbs.automatedMessages, index)
     
     local rChatData = rChat.data
     rChatData.automatedMessagesList:RefreshData()
-    rChat_AutomatedMsgs.CleanAutomatedMessageList(dbs)
+    RAM.CleanAutomatedMessageList(dbs)
 
 end
 
+function RAM.ShowAutoMsg(am_menu)
+    LMM:ToggleCategory(am_menu)
+end
+
+function RAM.BuildAutomatedMessagesDialog(control, saveFunc)
+
+    local function AddDialogSetup(dialog, data)
+
+        local name = GetControl(dialog, "NameEdit")
+        local message = GetControl(dialog, "MessageEdit")
+
+        name:SetText("")
+        message:SetText("")
+        name:SetEditEnabled(true)
+
+    end
+
+    ZO_Dialogs_RegisterCustomDialog("RCHAT_AUTOMSG_SAVE_MSG",
+    {
+        customControl = control,
+        setup = AddDialogSetup,
+        title = {
+            text = RCHAT_AUTOMSG_ADD_TITLE_HEADER,
+        },
+        buttons = {
+            [1] = {
+                control  = GetControl(control, "Request"),
+                text     = RCHAT_AUTOMSG_ADD_AUTO_MSG,
+                callback = function(dialog)
+                    local name = GetControl(dialog, "NameEdit"):GetText()
+                    local message = GetControl(dialog, "MessageEdit"):GetText()
+                    if(name ~= "") and (message ~= "") then
+                        saveFunc(name, message, true)
+                    end
+                end,
+            },
+            [2] = {
+                control = GetControl(control, "Cancel"),
+                text = SI_DIALOG_CANCEL,
+            }
+        }
+    })
+
+    local function EditDialogSetup(dialog)
+        local data = ZO_ScrollList_GetData(WINDOW_MANAGER:GetMouseOverControl())
+        local name = GetControl(dialog, "NameEdit")
+        local edit = GetControl(dialog, "MessageEdit")
+
+
+        name:SetText(data.name)
+        name:SetEditEnabled(false)
+        edit:SetText(data.message)
+        edit:TakeFocus()
+
+    end
+
+    ZO_Dialogs_RegisterCustomDialog("RCHAT_AUTOMSG_EDIT_MSG",
+    {
+        customControl = control,
+        setup = EditDialogSetup,
+        title = {
+            text = RCHAT_AUTOMSG_EDIT_TITLE_HEADER,
+        },
+        buttons = {
+            [1] = {
+                control  = GetControl(control, "Request"),
+                text     = RCHAT_AUTOMSG_EDIT_AUTO_MSG,
+                callback = function(dialog)
+                    local name = GetControl(dialog, "NameEdit"):GetText()
+                    local message = GetControl(dialog, "MessageEdit"):GetText()
+                    if(name ~= "") and (message ~= "") then
+                        saveFunc(name, message, false)
+                    end
+                end,
+            },
+            [2] = {
+                control = GetControl(control, "Cancel"),
+                text = SI_DIALOG_CANCEL,
+            }
+        }
+    })
+
+end
 
 --[[
 local MENU_CATEGORY_RCHAT = nil
@@ -91,34 +174,45 @@ local MENU_CATEGORY_RCHAT = nil
 -- ---------------------------------------------------------------------------
 -- Global space functions called by bindings and XML
 
-function rChat.ShowAutoMsg()
-    LMM:ToggleCategory(MENU_CATEGORY_RCHAT)
-end
-
 -- Register Slash commands
 SLASH_COMMANDS["/msg"] = rChat.ShowAutoMsg
 -- ---------------------------------------------------------------------------
 
+rChat_AutomatedMsgs.AML = ZO_Object:Subclass()
+
+local automatedMessagesList = rChat_AutomatedMsgs.AML
+
+-- new -- FIX Window name (parent)
+function MessageList:New()
+	local units = ZO_SortFilterList.New(self, ScrollListExampleMainWindow)
+	return units
+end
 
 
-local automatedMessagesList = rChat_AutomatedMsgs
+local AutomatedMessagesSorterKeys = {
+    ["name"] = {},
+    ["message"] = {tiebreaker = "name"}
+}
 
+-- checked - why return?
 function automatedMessagesList:Init(control)
     ZO_SortFilterList.InitializeSortFilterList(self, control)
+	--ZO_SortFilterList.Initialize(self, control)
 
-    local AutomatedMessagesSorterKeys =
-    {
-        ["name"] = {},
-        ["message"] = {tiebreaker = "name"}
-    }
+	--self.sortHeaderGroup:SelectHeaderByKey("name")
+	--ZO_SortHeader_OnMouseExit("rChatXMLAutoMsgHeaders")
 
     self.masterList = {}
     ZO_ScrollList_AddDataType(self.list, 1, "rChatXMLAutoMsgRowTemplate", 32, function(control, data) self:SetupEntry(control, data) end)
     ZO_ScrollList_EnableHighlight(self.list, "ZO_ThinListHighlight")
     self.sortFunction = function(listEntry1, listEntry2) return ZO_TableOrderingFunction(listEntry1.data, listEntry2.data, self.currentSortKey, AutomatedMessagesSorterKeys, self.currentSortOrder) end
 
+	--self:RefreshData()
     return self
 end
+
+-- checked - colors?
+local DEFAULT_TEXT = ZO_ColorDef:New(118/255, 188/255, 195/255, 1) -- scroll list row text color 
 
 function automatedMessagesList:SetupEntry(control, data)
     
@@ -133,28 +227,36 @@ function automatedMessagesList:SetupEntry(control, data)
     
     control.name:SetText(data.name)
     control.message:SetText(messageTrunc)
+
+	control.name.normalColor = DEFAULT_TEXT
+	control.message.normalColor = DEFAULT_TEXT
     
     ZO_SortFilterList.SetupRow(self, control, data)
     
 end
 
+
+-- checked - do we need data.name?
 function automatedMessagesList:BuildMasterList()
     self.masterList = {}
     local messages = rChat.save.automatedMessages
     if messages then
-        for k, v in ipairs(messages) do
+        for k, v in pairs(messages) do
             local data = v
+            -- data["name"] = k
             table.insert(self.masterList, data)
         end
     end
     
 end
 
+-- checked
 function automatedMessagesList:SortScrollList()
     local scrollData = ZO_ScrollList_GetDataList(self.list)
     table.sort(scrollData, self.sortFunction)
 end
 
+-- checked
 function automatedMessagesList:FilterScrollList()
     local scrollData = ZO_ScrollList_GetDataList(self.list)
     ZO_ClearNumericallyIndexedTable(scrollData)
@@ -164,6 +266,13 @@ function automatedMessagesList:FilterScrollList()
         table.insert(scrollData, ZO_ScrollList_CreateDataEntry(1, data))
     end
 end
+
+-- new
+function automatedMessagesList:Refresh()
+	self:RefreshData()
+end
+
+
 
 local function SaveAutomatedMessage(name, message, isNew)
     local db = rChat.save   
@@ -224,92 +333,55 @@ end
 
 
 
--- Called by XML
-function rChat_BuildAutomatedMessagesDialog(control)
 
-    local function AddDialogSetup(dialog, data)
-        
-        local name = GetControl(dialog, "NameEdit")
-        local message = GetControl(dialog, "MessageEdit")
-        
-        name:SetText("")
-        message:SetText("")
-        name:SetEditEnabled(true)
-        
-    end
+-- -------------------------------------------------------------------
+-- from ScrollList Example addon
+MessageList = ZO_SortFilterList:Subclass()
+SLE = {}
+SLE.MessageList = nil
+SLE.units = {}
 
-    ZO_Dialogs_RegisterCustomDialog("RCHAT_AUTOMSG_SAVE_MSG", 
-    {
-        customControl = control,
-        setup = AddDialogSetup,
-        title =
-        {
-            text = RCHAT_AUTOMSG_ADD_TITLE_HEADER,
-        },
-        buttons =
-        {
-            [1] =
-            {
-                control  = GetControl(control, "Request"),
-                text     = RCHAT_AUTOMSG_ADD_AUTO_MSG,
-                callback = function(dialog)
-                    local name = GetControl(dialog, "NameEdit"):GetText()
-                    local message = GetControl(dialog, "MessageEdit"):GetText()
-                    if(name ~= "") and (message ~= "") then
-                        SaveAutomatedMessage(name, message, true)
-                    end
-                end,
-            },
-            [2] =
-            {
-                control = GetControl(control, "Cancel"),
-                text = SI_DIALOG_CANCEL,
-            }
-        }
-    })
-    
-    local function EditDialogSetup(dialog)
-        local data = ZO_ScrollList_GetData(WINDOW_MANAGER:GetMouseOverControl())
-        local name = GetControl(dialog, "NameEdit")
-        local edit = GetControl(dialog, "MessageEdit")
-        
-        
-        name:SetText(data.name)
-        name:SetEditEnabled(false)
-        edit:SetText(data.message)
-        edit:TakeFocus()
-        
-    end
 
-    ZO_Dialogs_RegisterCustomDialog("RCHAT_AUTOMSG_EDIT_MSG", 
-    {
-        customControl = control,
-        setup = EditDialogSetup,
-        title =
-        {
-            text = RCHAT_AUTOMSG_EDIT_TITLE_HEADER,
-        },
-        buttons =
-        {
-            [1] =
-            {
-                control  = GetControl(control, "Request"),
-                text     = RCHAT_AUTOMSG_EDIT_AUTO_MSG,
-                callback = function(dialog)
-                    local name = GetControl(dialog, "NameEdit"):GetText()
-                    local message = GetControl(dialog, "MessageEdit"):GetText()
-                    if(name ~= "") and (message ~= "") then
-                        SaveAutomatedMessage(name, message, false)
-                    end
-                end,
-            },
-            [2] =
-            {
-                control = GetControl(control, "Cancel"),
-                text = SI_DIALOG_CANCEL,
-            }
-        }
-    })
-
+function SLE.MouseEnter(control)
+	SLE.MessageList:Row_OnMouseEnter(control)
 end
+
+function SLE.MouseExit(control)
+	SLE.MessageList:Row_OnMouseExit(control)
+end
+
+function SLE.MouseUp(control, button, upInside)
+	local cd = control.data
+	d(table.concat( { cd.name, cd.race, cd.class, cd.zone }, " "))
+end
+
+function SLE.TrackUnit()
+	local targetName = GetUnitName("reticleover")
+	if targetName == "" then return end
+	local targetRace = GetUnitRace("reticleover")
+	local targetClass = GetUnitClass("reticleover")
+	local targetZone = GetUnitZone("reticleover")
+	SLE.units[targetName] = {race=tagetRace, class=targetClass, zone=targetZone}
+	SLE.MessageList:Refresh()
+end
+
+-- do all this when the addon is loaded
+function SLE.Init(eventCode, addOnName)
+	if addOnName ~= "ScrollListExample" then return end
+
+	-- Event Registration
+	EVENT_MANAGER:RegisterForEvent("SLE_RETICLE_TARGET_CHANGED", EVENT_RETICLE_TARGET_CHANGED, SLE.TrackUnit)
+
+	SLE.MessageList = MessageList:New()
+	local playerName = GetUnitName("player")
+	local playerRace = GetUnitRace("player")
+	local playerClass = GetUnitClass("player")
+	local playerZone = GetUnitZone("player")
+	SLE.units[playerName] = {race=playerRace, class=playerClass, zone=playerZone}
+	SLE.MessageList:Refresh()
+
+	ScrollListExampleMainWindow:SetHidden(false)
+end
+
+EVENT_MANAGER:RegisterForEvent("SLE_Init", EVENT_ADD_ON_LOADED , SLE.Init)
 --]]

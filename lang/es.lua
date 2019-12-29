@@ -181,6 +181,7 @@ rChat_localization_strings["es"] = {
 
 	RCHAT_IMH = "Susurros",
 
+	RCHAT_WHISPSOUND_ENABLED = "Habilitar sonidos para mensajes susurrados",
 	RCHAT_SOUNDFORINCWHISPS = "Sonido para susurros entrantes",
 	RCHAT_SOUNDFORINCWHISPSTT = "Elige un sonido a reproducir cuando recibas un susurro",
 

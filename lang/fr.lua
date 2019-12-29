@@ -179,6 +179,7 @@ rChat_localization_strings["fr"] = {
             
     RCHAT_IMH = "Chuchotements",
             
+	RCHAT_WHISPSOUND_ENABLED = "Activer les sons pour les messages chuchotés",
     RCHAT_SOUNDFORINCWHISPS = "Son pour les chuchotements reçus",
     RCHAT_SOUNDFORINCWHISPSTT = "Choisir le son qui sera joué lors des chuchotements reçus",
             

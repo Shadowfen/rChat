@@ -191,6 +191,7 @@ rChat_localization_strings["de"] = {
         
     RCHAT_IMH = "Flüstern",
         
+	RCHAT_WHISPSOUND_ENABLED = "Aktivieren Sie Sounds für geflüsterte Nachrichten",
     RCHAT_SOUNDFORINCWHISPS = "Ton für eingehende Flüsternachricht",
     RCHAT_SOUNDFORINCWHISPSTT = "Wählen Sie Sound, der abgespielt wird, wenn Sie ein Flüstern erhalten",
         

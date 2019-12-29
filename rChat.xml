@@ -16,11 +16,11 @@
 		<Control name="rChatXMLAutoMsgRowTemplate" virtual="true" mouseEnabled="true">
 		
 			<OnMouseEnter>
-				rChat_HoverRowOfAutomatedMessages(self)
+				rChat.AutoMsg.HoverRow(self)
 			</OnMouseEnter>
 
 			<OnMouseExit>
-				rChat_ExitRowOfAutomatedMessages(self)
+				rChat.AutoMsg.ExitRow(self)
 			</OnMouseExit>
 
 			<Dimensions x="600" y="30" />
@@ -78,7 +78,7 @@
 		
 		<TopLevelControl name="rChatXMLAutoMsgDialog" inherits="ZO_CustomDialogBase" hidden="true">
 			<OnInitialized>
-				rChat_BuildAutomatedMessagesDialog(self)
+				rChat_BuildAutomatedMessagesDialog(self, rChat.SaveAutomatedMessage)
 			</OnInitialized>
 			<Controls>
 				<Label name="$(parent)NameHeader" inherits="ZO_DialogContentAnchors" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" font="ZoFontGame" text="RCHAT_AUTOMSG_NAME_HEADER"/>
