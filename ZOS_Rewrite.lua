@@ -4,17 +4,19 @@ rChat_ZOS = {
     FormatSysMessage = function() end,     -- function
     cachedMessages = {},        -- table of messages for chat restoring
     messagesWereRestored = false, -- bool  (was messagesHaveBeenRestorated)
-    tabwarning_color = "|c76BCC3", -- tab Warning ~ "Azure" (ZOS default),
+    tabwarning_color = ZO_ColorDef:New("76BCC3"), -- tab Warning ~ "Azure" (ZOS default),
 }
 
 -- utility function from rChat.lua
 -- Convert a colour from "|cABCDEF" form to [0,1] RGB form.
+--[[
 local function ConvertHexToRGBA(colourString)
     local r=tonumber(string.sub(colourString, 3, 4), 16) or 255
     local g=tonumber(string.sub(colourString, 5, 6), 16) or 255
     local b=tonumber(string.sub(colourString, 7, 8), 16) or 255
     return r/255, g/255, b/255, 1
 end
+--]]
 
 -- Rewrite of core function
 function CHAT_SYSTEM:AddMessage(text)
@@ -93,18 +95,17 @@ function d(...)
 end
 
 
--- Rewrite of core function to use saved var color
+-- Rewrite of core function to use saved var color instead of parameter
 function ZO_TabButton_Text_SetTextColor(self, color)
-
-    local r, g, b, a = ConvertHexToRGBA(rChat_ZOS.tabwarning_color)
 
     if(self.allowLabelColorChanges) then
         local label = GetControl(self, "Text")
-        label:SetColor(r, g, b, a)
+        local r, g, b = rChat_ZOS.tabwarning_color:UnpackRGB()
+        label:SetColor(r, g, b, 1)
     end
 end
 
--- Rewrite of (local) core function
+-- Copy of core function from chatdata.lua
 local function GetOfficerChannelErrorFunction(guildIndex)
     return function()
         if(GetNumGuilds() < guildIndex) then
@@ -115,7 +116,7 @@ local function GetOfficerChannelErrorFunction(guildIndex)
     end
 end
 
--- Rewrite of (local) core function
+-- Copy of core function from chatdata.lua
 local function GetGuildChannelErrorFunction(guildIndex)
     return function()
         if(GetNumGuilds() < guildIndex) then
