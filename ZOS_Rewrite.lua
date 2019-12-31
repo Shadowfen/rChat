@@ -7,16 +7,6 @@ rChat_ZOS = {
     tabwarning_color = ZO_ColorDef:New("76BCC3"), -- tab Warning ~ "Azure" (ZOS default),
 }
 
--- utility function from rChat.lua
--- Convert a colour from "|cABCDEF" form to [0,1] RGB form.
---[[
-local function ConvertHexToRGBA(colourString)
-    local r=tonumber(string.sub(colourString, 3, 4), 16) or 255
-    local g=tonumber(string.sub(colourString, 5, 6), 16) or 255
-    local b=tonumber(string.sub(colourString, 7, 8), 16) or 255
-    return r/255, g/255, b/255, 1
-end
---]]
 
 -- Rewrite of core function
 function CHAT_SYSTEM:AddMessage(text)
