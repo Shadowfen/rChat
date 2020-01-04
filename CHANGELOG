@@ -1,4 +1,14 @@
-﻿[COLOR="DeepSkyBlue"]1.3[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.4 unreleased[/COLOR]
+[LIST]
+[*] Removed dependency on LibMainMenu library (and the code that used it). The main menu entry for pChat/rChat has never appeared in my memory of using pChat, and my testing of addons using LibMainMenu verses LibMainMenu-2.0 seems to indicate that they have issues with the latest version of the game and potentially with each other. Since having a main menu entry is not that big of a "feature", it is best to remove this potential source of problems.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.3.1[/COLOR]
+[LIST]
+[*] Fix "rChat.lua:3271: function expected instead of nil" error messages. (reported by SimplyArmin)
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.3[/COLOR]
 [COLOR="MediumSlateBlue"]Breaking Change[/COLOR]
 [LIST]
 [*] [COLOR="DarkOrange"]Now requires the library LibDebugLogger in addition to the libraries LibSFUtils, LibAddonMenu, LibMediaProvider-1.0, LibMainMenu, and libChat2 (note the lower case 'l') to be installed separately.[/COLOR]

@@ -3,7 +3,7 @@
 local LAM = LibAddonMenu2
 local LC2 = LibChat2
 local LMP = LibMediaProvider
-local LMM = LibMainMenu     -- used by automessages
+--local LMM = LibMainMenu     -- used by automessages
 local SF = LibSFUtils
 local RAM = rChat.AutoMsg
 
@@ -463,7 +463,7 @@ end
 -- Also called by bindings
 function rChat.ShowAutoMsg()
     if RAM then
-        RAM.ShowAutoMsg(MENU_CATEGORY_RCHAT)
+        RAM.ShowAutoMsg()
     else
         CHAT_SYSTEM.Zo_AddMessage("[rChat] Automated Message System is not enabled")
     end
@@ -692,6 +692,7 @@ function rChat.InitAutomatedMessages()
     -- Register Scenes and the group name
     SCENE_MANAGER:AddSceneGroup("rChatSceneGroup", ZO_SceneGroup:New("rChatAutomatedMessagesScene"))
 
+--[[
     -- Its infos
     RCHAT_MAIN_MENU_CATEGORY_DATA = {
         binding = "RCHAT_SHOW_AUTO_MSG",
@@ -713,6 +714,9 @@ function rChat.InitAutomatedMessages()
     }
     -- Register the group and add the buttons (we cannot all AddRawScene, only AddSceneGroup, so we emulate both functions).
     LMM:AddSceneGroup(MENU_CATEGORY_RCHAT, "rChatSceneGroup", iconData)
+    end
+--]]
+    --AM_InitMainMenu()
 
     local autoMsgDescriptor = {
         alignment = KEYBIND_STRIP_ALIGN_CENTER,
@@ -3225,7 +3229,7 @@ local function OnIgnoreAdded(displayName)
 
     -- Only if statusMessage is set
     if statusMessage then
-        return FormatSysMessage(statusMessage)
+        return rChat.FormatSysMessage(statusMessage)
     end
 
 end
@@ -3239,7 +3243,7 @@ local function OnIgnoreRemoved(displayName)
 
     -- Only if statusMessage is set
     if statusMessage then
-        return FormatSysMessage(statusMessage)
+        return rChat.FormatSysMessage(statusMessage)
     end
 
 end
@@ -3268,7 +3272,7 @@ local function OnFriendPlayerStatusChanged(displayName, characterName, oldStatus
 
     -- Only if statusMessage is set
     if statusMessage then
-        return FormatSysMessage(statusMessage)
+        return rChat.FormatSysMessage(statusMessage)
     end
 
 end
@@ -3277,9 +3281,9 @@ end
 local function OnGroupTypeChanged(largeGroup)
 
     if largeGroup then
-        return FormatSysMessage(L(SI_CHAT_ANNOUNCEMENT_IN_LARGE_GROUP))
+        return rChat.FormatSysMessage(L(SI_CHAT_ANNOUNCEMENT_IN_LARGE_GROUP))
     else
-        return FormatSysMessage(L(SI_CHAT_ANNOUNCEMENT_IN_SMALL_GROUP))
+        return rChat.FormatSysMessage(L(SI_CHAT_ANNOUNCEMENT_IN_SMALL_GROUP))
     end
 
 end
@@ -5221,7 +5225,6 @@ local function checkLibraryVersions()
 
         checkLS("LibAddonMenu-2.0", 30)
         checkLS("LibMediaProvider-1.0", 12)
-        checkLS("LibMainMenu", 8)
         checkLS("libChat-1.0", 12)
     end
     
@@ -5237,7 +5240,6 @@ end
 -- Please note that some things are delayed in OnPlayerActivated() because Chat isn't ready when this function triggers
 local function OnAddonLoaded(_, addonName)
 
-    --Protect
     if addonName ~= rChat.name then return end
     
     checkLibraryVersions()
@@ -5245,8 +5247,6 @@ local function OnAddonLoaded(_, addonName)
     -- Saved variables
     rChat.save = loadSavedVars(rChat.savedvar, rChat.sv_version, defaults)	
     db = rChat.save
-    db.history = nil
-    rChat.history = loadSavedVars("rChat_History", rChat.sv_version, defaults)	
     
     rChat_ZOS.cachedMessages = rChatData.cachedMessages
     rChat_ZOS.FormatSysMessage = rChat.FormatSysMessage
@@ -5383,12 +5383,12 @@ end
 
 -- For compatibility. Called by others addons.
 function rChat.formatSysMessage(statusMessage)
-    return FormatSysMessage(statusMessage)
+    return rChat.FormatSysMessage(statusMessage)
 end
 
 -- For compatibility. Called by others addons.
 function rChat_FormatSysMessage(statusMessage)
-    return FormatSysMessage(statusMessage)
+    return rChat.FormatSysMessage(statusMessage)
 end
 
 -- For compatibility. Called by others addons.
