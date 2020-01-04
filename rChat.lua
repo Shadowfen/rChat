@@ -1402,9 +1402,9 @@ local function SetDefaultTab(tabToSet)
 
     -- Search in all tabs the good name
     for numTab in ipairs(CHAT_SYSTEM.primaryContainer.windows) do
-        -- Not this one, try the next one, if tab is not found (newly added, removed), rChat_SwitchToNextTab() will go back to tab 1
+        -- Not this one, try the next one, if tab is not found (newly added, removed), rChat.SwitchToNextTab() will go back to tab 1
         if tonumber(tabToSet) ~= numTab then
-            rChat_SwitchToNextTab()
+            rChat.SwitchToNextTab()
         else
             -- Found it, stop
             return
@@ -5202,11 +5202,45 @@ local function loadSavedVars(savedvar, sv_version, defaults)
     return save
 end
 
+-- checks the versions of libraries where possible and warn in
+-- debug logger if we detect out of date libraries.
+local function checkLibraryVersions()
+    local logger = LibDebugLogger("AutoCategory")
+    
+    -- check the libraries that still support LibStub
+    -- because there we can get versions through a standard 
+    -- mechanism.
+    if LibStub then 
+        local function checkLS(name, expected)
+            local lib, ver
+            lib, ver = LibStub:GetLibrary(name)
+            if not ver or ver < expected then
+                logger:Error("Outdated version of %s detected (%d) - possibly embedded in another older addon.", name, ver or -1) 
+            end
+        end
+
+        checkLS("LibAddonMenu-2.0", 30)
+        checkLS("LibMediaProvider-1.0", 12)
+        checkLS("LibMainMenu", 8)
+        checkLS("libChat-1.0", 12)
+    end
+    
+    -- check libraries that do not use LibStub
+    ver = LibSFUtils.LibVersion or -1
+    if ver < 20 then
+        logger:Error("Outdated version of %s detected (%d) - possibly embedded in another older addon.", "LibSFUtils", ver) 
+    end
+    
+    logger:Info("Library %s does not provide version information", "LibDebugLogger")
+end
+
 -- Please note that some things are delayed in OnPlayerActivated() because Chat isn't ready when this function triggers
 local function OnAddonLoaded(_, addonName)
 
     --Protect
     if addonName ~= rChat.name then return end
+    
+    checkLibraryVersions()
 
     -- Saved variables
     rChat.save = loadSavedVars(rChat.savedvar, rChat.sv_version, defaults)	
