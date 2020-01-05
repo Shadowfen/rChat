@@ -3,7 +3,6 @@
 local LAM = LibAddonMenu2
 local LC2 = LibChat2
 local LMP = LibMediaProvider
---local LMM = LibMainMenu     -- used by automessages
 local SF = LibSFUtils
 local RAM = rChat.AutoMsg
 
@@ -200,7 +199,7 @@ local RCHAT_LINK = "p"
 local RCHAT_URL_CHAN = 97
 local RCHAT_CHANNEL_NONE = 99
 
--- Backuping AddMessage for internal debug - AVOID DOING A CHAT_SYSTEM:AddMessage() in rChat, it can cause recursive calls
+-- Save AddMessage for internal debug - AVOID DOING A CHAT_SYSTEM:AddMessage() in rChat, it can cause recursive calls
 CHAT_SYSTEM.Zo_AddMessage = CHAT_SYSTEM.AddMessage
 
 --[[
@@ -256,7 +255,7 @@ rChatData.guildCategories = {
     CHAT_CATEGORY_OFFICER_5,
 }
 
-local chatStrings = {
+local chatStrings_brackets = {
     standard = "%s%s: |r%s%s%s|r", -- standard format: say, yell, group, npc, npc yell, npc whisper, zone
     esostandard = "%s%s %s: |r%s%s%s|r", -- standard format: say, yell, group, npc, npc yell, npc whisper, zone with tag (except for monsters)
     esoparty = "%s%s%s: |r%s%s%s|r", -- standard format: party
@@ -267,7 +266,6 @@ local chatStrings = {
     language = "%s[%s] %s: |r%s%s%s|r", -- language zones
 
     -- For copy System, only Handle "From part"
-
     copystandard = "[%s]: ", -- standard format: say, yell, group, npc, npc yell, npc whisper, zone
     copyesostandard = "[%s] %s: ", -- standard format: say, yell, group, npc, npc yell, npc whisper, zone with tag (except for monsters)
     copyesoparty = "[%s]%s: ", -- standard format: party
@@ -278,6 +276,30 @@ local chatStrings = {
     copylanguage = "[%s] %s: ", -- language zones
     copynpc = "%s: ", -- NPCs
 }
+
+local chatStrings_nobrackets = {
+    standard = chatStrings_brackets.standard, 
+    esostandard = chatStrings_brackets.esostandard,
+    esoparty = chatStrings_brackets.esoparty,
+    tellIn = chatStrings_brackets.tellIn, 
+    tellOut = chatStrings_brackets.tellOut,
+    emote = chatStrings_brackets.emote,
+    guild = chatStrings_brackets.guild,
+    language = chatStrings_brackets.language,
+
+    -- For copy System, only Handle "From part"
+    copystandard = "%s: ", -- standard format: say, yell, group, npc, npc yell, npc whisper, zone
+    copyesostandard = "%s %s: ", -- standard format: say, yell, group, npc, npc yell, npc whisper, zone with tag (except for monsters)
+    copyesoparty = "[%s]%s: ", -- standard format: party
+    copytellIn = "%s: ", -- tell in
+    copytellOut = "-> %s: ", -- tell out
+    copyemote = chatStrings_brackets.copyemote,
+    copyguild = "[%s] %s: ", -- guild
+    copylanguage = chatStrings_brackets.copylanguage,
+    copynpc = chatStrings_brackets.copynpc,
+}
+
+local chatStrings = chatStrings_brackets
 
 local MENU_CATEGORY_RCHAT = nil
 
@@ -331,6 +353,7 @@ local function CreateTimestamp(timeStr, formatStr)
 end
 
 -- Format "From" name
+--      Modifies: db.LineStrings[db.lineNumber] values
 local function ConvertName(chanCode, from, isCS, fromDisplayName)
 
     local function DisplayWithOrWoBrackets(realFrom, displayed, linkType)
@@ -344,8 +367,9 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
         end
     end
 
-    -- From can be UserID or Character name depending on wich channel we are
+    -- "From" can be UserID or Character name depending on which channel we are
     local new_from = from
+    local chatline = db.LineStrings[db.lineNumber]    -- table ref
 
     -- Messages from @Someone (guild / whisps)
     if IsDecoratedDisplayName(from) then
@@ -356,19 +380,19 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
             -- Get guild ID based on channel id
             local guildId = GetGuildId((chanCode - CHAT_CHANNEL_GUILD_1) % 5 + 1)
             local guildName = GetGuildName(guildId)
-
-            if rChatData.nicknames[new_from] then -- @UserID Nicknammed
-                db.LineStrings[db.lineNumber].rawFrom = rChatData.nicknames[new_from]
+            
+            if rChatData.nicknames[new_from] then -- @UserID Nicknamed
+                chatline.rawFrom = rChatData.nicknames[new_from]
                 new_from = DisplayWithOrWoBrackets(new_from, rChatData.nicknames[new_from], DISPLAY_NAME_LINK_TYPE)
                 
             elseif db.formatguild[guildName] == 2 then -- Char
                 local _, characterName = GetGuildMemberCharacterInfo(guildId, GetGuildMemberIndexFromDisplayName(guildId, new_from))
                 characterName = zo_strformat(SI_UNIT_NAME, characterName)
                 local nickNamedName
-                if rChatData.nicknames[characterName] then -- Char Nicknammed
+                if rChatData.nicknames[characterName] then -- Char Nicknamed
                     nickNamedName = rChatData.nicknames[characterName]
                 end
-                db.LineStrings[db.lineNumber].rawFrom = nickNamedName or characterName
+                chatline.rawFrom = nickNamedName or characterName
                 new_from = DisplayWithOrWoBrackets(characterName, nickNamedName or characterName, CHARACTER_LINK_TYPE)
                 
             elseif db.formatguild[guildName] == 3 then -- Char@UserID
@@ -376,28 +400,28 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
                 characterName = zo_strformat(SI_UNIT_NAME, characterName)
                 if characterName == "" then characterName = new_from end -- Some buggy rosters
 
-                if rChatData.nicknames[characterName] then -- Char Nicknammed
+                if rChatData.nicknames[characterName] then -- Char Nicknamed
                     characterName = rChatData.nicknames[characterName]
                 else
                     characterName = characterName .. new_from
                 end
 
-                db.LineStrings[db.lineNumber].rawFrom = characterName
+                chatline.rawFrom = characterName
                 new_from = DisplayWithOrWoBrackets(new_from, characterName, DISPLAY_NAME_LINK_TYPE)
                 
             else
-                db.LineStrings[db.lineNumber].rawFrom = new_from
+                chatline.rawFrom = new_from
                 new_from = DisplayWithOrWoBrackets(new_from, new_from, DISPLAY_NAME_LINK_TYPE)
             end
 
         else
             -- Wisps with @ We can't guess characterName for those ones
             if rChatData.nicknames[new_from] then -- @UserID Nicknamed
-                db.LineStrings[db.lineNumber].rawFrom = rChatData.nicknames[new_from]
+                chatline.rawFrom = rChatData.nicknames[new_from]
                 new_from = DisplayWithOrWoBrackets(new_from, rChatData.nicknames[new_from], DISPLAY_NAME_LINK_TYPE)
                 
             else
-                db.LineStrings[db.lineNumber].rawFrom = new_from
+                chatline.rawFrom = new_from
                 new_from = DisplayWithOrWoBrackets(new_from, new_from, DISPLAY_NAME_LINK_TYPE)
             end
 
@@ -408,13 +432,13 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
         new_from = zo_strformat(SI_UNIT_NAME, new_from)
 
         local nicknamedFrom
-        if rChatData.nicknames[new_from] then -- Character or Account Nicknammed
+        if rChatData.nicknames[new_from] then -- Character or Account Nicknamed
             nicknamedFrom = rChatData.nicknames[new_from]
         elseif rChatData.nicknames[fromDisplayName] then
             nicknamedFrom = rChatData.nicknames[fromDisplayName]
         end
 
-        db.LineStrings[db.lineNumber].rawFrom = nicknamedFrom or new_from
+        chatline.rawFrom = nicknamedFrom or new_from
 
         -- No brackets / UserID for emotes
         if chanCode == CHAT_CHANNEL_EMOTE then
@@ -424,33 +448,33 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
 
             if chanCode == CHAT_CHANNEL_PARTY then
                 if db.groupNames == 1 then
-                    db.LineStrings[db.lineNumber].rawFrom = nicknamedFrom or fromDisplayName
+                    chatline.rawFrom = nicknamedFrom or fromDisplayName
                     new_from = DisplayWithOrWoBrackets(fromDisplayName, nicknamedFrom or fromDisplayName, DISPLAY_NAME_LINK_TYPE)
                 elseif db.groupNames == 3 then
                     new_from = new_from .. fromDisplayName
-                    db.LineStrings[db.lineNumber].rawFrom = nicknamedFrom or new_from
+                    chatline.rawFrom = nicknamedFrom or new_from
                     new_from = DisplayWithOrWoBrackets(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
                 else
-                    db.LineStrings[db.lineNumber].rawFrom = nicknamedFrom or new_from
+                    chatline.rawFrom = nicknamedFrom or new_from
                     new_from = DisplayWithOrWoBrackets(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
                 end
             else
                 if db.geoChannelsFormat == 1 then
-                    db.LineStrings[db.lineNumber].rawFrom = nicknamedFrom or fromDisplayName
+                    chatline.rawFrom = nicknamedFrom or fromDisplayName
                     new_from = DisplayWithOrWoBrackets(fromDisplayName, nicknamedFrom or fromDisplayName, DISPLAY_NAME_LINK_TYPE)
                 elseif db.geoChannelsFormat == 3 then
                     new_from = new_from .. fromDisplayName
-                    db.LineStrings[db.lineNumber].rawFrom = nicknamedFrom or new_from
+                    chatline.rawFrom = nicknamedFrom or new_from
                     new_from = DisplayWithOrWoBrackets(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
                 else
-                    db.LineStrings[db.lineNumber].rawFrom = nicknamedFrom or new_from
+                    chatline.rawFrom = nicknamedFrom or new_from
                     new_from = DisplayWithOrWoBrackets(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
-                end
-            end
+                end -- db.geoChannelsFormat
+            end     -- chanCode == CHAT_CHANNEL_PARTY
 
-        end
+        end     -- if chanCode == CHAT_CHANNEL_EMOTE
 
-    end
+    end     -- IsDecoratedDisplayName(from)
 
     if isCS then -- ZOS icon
         new_from = "|t16:16:EsoUI/Art/ChatWindow/csIcon.dds|t" .. new_from
@@ -2320,6 +2344,7 @@ local function StorelineNumber(rawTimestamp, rawFrom, text, chanCode, originalFr
 
     local formattedMessage = ""
     local rawText = text
+    local chatline = {}
 
     -- SysMessages does not have a from
     if chanCode ~= CHAT_CHANNEL_SYSTEM then
@@ -2334,7 +2359,7 @@ local function StorelineNumber(rawTimestamp, rawFrom, text, chanCode, originalFr
         rawFrom = StripDDStags(rawFrom)
 
         -- Needed for SpamFilter
-        db.LineStrings[db.lineNumber].rawFrom = originalFrom
+        chatline.rawFrom = originalFrom
 
         -- formattedMessage is only rawFrom for now
         formattedMessage = formattedMessage .. rawFrom
@@ -2346,16 +2371,16 @@ local function StorelineNumber(rawTimestamp, rawFrom, text, chanCode, originalFr
     end
 
     -- Needed for SpamFilter & Restoration, UNIX timestamp
-    db.LineStrings[db.lineNumber].rawTimestamp = rawTimestamp
+    chatline.rawTimestamp = rawTimestamp
 
     -- Store CopyMessage / Used for SpamFiltering.
-    db.LineStrings[db.lineNumber].channel = chanCode
+    chatline.channel = chanCode
 
     -- Store CopyMessage
-    db.LineStrings[db.lineNumber].rawText = rawText
+    chatline.rawText = rawText
 
     -- Store CopyMessage
-    --db.LineStrings[db.lineNumber].rawValue = text
+    --chatline.rawValue = rawText
 
     -- Strip DDS tags
     rawText = StripDDStags(rawText)
@@ -2364,12 +2389,12 @@ local function StorelineNumber(rawTimestamp, rawFrom, text, chanCode, originalFr
     rawText = rChat.FormatRawText(rawText)
 
     -- Store CopyMessage
-    db.LineStrings[db.lineNumber].rawMessage = rawText
+    chatline.rawMessage = rawText
 
     -- Store CopyLine
-    db.LineStrings[db.lineNumber].rawLine = formattedMessage .. rawText
+    chatline.rawLine = formattedMessage .. rawText
 
-    --Increment at each message handled
+    db.LineStrings[db.lineNumber] = chatline
     db.lineNumber = db.lineNumber + 1
 
 end
@@ -2617,39 +2642,28 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName, origin
     local message = DDSBeforeAll .. TextBeforeAll
 
     -- Init text with other addons stuff. Note : text can also be modified by other addons. Only originalText is the string the game has receive
-    text = DDSBeforeText .. TextBeforeText .. text .. TextAfterText .. DDSAfterText
+    text = table.concat({DDSBeforeText, TextBeforeText, text, TextAfterText, DDSAfterText})
 
     if db.disableBrackets then
-        chatStrings["copystandard"] = "%s: " -- standard format: say, yell, group, npc, npc yell, npc whisper, zone
-        chatStrings["copyesostandard"] = "%s %s: " -- standard format: say, yell, group, npc, npc yell, npc whisper, zone with tag (except for monsters)
-        chatStrings["copyesoparty"] = "[%s]%s: " -- standard format: party
-        chatStrings["copytellIn"] = "%s: " -- tell in
-        chatStrings["copytellOut"] = "-> %s: " -- tell out
-        chatStrings["copyguild"] = "[%s] %s: " -- guild
-        chatStrings["copylanguage"] = "[%s] %s: " -- language zones
+        chatStrings = chatStrings_nobrackets
     else
-        chatStrings["copystandard"] = "[%s]: " -- standard format: say, yell, group, npc, npc yell, npc whisper, zone
-        chatStrings["copyesostandard"] = "[%s] %s: " -- standard format: say, yell, group, npc, npc yell, npc whisper, zone with tag (except for monsters)
-        chatStrings["copyesoparty"] = "[%s]%s: " -- standard format: party
-        chatStrings["copytellIn"] = "[%s]: " -- tell in
-        chatStrings["copytellOut"] = "-> [%s]: " -- tell out
-        chatStrings["copyguild"] = "[%s] [%s]: " -- guild
-        chatStrings["copylanguage"] = "[%s] %s: " -- language zones
+        chatStrings = chatStrings_brackets
     end
 
     --  for CopySystem
-    db.LineStrings[db.lineNumber] = {}
-    if not db.LineStrings[db.lineNumber].rawFrom then db.LineStrings[db.lineNumber].rawFrom = from end
-    if not db.LineStrings[db.lineNumber].rawValue then db.LineStrings[db.lineNumber].rawValue = text end
-    if not db.LineStrings[db.lineNumber].rawMessage then db.LineStrings[db.lineNumber].rawMessage = text end
-    if not db.LineStrings[db.lineNumber].rawLine then db.LineStrings[db.lineNumber].rawLine = text end
-    if not db.LineStrings[db.lineNumber].rawDisplayed then db.LineStrings[db.lineNumber].rawDisplayed = text end
+    local chatline = {}
+    chatline.rawFrom = from
+    chatline.rawValue = text
+    chatline.rawMessage = text
+    chatline.rawLine = text
+    chatline.rawDisplayed = text
+    db.LineStrings[db.lineNumber] = chatline
 
     local new_from = ConvertName(chanCode, from, isCS, fromDisplayName)
-    local displayedFrom = db.LineStrings[db.lineNumber].rawFrom
-
+    local displayedFrom = chatline.rawFrom
+    
     -- Add other addons stuff related to sender
-    new_from = DDSBeforeSender .. TextBeforeSender .. new_from .. TextAfterSender .. DDSAfterSender
+    new_from = table.concat({DDSBeforeSender, TextBeforeSender, new_from, TextAfterSender, DDSAfterSender})
 
     -- Guild tag
     local tag
