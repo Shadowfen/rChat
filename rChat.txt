@@ -11,7 +11,7 @@
 ## Version: 1.4
 ## Author: Shadowfen
 ## APIVersion: 100029 100030
-## SavedVariables: RCHAT_OPTS rChat_History
+## SavedVariables: RCHAT_OPTS
 ## AddOnVersion: 2
 ## DependsOn: LibSFUtils LibAddonMenu-2.0 LibMediaProvider-1.0 libChat2 LibDebugLogger
 
