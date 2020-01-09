@@ -5031,7 +5031,7 @@ local function OnPlayerActivated()
         CopyToTextEntryText()
 
         -- Restore History if needed
-        RestoreChatHistory()
+        --RestoreChatHistory()
         -- Default Tab
         SetDefaultTab(db.defaultTab)
         -- Change Window apparence

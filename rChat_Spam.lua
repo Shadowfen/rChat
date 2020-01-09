@@ -2,6 +2,12 @@ rChat = rChat or {}
 
 local SF = LibSFUtils
 
+-- the spam table from the saved variables
+local config = {}
+function rChat.setSpamConfig(cfgtable)
+    config = cfgtable or {}
+end
+
 -- These require access to rChat.save and rChat.data (local vars in rChat.lua that have
 -- been stuffed in rChat table so that we can get to them from here.
 -- Readdress this properly.
@@ -40,7 +46,7 @@ local function SpamFlood(from, text, chanCode)
         
         -- Previous line can be a ChanSystem one
         if db.LineStrings[previousLine].channel ~= CHAT_CHANNEL_SYSTEM then
-            if (ourMessageTimestamp - db.LineStrings[previousLine].rawTimestamp) < db.floodGracePeriod then
+            if (ourMessageTimestamp - db.LineStrings[previousLine].rawTimestamp) < config.floodGracePeriod then
                 -- if our message is sent by our chatter / will be break by "Character" channels and "UserID" Channels
                 if from == db.LineStrings[previousLine].rawFrom then
                     -- if our message is eq of last message
@@ -149,13 +155,12 @@ end
 -- Return true/false if anti spam is enabled for a certain category
 -- Categories must be : Flood, LookingFor, WantTo, GuildRecruit
 local function IsSpamEnabledForCategory(category)
-    local db = rChat.save
     local rChatData = rChat.data
     
     if category == "Flood" then
     
         -- Enabled in Options?
-        if db.floodProtect then
+        if config.floodProtect then
             --CHAT_SYSTEM:Zo_AddMessage("floodProtect enabled")
             -- AntiSpam is enabled
             return true
@@ -168,7 +173,7 @@ local function IsSpamEnabledForCategory(category)
     -- LFG
     elseif category == "LookingFor" then
         -- Enabled in Options?
-        if db.lookingForProtect then
+        if config.lookingForProtect then
             -- Enabled in reality?
             if rChatData.spamLookingForEnabled then
                 --CHAT_SYSTEM:Zo_AddMessage("lookingForProtect enabled")
@@ -179,7 +184,7 @@ local function IsSpamEnabledForCategory(category)
                 --CHAT_SYSTEM:Zo_AddMessage("lookingForProtect is temporary disabled since " .. rChat.spamTempLookingForStopTimestamp)
                 
                 -- AntiSpam is disabled .. since -/+ grace time ?
-                if GetTimeStamp() - rChatData.spamTempLookingForStopTimestamp > (db.spamGracePeriod * 60) then
+                if GetTimeStamp() - rChatData.spamTempLookingForStopTimestamp > (config.spamGracePeriod * 60) then
                     --CHAT_SYSTEM:Zo_AddMessage("lookingForProtect enabled again")
                     -- Grace period outdatted -> we need to re-enable it
                     rChatData.spamLookingForEnabled = true
@@ -195,7 +200,7 @@ local function IsSpamEnabledForCategory(category)
     -- WTT
     elseif category == "WantTo" then
         -- Enabled in Options?
-        if db.wantToProtect then
+        if config.wantToProtect then
             -- Enabled in reality?
             if rChatData.spamWantToEnabled then
                 --CHAT_SYSTEM:Zo_AddMessage("wantToProtect enabled")
@@ -203,7 +208,7 @@ local function IsSpamEnabledForCategory(category)
                 return true
             else
                 -- AntiSpam is disabled .. since -/+ grace time ?
-                if GetTimeStamp() - rChatData.spamTempWantToStopTimestamp > (db.spamGracePeriod * 60) then
+                if GetTimeStamp() - rChatData.spamTempWantToStopTimestamp > (config.spamGracePeriod * 60) then
                     --CHAT_SYSTEM:Zo_AddMessage("wantToProtect enabled again")
                     -- Grace period outdatted -> we need to re-enable it
                     rChatData.spamWantToEnabled = true
@@ -219,14 +224,14 @@ local function IsSpamEnabledForCategory(category)
     -- Join my Awesome guild
     elseif category == "GuildRecruit" then
         -- Enabled in Options?
-        if db.guildProtect then
+        if config.guildProtect then
             -- Enabled in reality?
             if rChatData.spamGuildRecruitEnabled then
                 -- AntiSpam is enabled
                 return true
             else
                 -- AntiSpam is disabled .. since -/+ grace time ?
-                if GetTimeStamp() - rChatData.spamTempGuildRecruitStopTimestamp > (db.spamGracePeriod * 60) then
+                if GetTimeStamp() - rChatData.spamTempGuildRecruitStopTimestamp > (config.spamGracePeriod * 60) then
                     -- Grace period outdated -> we need to re-enable it
                     rChatData.spamGuildRecruitEnabled = true
                     return true

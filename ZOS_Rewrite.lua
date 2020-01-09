@@ -1,3 +1,6 @@
+local L = GetString
+
+
 -- contains insertion functions and data references to allow rChat to 
 -- affect the operation of the revised core ZOS functions below.
 rChat_ZOS = {

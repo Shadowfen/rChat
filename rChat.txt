@@ -13,7 +13,7 @@
 ## APIVersion: 100029 100030
 ## SavedVariables: RCHAT_OPTS
 ## AddOnVersion: 2
-## DependsOn: LibSFUtils LibAddonMenu-2.0 LibMediaProvider-1.0 libChat2 LibDebugLogger
+## DependsOn: LibSFUtils LibAddonMenu-2.0 LibMediaProvider-1.0 libChat2 LibDebugLogger rChat_history
 
 lang/en.lua
 lang/$(language).lua

@@ -1,0 +1,7 @@
+## Title: rChat_history
+## Author: Shadowfen
+## APIVersion: 100030 100029
+## Description: This module is used to store data for rChat.
+;## IsLibrary: true
+## AddOnVersion: 1
+## SavedVariables: rChat_hist
