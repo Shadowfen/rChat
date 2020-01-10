@@ -1,4 +1,9 @@
-﻿[COLOR="DeepSkyBlue"]1.4[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.4.1[/COLOR]
+[LIST]
+[*] Fixed chat restore on /reloadui, etc.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.4[/COLOR]
 [LIST]
 [*] Fixed nil function in ZOS_Rewrite.lua error. (Reported by Kenza)
 [*] Removed dependency on LibMainMenu library (and the code that used it). The main menu entry for pChat/rChat has never appeared in my memory of using pChat, and my testing of addons using LibMainMenu verses LibMainMenu-2.0 seems to indicate that they have issues with the latest version of the game and potentially with each other. Since having a main menu entry is not that big of a "feature", it is best to remove this potential source of problems until it can be reevaluated.

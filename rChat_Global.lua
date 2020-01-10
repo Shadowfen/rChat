@@ -8,8 +8,7 @@ local SF = LibSFUtils
  
 rChat = {
     name = "rChat",
-    version = "1.4",
-    epoch = 1,
+    version = "1.4.1",
     settingName = "rChat",
     settingDisplayName = "rChat",
     author = "Shadowfen",
