@@ -85,7 +85,9 @@ function RAM.RemoveAutomatedMessage(dbs)
 end
 
 function RAM.ShowAutoMsg(am_menu)
-    LMM:ToggleCategory(am_menu)
+    if not SCENE_MANAGER:IsShowing("rChatAutomatedMessagesScene") then
+        SCENE_MANAGER:Toggle("rChatAutomatedMessagesScene")
+    end
 end
 
 function RAM.BuildAutomatedMessagesDialog(control, saveFunc)

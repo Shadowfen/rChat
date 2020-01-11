@@ -8,12 +8,12 @@ local SF = LibSFUtils
  
 rChat = {
     name = "rChat",
-    version = "1.4.1",
+    version = "1.4.2",
     settingName = "rChat",
     settingDisplayName = "rChat",
     author = "Shadowfen",
     savedvar = "RCHAT_OPTS",
-    sv_version = 1,
+    sv_version = 2,
 }
 rChat.settingDisplayName = SF.GetIconized(rChat.settingDisplayName, SF.colors.gold.hex)
 rChat.version = SF.GetIconized(rChat.version, SF.colors.gold.hex)

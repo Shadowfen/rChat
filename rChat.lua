@@ -373,6 +373,7 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
 
     -- "From" can be UserID or Character name depending on which channel we are
     local new_from = from
+    local chatline = db.LineStrings[db.lineNumber]  -- aliasing
 
     -- Messages from @Someone (guild / whisps)
     if IsDecoratedDisplayName(from) then
@@ -385,7 +386,7 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
             local guildName = GetGuildName(guildId)
 
             if rChatData.nicknames[new_from] then -- @UserID Nicknamed
-                db.LineStrings[db.lineNumber].rawFrom = rChatData.nicknames[new_from]
+                chatline.rawFrom = rChatData.nicknames[new_from]
                 new_from = DisplayWithOrWoBrackets(new_from, rChatData.nicknames[new_from], DISPLAY_NAME_LINK_TYPE)
                 
             elseif db.formatguild[guildName] == 2 then -- Char
@@ -395,7 +396,7 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
                 if rChatData.nicknames[characterName] then -- Char Nicknammed
                     nickNamedName = rChatData.nicknames[characterName]
                 end
-                db.LineStrings[db.lineNumber].rawFrom = nickNamedName or characterName
+                chatline.rawFrom = nickNamedName or characterName
                 new_from = DisplayWithOrWoBrackets(characterName, nickNamedName or characterName, CHARACTER_LINK_TYPE)
                 
             elseif db.formatguild[guildName] == 3 then -- Char@UserID
@@ -409,22 +410,22 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
                     characterName = characterName .. new_from
                 end
 
-                db.LineStrings[db.lineNumber].rawFrom = characterName
+                chatline.rawFrom = characterName
                 new_from = DisplayWithOrWoBrackets(new_from, characterName, DISPLAY_NAME_LINK_TYPE)
                 
             else
-                db.LineStrings[db.lineNumber].rawFrom = new_from
+                chatline.rawFrom = new_from
                 new_from = DisplayWithOrWoBrackets(new_from, new_from, DISPLAY_NAME_LINK_TYPE)
             end
 
         else
             -- Wisps with @ We can't guess characterName for those ones
             if rChatData.nicknames[new_from] then -- @UserID Nicknamed
-                db.LineStrings[db.lineNumber].rawFrom = rChatData.nicknames[new_from]
+                chatline.rawFrom = rChatData.nicknames[new_from]
                 new_from = DisplayWithOrWoBrackets(new_from, rChatData.nicknames[new_from], DISPLAY_NAME_LINK_TYPE)
                 
             else
-                db.LineStrings[db.lineNumber].rawFrom = new_from
+                chatline.rawFrom = new_from
                 new_from = DisplayWithOrWoBrackets(new_from, new_from, DISPLAY_NAME_LINK_TYPE)
             end
 
@@ -441,7 +442,7 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
             nicknamedFrom = rChatData.nicknames[fromDisplayName]
         end
 
-        db.LineStrings[db.lineNumber].rawFrom = nicknamedFrom or new_from
+        chatline.rawFrom = nicknamedFrom or new_from
 
         -- No brackets / UserID for emotes
         if chanCode == CHAT_CHANNEL_EMOTE then
@@ -455,22 +456,22 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
                     new_from = DisplayWithOrWoBrackets(fromDisplayName, nicknamedFrom or fromDisplayName, DISPLAY_NAME_LINK_TYPE)
                 elseif db.groupNames == 3 then
                     new_from = new_from .. fromDisplayName
-                    db.LineStrings[db.lineNumber].rawFrom = nicknamedFrom or new_from
+                    chatline.rawFrom = nicknamedFrom or new_from
                     new_from = DisplayWithOrWoBrackets(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
                 else
-                    db.LineStrings[db.lineNumber].rawFrom = nicknamedFrom or new_from
+                    chatline.rawFrom = nicknamedFrom or new_from
                     new_from = DisplayWithOrWoBrackets(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
                 end
             else
                 if db.geoChannelsFormat == 1 then
-                    db.LineStrings[db.lineNumber].rawFrom = nicknamedFrom or fromDisplayName
+                    chatline.rawFrom = nicknamedFrom or fromDisplayName
                     new_from = DisplayWithOrWoBrackets(fromDisplayName, nicknamedFrom or fromDisplayName, DISPLAY_NAME_LINK_TYPE)
                 elseif db.geoChannelsFormat == 3 then
                     new_from = new_from .. fromDisplayName
-                    db.LineStrings[db.lineNumber].rawFrom = nicknamedFrom or new_from
+                    chatline.rawFrom = nicknamedFrom or new_from
                     new_from = DisplayWithOrWoBrackets(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
                 else
-                    db.LineStrings[db.lineNumber].rawFrom = nicknamedFrom or new_from
+                    chatline.rawFrom = nicknamedFrom or new_from
                     new_from = DisplayWithOrWoBrackets(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
                 end
             end
@@ -1033,65 +1034,63 @@ end
 -- Show IM notification tooltip
 local function ShowIMTooltip(self, lineNumber)
 
-    if db.LineStrings[lineNumber] then
+    local chatline = db.LineStrings[lineNumber]
+    if not chatline then return end
 
-        local sender = db.LineStrings[lineNumber].rawFrom
-        local text = db.LineStrings[lineNumber].rawMessage
+    local sender = chatline.rawFrom
+    local text = chatline.rawMessage
 
-        if (not IsDecoratedDisplayName(sender)) then
-            sender = zo_strformat(SI_UNIT_NAME, sender)
-        end
-
-        InitializeTooltip(InformationTooltip, self, BOTTOMLEFT, 0, 0, TOPRIGHT)
-        InformationTooltip:AddLine(sender, "ZoFontGame", 1, 1, 1, TOPLEFT, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_LEFT, true)
-
-        local r, g, b = ZO_NORMAL_TEXT:UnpackRGB()
-        InformationTooltip:AddLine(text, "ZoFontGame", r, g, b, TOPLEFT, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_LEFT, true)
-
+    if (not IsDecoratedDisplayName(sender)) then
+        sender = zo_strformat(SI_UNIT_NAME, sender)
     end
+
+    InitializeTooltip(InformationTooltip, self, BOTTOMLEFT, 0, 0, TOPRIGHT)
+    InformationTooltip:AddLine(sender, "ZoFontGame", 1, 1, 1, TOPLEFT, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_LEFT, true)
+
+    local r, g, b = ZO_NORMAL_TEXT:UnpackRGB()
+    InformationTooltip:AddLine(text, "ZoFontGame", r, g, b, TOPLEFT, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_LEFT, true)
+
 
 end
 
 -- When an incoming Whisper is received
 local function OnIMReceived(from, lineNumber)
 
+    if not db.notifyIM then return end
+
     -- Display visual notification
-    if db.notifyIM then
+    -- If chat minimized, show the minified button
+    if (CHAT_SYSTEM:IsMinimized()) then
+        CHAT_SYSTEM.IMLabelMin:SetHandler("OnMouseEnter", function(self) ShowIMTooltip(self, lineNumber) end)
+        CHAT_SYSTEM.IMLabelMin:SetHandler("OnMouseExit", HideIMTooltip)
+        CHAT_SYSTEM.IMLabelMin:SetHidden(false)
+    else
+        -- Chat maximized
+        local _, scrollMax = CHAT_SYSTEM.primaryContainer.scrollbar:GetMinMax()
 
-        -- If chat minimized, show the minified button
-        if (CHAT_SYSTEM:IsMinimized()) then
-            CHAT_SYSTEM.IMLabelMin:SetHandler("OnMouseEnter", function(self) ShowIMTooltip(self, lineNumber) end)
-            CHAT_SYSTEM.IMLabelMin:SetHandler("OnMouseExit", HideIMTooltip)
-            CHAT_SYSTEM.IMLabelMin:SetHidden(false)
-        else
-            -- Chat maximized
-            local _, scrollMax = CHAT_SYSTEM.primaryContainer.scrollbar:GetMinMax()
+        -- If whispers not show in the tab or we don't scroll at bottom
+        if ((not IsChatContainerTabCategoryEnabled(1, rChatData.activeTab, CHAT_CATEGORY_WHISPER_INCOMING)) or (IsChatContainerTabCategoryEnabled(1, rChatData.activeTab, CHAT_CATEGORY_WHISPER_INCOMING) and CHAT_SYSTEM.primaryContainer.scrollbar:GetValue() < scrollMax)) then
 
-            -- If whispers not show in the tab or we don't scroll at bottom
-            if ((not IsChatContainerTabCategoryEnabled(1, rChatData.activeTab, CHAT_CATEGORY_WHISPER_INCOMING)) or (IsChatContainerTabCategoryEnabled(1, rChatData.activeTab, CHAT_CATEGORY_WHISPER_INCOMING) and CHAT_SYSTEM.primaryContainer.scrollbar:GetValue() < scrollMax)) then
-
-                -- Undecorate (^F / ^M)
-                if (not IsDecoratedDisplayName(from)) then
-                    from = zo_strformat(SI_UNIT_NAME, from)
-                end
-
-                -- Split if name too long
-                local displayedFrom = from
-                if string.len(displayedFrom) > 8 then
-                    displayedFrom = string.sub(from, 1, 7) .. ".."
-                end
-
-                -- Show
-                CHAT_SYSTEM.IMLabel:SetText(displayedFrom)
-                CHAT_SYSTEM.IMLabel:SetHidden(false)
-                CHAT_SYSTEM.IMbutton:SetHidden(false)
-
-                -- Add handler
-                CHAT_SYSTEM.IMLabel:SetHandler("OnMouseEnter", function(self) ShowIMTooltip(self, lineNumber) end)
-                CHAT_SYSTEM.IMLabel:SetHandler("OnMouseExit", function(self) HideIMTooltip() end)
+            -- Undecorate (^F / ^M)
+            if (not IsDecoratedDisplayName(from)) then
+                from = zo_strformat(SI_UNIT_NAME, from)
             end
-        end
 
+            -- Split if name too long
+            local displayedFrom = from
+            if string.len(displayedFrom) > 8 then
+                displayedFrom = string.sub(from, 1, 7) .. ".."
+            end
+
+            -- Show
+            CHAT_SYSTEM.IMLabel:SetText(displayedFrom)
+            CHAT_SYSTEM.IMLabel:SetHidden(false)
+            CHAT_SYSTEM.IMbutton:SetHidden(false)
+
+            -- Add handler
+            CHAT_SYSTEM.IMLabel:SetHandler("OnMouseEnter", function(self) ShowIMTooltip(self, lineNumber) end)
+            CHAT_SYSTEM.IMLabel:SetHandler("OnMouseExit", function(self) HideIMTooltip() end)
+        end
     end
 
 end
