@@ -13,6 +13,7 @@ local L = GetString
 local isAddonLoaded         = false -- OnAddonLoaded() done
 local isAddonInitialized    = false
 
+-- ---- Mention specific options
 local defmention = {
 	mentionEnabled = false,
 	mentionStr = "",
@@ -23,9 +24,20 @@ local defmention = {
 	color = "|cFFFFFF",
 }
 
+-- ---- Anti Spam specific options
+local defspam = {
+    spamGracePeriod = 5,
+    floodProtect = true,
+    floodGracePeriod = 30,
+    lookingForProtect = false,
+    wantToProtect = false,
+    guildProtect = false,
+}
+
 -- Default variables to push in SavedVars
 local defaults = {
 	mention = defmention,
+    spam = defspam,
     
     -- ---- Message Settings
     showGuildNumbers = false,
@@ -111,15 +123,6 @@ local defaults = {
     -- localPlayer
     chatConfSync = {},  -- not LAM
     -- ---- Sync Settings - End
-
-    -- ---- Anti Spam specific options
-    spamGracePeriod = 5,
-    floodProtect = true,
-    floodGracePeriod = 30,
-    lookingForProtect = false,
-    wantToProtect = false,
-    guildProtect = false,
-    -- ---- Anti Spam specific options - End
 
     -- ----
     colours = {
@@ -4567,10 +4570,10 @@ local function BuildLAMPanel()
                 min = 0,
                 max = 10,
                 step = 1,
-                getFunc = function() return db.spamGracePeriod end,
-                setFunc = function(newValue) db.spamGracePeriod = newValue end,
+                getFunc = function() return db.spam.spamGracePeriod end,
+                setFunc = function(newValue) db.spam.spamGracePeriod = newValue end,
                 width = "full",
-                default = defaults.spamGracePeriod,
+                default = defaults.spam.spamGracePeriod,
             },
         },
     } -- Timestamp options
@@ -5340,7 +5343,6 @@ local function OnPlayerActivated()
 
         rChatData.activeTab = 1
 
-
         ZO_PreHook(CHAT_SYSTEM, "ValidateChatChannel", function(self)
                 if (db.enableChatTabChannel  == true) and (self.currentChannel ~= CHAT_CHANNEL_WHISPER) then
                     local tabIndex = self.primaryContainer.currentBuffer:GetParent().tab.index
@@ -5445,7 +5447,7 @@ local function OnPlayerActivated()
 end
 
 
--- Runs whenever "me" left a guild (or get kicked)
+-- Runs whenever "me" left a guild (or gets kicked)
 local function OnSelfLeftGuild(_, _, guildName)
 
     -- It will rebuild optionsTable and recreate tables if user didn't go in this section before
@@ -5462,7 +5464,7 @@ local function SwitchToParty(characterName)
         -- If "me" join group
         if(GetRawUnitName("player") == characterName) then
 
-            -- Switch to party channel when joinin a group
+            -- Switch to party channel when joining a group
             if db.enablepartyswitch then
                 CHAT_SYSTEM:SetChannel(CHAT_CHANNEL_PARTY)
             end
@@ -5683,10 +5685,8 @@ local function OnAddonLoaded(_, addonName)
     rChat.save = loadSavedVars(rChat.savedvar, rChat.sv_version, defaults)
     db = rChat.save
     
-    
-    
     -- init vars for antispam
-    --rChat.setSpamConfig(db.spam)
+    rChat.setSpamConfig(db.spam)
 
     -- init vars/funcs for ZOS rewritten functions
     --rChat_ZOS.cachedMessages = rChatData.cachedMessages
