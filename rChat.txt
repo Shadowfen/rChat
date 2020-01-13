@@ -23,6 +23,7 @@ fonts.lua
 ; Global is always first!
 rChat_Global.lua
 
+ZOS_Rewrite.lua
 rChat_AutomatedMsgs.lua
 rChat.lua
 rChat_Spam.lua

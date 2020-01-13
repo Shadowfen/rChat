@@ -3,7 +3,6 @@ rChat = rChat or {}
 rChat.AutoMsg = {}
 
 local SF = LibSFUtils
---local LMM = LibMainMenu
 local RAM = rChat.AutoMsg
 
 local L = GetString
@@ -66,7 +65,7 @@ end
 
 function RAM.CleanAutomatedMessageList(dbs)
     -- :RefreshData() adds dataEntry recursively, delete it to avoid overflow in SavedVars
-    for k, v in ipairs(dbs.automatedMessages) do
+    for k, v in pairs(dbs.automatedMessages) do
         if v.dataEntry then
             v.dataEntry = nil
         end

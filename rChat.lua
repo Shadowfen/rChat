@@ -186,7 +186,6 @@ local defaults = {
         ["groupleader"] = "|cC35582", --
         ["groupleader1"] = "|c76BCC3", --
     },
-    -- Not LAM
 }
 
 -- SV
@@ -212,8 +211,6 @@ message = message to display, nil (ignored by ZO_LinkHandler_CreateLink), RCHAT_
 data : strings separated by ":"
 1st arg is chancode like CHAT_CHANNEL_GUILD_1
 ]]--
-
---local ChanInfoArray = ZO_ChatSystem_GetChannelInfo()
 
 -- used only by save and sync chat config
 rChatData.chatCategories = {
@@ -720,32 +717,6 @@ function rChat.InitAutomatedMessages()
     -- Register Scenes and the group name
     SCENE_MANAGER:AddSceneGroup("rChatSceneGroup", ZO_SceneGroup:New("rChatAutomatedMessagesScene"))
 
---[[
-    -- Its infos
-    RCHAT_MAIN_MENU_CATEGORY_DATA = {
-        binding = "RCHAT_SHOW_AUTO_MSG",
-        categoryName = RCHAT_SHOW_AUTO_MSG,
-        normal = "EsoUI/Art/MainMenu/menuBar_champion_up.dds",
-        pressed = "EsoUI/Art/MainMenu/menuBar_champion_down.dds",
-        highlight = "EsoUI/Art/MainMenu/menuBar_champion_over.dds",
-    }
-    MENU_CATEGORY_RCHAT = LMM:AddCategory(RCHAT_MAIN_MENU_CATEGORY_DATA)
-
-    local iconData = {
-        {
-        categoryName = SI_BINDING_NAME_RCHAT_SHOW_AUTO_MSG,
-        descriptor = "rChatAutomatedMessagesScene",
-        normal = "EsoUI/Art/MainMenu/menuBar_champion_up.dds",
-        pressed = "EsoUI/Art/MainMenu/menuBar_champion_down.dds",
-        highlight = "EsoUI/Art/MainMenu/menuBar_champion_over.dds",
-        },
-    }
-    -- Register the group and add the buttons (we cannot all AddRawScene, only AddSceneGroup, so we emulate both functions).
-    LMM:AddSceneGroup(MENU_CATEGORY_RCHAT, "rChatSceneGroup", iconData)
-    end
---]]
-    --AM_InitMainMenu()
-
     local autoMsgDescriptor = {
         alignment = KEYBIND_STRIP_ALIGN_CENTER,
         {
@@ -821,12 +792,12 @@ end
 local function getTabNames()
     local totalTabs = CHAT_SYSTEM.tabPool.m_Active
     if totalTabs ~= nil and #totalTabs >= 1 then
-        tabNames = {}
+        rChat.tabNames = {}
         for idx, tmpTab in pairs(totalTabs) do
             local tabLabel = tmpTab:GetNamedChild("Text")
             local tmpTabName = tabLabel:GetText()
             if tmpTabName ~= nil and tmpTabName ~= "" then
-                tabNames[idx] = tmpTabName
+                rChat.tabNames[idx] = tmpTabName
             end
         end
     end
@@ -836,117 +807,12 @@ local function getTabIdx (tabName)
     local tabIdx = 0
     local totalTabs = CHAT_SYSTEM.tabPool.m_Active
     for i = 1, #totalTabs do
-        if tabNames[i] == tabName then
+        if rChat.tabNames[i] == tabName then
             tabIdx = i
+            break
         end
     end
     return tabIdx
-end
-
--- Rewrite of a core function
-function CHAT_SYSTEM.textEntry:AddCommandHistory(text)
-
-    local currentChannel = CHAT_SYSTEM.currentChannel
-    local currentTarget = CHAT_SYSTEM.currentTarget
-    local rewritedText = text
-
-    -- Don't add the switch when chat is restored
-    if db.addChannelAndTargetToHistory and isAddonInitialized then
-
-        local switch = CHAT_SYSTEM.switchLookup[0]
-
-        -- It's a message
-        switch = CHAT_SYSTEM.switchLookup[currentChannel]
-        -- Below code suspected issue fix under comment - Bug ticket 2253 6/12/2018
-        --[[
-                rewritedText = string.format("%s ", switch)
-        if currentTarget then
-            rewritedText = string.format("%s%s ", rewritedText, currentTarget)
-        end
-        rewritedText = string.format("%s%s", rewritedText, text)
-        ]]--
-        -- New code for bug ticket 2253 6/12/2018
-        if switch ~= nil then
-            rewritedText = string.format("%s ", switch)
-            if currentTarget then
-                rewritedText = string.format("%s%s ", rewritedText, currentTarget)
-            end
-            rewritedText = string.format("%s%s", rewritedText, text)
-        end
-    end
-
-    CHAT_SYSTEM.textEntry.commandHistory:Add(rewritedText)
-    CHAT_SYSTEM.textEntry.commandHistoryCursor = CHAT_SYSTEM.textEntry.commandHistory:Size() + 1
-
-end
-
--- Rewrite of a core function
-function CHAT_SYSTEM.textEntry:GetText()
-    local text = self.editControl:GetText()
-
-    -- do custom stuff
-    if text ~= "" then
-        if string.sub(text,1,1) == "!" then
-            if string.len(text) <= 12 then
-
-                local automatedMessage = true
-                for k, v in ipairs(db.automatedMessages) do
-                    if v.name == text then
-                        text = db.automatedMessages[k].message
-                        automatedMessage = true
-                    end
-                end
-
-                if automatedMessage then
-
-                    if string.len(text) < 1 or string.len(text) > 351 then
-                        text = self.editControl:GetText()
-                    end
-
-                    if self.ignoreTextEntryChangedEvent then return end
-                    self.ignoreTextEntryChangedEvent = true
-
-                    local spaceStart, spaceEnd = zo_strfind(text, " ", 1, true)
-
-                    if spaceStart and spaceStart > 1 then
-                        local potentialSwitch = zo_strsub(text, 1, spaceStart - 1)
-                        local switch = CHAT_SYSTEM.switchLookup[potentialSwitch:lower()]
-
-                        local valid, switchArg, deferredError, spaceStartOverride = CHAT_SYSTEM:ValidateSwitch(switch, text, spaceStart)
-
-                        if valid then
-                            if(deferredError) then
-                                self.requirementErrorMessage = switch.requirementErrorMessage
-                                if self.requirementErrorMessage then
-                                    if type(self.requirementErrorMessage) == "string" then
-                                        CHAT_SYSTEM:AddMessage(self.requirementErrorMessage)
-                                    elseif type(self.requirementErrorMessage) == "function" then
-                                        CHAT_SYSTEM:AddMessage(self.requirementErrorMessage())
-                                    end
-                                end
-                            else
-                                self.requirementErrorMessage = nil
-                            end
-
-                            CHAT_SYSTEM:SetChannel(switch.id, switchArg)
-                            local oldCursorPos = CHAT_SYSTEM.textEntry:GetCursorPosition()
-
-                            spaceStart = spaceStartOverride or spaceStart
-                            CHAT_SYSTEM.textEntry:SetText(zo_strsub(text, spaceStart + 1))
-                            text = zo_strsub(text, spaceStart + 1)
-                            CHAT_SYSTEM.textEntry:SetCursorPosition(oldCursorPos - spaceStart)
-                        end
-                    end
-
-                    self.ignoreTextEntryChangedEvent = false
-
-                end
-            end
-        end
-    end
-
-    return text
-
 end
 
 -- Change ChatWindow Darkness by modifying its <Center> & <Edge>.
@@ -1171,6 +1037,7 @@ function rChat_TryToJumpToIm(isMinimized)
 
 end
 
+--[[
 -- Rewrite of a core function, if user click on the scroll to bottom button, Hide IM notification
 -- Todo: Hide IM when user manually scroll to the bottom
 function ZO_ChatSystem_ScrollToBottom(control)
@@ -1180,6 +1047,7 @@ function ZO_ChatSystem_ScrollToBottom(control)
     control.container:ScrollToBottom()
 
 end
+--]]
 
 -- Set copied text into text entry, if possible
 local function CopyToTextEntry(message)
@@ -1765,49 +1633,6 @@ local function ChangeChatFont(change)
 
 end
 
--- Rewrite of a core function
-function CHAT_SYSTEM:UpdateTextEntryChannel()
-
-    local channelData = self.channelData[self.currentChannel]
-
-    if channelData then
-        self.textEntry:SetChannel(channelData, self.currentTarget)
-
-        if isAddonLoaded then
-            if not db.useESOcolors then
-
-                local rChatcolor
-                if db.allGuildsSameColour and (self.currentChannel >= CHAT_CHANNEL_GUILD_1
-                        and self.currentChannel <= CHAT_CHANNEL_GUILD_5) then
-                    rChatcolor = db.colours[2*CHAT_CHANNEL_GUILD_1]
-                elseif db.allGuildsSameColour and (self.currentChannel >= CHAT_CHANNEL_OFFICER_1
-                        and self.currentChannel <= CHAT_CHANNEL_OFFICER_5) then
-                    rChatcolor = db.colours[2*CHAT_CHANNEL_OFFICER_1]
-                elseif db.allZonesSameColour and (self.currentChannel >= CHAT_CHANNEL_ZONE_LANGUAGE_1
-                        and self.currentChannel <= CHAT_CHANNEL_ZONE_LANGUAGE_4) then
-                    rChatcolor = db.colours[2*CHAT_CHANNEL_ZONE]
-                else
-                    rChatcolor = db.colours[2*self.currentChannel]
-                end
-
-                if not rChatcolor then
-                    self.textEntry:SetColor(1, 1, 1, 1)
-                else
-                    local r, g, b, a = ConvertHexToRGBA(rChatcolor)
-                    self.textEntry:SetColor(r, g, b, a)
-                end
-
-            else
-                self.textEntry:SetColor(self:GetCategoryColorFromChannel(self.currentChannel))
-            end
-        else
-            self.textEntry:SetColor(self:GetCategoryColorFromChannel(self.currentChannel))
-        end
-
-    end
-
-end
-
 -- Change guild channel names in entry box
 local function UpdateCharCorrespondanceTableChannelNames()
 
@@ -1860,7 +1685,6 @@ local function UpdateCharCorrespondanceTableChannelNames()
 end
 
 -- Split text with blocs of 100 chars (106 is max for LinkHandle) and add LinkHandle to them
--- WARNING : See FormatSysMessage()
 local function SplitTextForLinkHandler(text, numLine, chanCode)
 
     local newText = ""
@@ -1943,7 +1767,6 @@ local function SplitTextForLinkHandler(text, numLine, chanCode)
 end
 
 -- Sub function of addLinkHandlerToString
--- WARNING : See FormatSysMessage()
 -- Get a string without |cXXXXXX and without |t as parameter
 local function AddLinkHandlerToStringWithoutDDS(textToCheck, numLine, chanCode)
 
@@ -2037,7 +1860,6 @@ local function AddLinkHandlerToStringWithoutDDS(textToCheck, numLine, chanCode)
 end
 
 -- Sub function of addLinkHandlerToLine, Handling DDS textures in chat
--- WARNING : See FormatSysMessage()
 -- Get a string without |cXXXXXX as parameter
 local function AddLinkHandlerToString(textToCheck, numLine, chanCode)
 
@@ -2129,7 +1951,7 @@ end
 -- Reformat Colored Sysmessages to the correct format
 -- Bad format = |[cC]XXXXXXblablabla[,|[cC]XXXXXXblablabla,(...)] with optional |r
 -- Good format : "|c%x%x%x%x%x%x(.-)|r"
--- WARNING : See FormatSysMessage()
+--
 -- TODO : Handle LinkHandler + Malformatted strings , such as : "|c87B7CC|c87B7CCUpdated: |H0:achievement:68:5252:0|h|h (Artisanat)."
 local function ReformatSysMessages(text)
 
@@ -2215,7 +2037,6 @@ local function ReformatSysMessages(text)
 end
 
 -- Add rChatLinks Handlers on the whole text except LinkHandlers already here
--- WARNING : See FormatSysMessage()
 local function AddLinkHandlerToLine(text, chanCode, numLine)
 
     local rawText = ReformatSysMessages(text)
@@ -2283,7 +2104,6 @@ local function AddLinkHandlerToLine(text, chanCode, numLine)
 end
 
 -- Split lines using CRLF for function addLinkHandlerToLine
--- WARNING : See FormatSysMessage()
 local function AddLinkHandler(text, chanCode, numLine)
     if not text then return end
 
@@ -2475,7 +2295,8 @@ local function RestoreChatHistory()
             RestoreChatMessagesFromHistory(false)
         end
 
-        rChatData.messagesHaveBeenRestorated = true
+        --rChatData.messagesHaveBeenRestorated = true
+        rChat_ZOS.messagesWereRestored = true
 
         local indexMessages = #rChatData.cachedMessages
         if indexMessages > 0 then
@@ -2489,14 +2310,14 @@ local function RestoreChatHistory()
         db.lastWasQuit = false
         db.lastWasAFK = true
     else
-        rChatData.messagesHaveBeenRestorated = true
+        --rChatData.messagesHaveBeenRestorated = true
+        rChat_ZOS.messagesWereRestored = true
     end
 
 end
 
 -- Store line number
 -- Create an array for the copy functions, spam functions and revert history functions
--- WARNING : See FormatSysMessage()
 local function StorelineNumber(rawTimestamp, rawFrom, text, chanCode, originalFrom)
 
     -- Strip DDS tag from Copy text
@@ -2562,7 +2383,7 @@ end
 
 -- WARNING : Since AddMessage is bypassed, this function and all its subfunctions DOES NOT CALL d() / Emitmessage() / AddMessage() or it will result an infinite loop and crash the game
 -- Debug must call CHAT_SYSTEM:Zo_AddMessage() wich is backed up copy of CHAT_SYSTEM.AddMessage
-function rChat.FormatSysMessage(statusMessage)
+local function FormatSysMessage(statusMessage)
 
     -- Display Timestamp if needed
     local function ShowTimestamp()
@@ -2669,14 +2490,22 @@ local function InitializeURLHandling()
     -- cTLD + most used (> 0.1%)
     local domains =
     [[
-    .ac.ad.ae.af.ag.ai.al.am.an.ao.aq.ar.as.at.au.aw.ax.az.ba.bb.bd.be.bf.bg.bh.bi.bj.bl.bm.bn.bo.bq
-    .br.bs.bt.bv.bw.by.bz.ca.cc.cd.cf.cg.ch.ci.ck.cl.cm.cn.co.cr.cu.cv.cw.cx.cy.cz.de.dj.dk.dm.do.dz
-    .ec.ee.eg.eh.er.es.et.eu.fi.fj.fk.fm.fo.fr.ga.gb.gd.ge.gf.gg.gh.gi.gl.gm.gn.gp.gq.gr.gs.gt.gu.gw
-    .gy.hk.hm.hn.hr.ht.hu.id.ie.il.im.in.io.iq.ir.is.it.je.jm.jo.jp.ke.kg.kh.ki.km.kn.kp.kr.kw.ky.kz
-    .la.lb.lc.li.lk.lr.ls.lt.lu.lv.ly.ma.mc.md.me.mf.mg.mh.mk.ml.mm.mn.mo.mp.mq.mr.ms.mt.mu.mv.mw.mx
-    .my.mz.na.nc.ne.nf.ng.ni.nl.no.np.nr.nu.nz.om.pa.pe.pf.pg.ph.pk.pl.pm.pn.pr.ps.pt.pw.py.qa.re.ro
-    .rs.ru.rw.sa.sb.sc.sd.se.sg.sh.si.sj.sk.sl.sm.sn.so.sr.ss.st.su.sv.sx.sy.sz.tc.td.tf.tg.th.tj.tk
-    .tl.tm.tn.to.tp.tr.tt.tv.tw.tz.ua.ug.uk.um.us.uy.uz.va.vc.ve.vg.vi.vn.vu.wf.ws.ye.yt.za.zm.zw
+    .ac.ad.ae.af.ag.ai.al.am.an.ao.aq.ar.as.at.au.aw.ax.az
+    .ba.bb.bd.be.bf.bg.bh.bi.bj.bl.bm.bn.bo.bq.br.bs.bt.bv.bw.by.bz
+    .ca.cc.cd.cf.cg.ch.ci.ck.cl.cm.cn.co.cr.cu.cv.cw.cx.cy.cz
+    .de.dj.dk.dm.do.dz
+    .ec.ee.eg.eh.er.es.et.eu.fi.fj.fk.fm.fo.fr
+    .ga.gb.gd.ge.gf.gg.gh.gi.gl.gm.gn.gp.gq.gr.gs.gt.gu.gw.gy
+    .hk.hm.hn.hr.ht.hu.id.ie.il.im.in.io.iq.ir.is.it
+    .je.jm.jo.jp.ke.kg.kh.ki.km.kn.kp.kr.kw.ky.kz
+    .la.lb.lc.li.lk.lr.ls.lt.lu.lv.ly
+    .ma.mc.md.me.mf.mg.mh.mk.ml.mm.mn.mo.mp.mq.mr.ms.mt.mu.mv.mw.mx.my.mz
+    .na.nc.ne.nf.ng.ni.nl.no.np.nr.nu.nz.om
+    .pa.pe.pf.pg.ph.pk.pl.pm.pn.pr.ps.pt.pw.py.qa
+    .re.ro.rs.ru.rw
+    .sa.sb.sc.sd.se.sg.sh.si.sj.sk.sl.sm.sn.so.sr.ss.st.su.sv.sx.sy.sz
+    .tc.td.tf.tg.th.tj.tk.tl.tm.tn.to.tp.tr.tt.tv.tw.tz
+    .ua.ug.uk.um.us.uy.uz.va.vc.ve.vg.vi.vn.vu.wf.ws.ye.yt.za.zm.zw
     .biz.com.coop.edu.gov.int.mil.mobi.info.net.org.xyz.top.club.pro.asia
     ]]
 
@@ -3076,253 +2905,6 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName, origin
 
 end
 
--- Rewrite of core function
-function CHAT_SYSTEM:AddMessage(text)
-
-    -- Overwrite CHAT_SYSTEM:AddMessage() function to format it
-    -- Overwrite SharedChatContainer:AddDebugMessage(formattedEventText) in order to display system message in specific tabs
-    -- CHAT_SYSTEM:Zo_AddMessage() can be used in order to use old function
-    -- Store the message in rChatData.cachedMessages if this one is sent before CHAT_SYSTEM.primaryContainer goes up (before 1st EVENT_PLAYER_ACTIVATED)
-
-    if CHAT_SYSTEM.primaryContainer and rChatData.messagesHaveBeenRestorated then
-        for k in ipairs(CHAT_SYSTEM.containers) do
-            CHAT_SYSTEM.containers[k]:OnChatEvent(nil, rChat.FormatSysMessage(text), CHAT_CATEGORY_SYSTEM)
-        end
-    else
-        table.insert(rChatData.cachedMessages, text)
-    end
-
-end
-
--- Rewrite of core local
--- (adding restoration of messages)
-local function EmitMessage(text)
-    if CHAT_SYSTEM and CHAT_SYSTEM.primaryContainer and rChatData.messagesHaveBeenRestorated then
-        if text == "" then
-            text = "[Empty String]"
-        end
-        CHAT_SYSTEM:AddMessage(text)
-    else
-        table.insert(rChatData.cachedMessages, text)
-    end
-end
-
--- Redefinition of core local
--- (no changes from original)
-local function EmitTable(t, indent, tableHistory)
-    indent        = indent or "."
-    tableHistory    = tableHistory or {}
-
-    for k, v in pairs(t)
-    do
-        local vType = type(v)
-
-        EmitMessage(indent.."("..vType.."): "..tostring(k).." = "..tostring(v))
-
-        if(vType == "table")
-        then
-            if(tableHistory[v])
-            then
-                EmitMessage(indent.."Avoiding cycle on table...")
-            else
-                tableHistory[v] = true
-                EmitTable(v, indent.."  ", tableHistory)
-            end
-        end
-    end
-end
-
-
--- Rewrite of a core function
--- (use local EmitTable and EmitMessage)
-function d(...)
-    for i = 1, select("#", ...) do
-        local value = select(i, ...)
-        if(type(value) == "table")
-        then
-            EmitTable(value)
-        else
-            if CHAT_SYSTEM and CHAT_SYSTEM.primaryContainer and rChatData.messagesHaveBeenRestorated then
-                EmitMessage(tostring (value))
-            else
-                table.insert(rChatData.cachedMessages, text)
-            end
-
-        end
-    end
-end
-
-
--- Rewrite of core function to use saved var color
-function ZO_TabButton_Text_SetTextColor(self, color)
-
-    local r, g, b, a = ConvertHexToRGBA(db.colours.tabwarning)
-
-    if(self.allowLabelColorChanges) then
-        local label = GetControl(self, "Text")
-        label:SetColor(r, g, b, a)
-    end
-end
-
--- Rewrite of (local) core function
-local function GetOfficerChannelErrorFunction(guildIndex)
-    return function()
-        if(GetNumGuilds() < guildIndex) then
-            return zo_strformat(SI_CANT_GUILD_CHAT_NOT_IN_GUILD, guildIndex)
-        else
-            return zo_strformat(SI_CANT_OFFICER_CHAT_NO_PERMISSION, GetGuildName(guildIndex))
-        end
-    end
-end
-
--- Rewrite of (local) core function
-local function GetGuildChannelErrorFunction(guildIndex)
-    return function()
-        if(GetNumGuilds() < guildIndex) then
-            return zo_strformat(SI_CANT_GUILD_CHAT_NOT_IN_GUILD, guildIndex)
-        else
-            return zo_strformat(SI_CANT_GUILD_CHAT_NO_PERMISSION, GetGuildName(guildIndex))
-        end
-    end
-end
-
--- Copy of a core data (nothing changed)
-local FILTERS_PER_ROW = 2
-
--- Copy of a core data (nothing changed)
--- defines the ordering of the filter categories
-local CHANNEL_ORDERING_WEIGHT = {
-    [CHAT_CATEGORY_SAY] = 10,
-    [CHAT_CATEGORY_YELL] = 20,
-
-    [CHAT_CATEGORY_WHISPER_INCOMING] = 30,
-    [CHAT_CATEGORY_PARTY] = 40,
-
-    [CHAT_CATEGORY_EMOTE] = 50,
-    [CHAT_CATEGORY_MONSTER_SAY] = 60,
-
-    [CHAT_CATEGORY_ZONE] = 80,
-    [CHAT_CATEGORY_ZONE_ENGLISH] = 90,
-
-    [CHAT_CATEGORY_ZONE_FRENCH] = 100,
-    [CHAT_CATEGORY_ZONE_GERMAN] = 110,
-
-    [CHAT_CATEGORY_ZONE_JAPANESE] = 120,
-    [CHAT_CATEGORY_SYSTEM] = 130,
-}
-
-local function FilterComparator(left, right)
-    local leftPrimaryCategory = left.channels[1]
-    local rightPrimaryCategory = right.channels[1]
-
-    local leftWeight = CHANNEL_ORDERING_WEIGHT[leftPrimaryCategory]
-    local rightWeight = CHANNEL_ORDERING_WEIGHT[rightPrimaryCategory]
-
-    if leftWeight and rightWeight then
-        return leftWeight < rightWeight
-    elseif not leftWeight and not rightWeight then
-        return false
-    elseif leftWeight then
-        return true
-    end
-
-    return false
-end
-
--- Copy of a core data
--- (CHAT_CATEGORY_SYSTEM is commented out)
-local SKIP_CHANNELS = {
-    -- [CHAT_CATEGORY_SYSTEM] = true,
-    [CHAT_CATEGORY_GUILD_1] = true,
-    [CHAT_CATEGORY_GUILD_2] = true,
-    [CHAT_CATEGORY_GUILD_3] = true,
-    [CHAT_CATEGORY_GUILD_4] = true,
-    [CHAT_CATEGORY_GUILD_5] = true,
-    [CHAT_CATEGORY_OFFICER_1] = true,
-    [CHAT_CATEGORY_OFFICER_2] = true,
-    [CHAT_CATEGORY_OFFICER_3] = true,
-    [CHAT_CATEGORY_OFFICER_4] = true,
-    [CHAT_CATEGORY_OFFICER_5] = true,
-}
-
-local FILTER_PAD_X = 90
-local FILTER_PAD_Y = 0
-local FILTER_WIDTH = 150
-local FILTER_HEIGHT = 27
-local INITIAL_XOFFS = 0
-local INITIAL_YOFFS = 0
-
--- Rewrite of a core data
--- (Nothing is changed)
-local COMBINED_CHANNELS = {
-    [CHAT_CATEGORY_WHISPER_INCOMING] = {parentChannel = CHAT_CATEGORY_WHISPER_INCOMING, name = SI_CHAT_CHANNEL_NAME_WHISPER},
-    [CHAT_CATEGORY_WHISPER_OUTGOING] = {parentChannel = CHAT_CATEGORY_WHISPER_INCOMING, name = SI_CHAT_CHANNEL_NAME_WHISPER},
-
-    [CHAT_CATEGORY_MONSTER_SAY] = {parentChannel = CHAT_CATEGORY_MONSTER_SAY, name = SI_CHAT_CHANNEL_NAME_NPC},
-    [CHAT_CATEGORY_MONSTER_YELL] = {parentChannel = CHAT_CATEGORY_MONSTER_SAY, name = SI_CHAT_CHANNEL_NAME_NPC},
-    [CHAT_CATEGORY_MONSTER_WHISPER] = {parentChannel = CHAT_CATEGORY_MONSTER_SAY, name = SI_CHAT_CHANNEL_NAME_NPC},
-    [CHAT_CATEGORY_MONSTER_EMOTE] = {parentChannel = CHAT_CATEGORY_MONSTER_SAY, name = SI_CHAT_CHANNEL_NAME_NPC},
-}
-
--- Rewrite of a core function. Nothing is changed except in SKIP_CHANNELS set a above
-function CHAT_OPTIONS:InitializeFilterButtons(dialogControl)
-    --generate a table of entry data from the chat category header information
-    local entryData = {}
-    local lastEntry = CHAT_CATEGORY_HEADER_COMBAT - 1
-
-    for i = CHAT_CATEGORY_HEADER_CHANNELS, lastEntry do
-        if(SKIP_CHANNELS[i] == nil and L("SI_CHATCHANNELCATEGORIES", i) ~= "") then
-
-            if(COMBINED_CHANNELS[i] == nil) then
-                entryData[i] =
-                {
-                    channels = { i },
-                    name = L("SI_CHATCHANNELCATEGORIES", i),
-                }
-            else
-                --create the entry for those with combined channels just once
-                local parentChannel = COMBINED_CHANNELS[i].parentChannel
-
-                if(not entryData[parentChannel]) then
-                    entryData[parentChannel] =
-                    {
-                        channels = { },
-                        name = L(COMBINED_CHANNELS[i].name),
-                    }
-                end
-
-                table.insert(entryData[parentChannel].channels, i)
-            end
-        end
-    end
-
-    --now generate and anchor buttons
-    local filterAnchor = ZO_Anchor:New(TOPLEFT, self.filterSection, TOPLEFT, 0, 0)
-    local count = 0
-
-    local sortedEntries = {}
-    for _, entry in pairs(entryData) do
-        sortedEntries[#sortedEntries + 1] = entry
-    end
-
-    table.sort(sortedEntries, FilterComparator)
-
-    for _, entry in ipairs(sortedEntries) do
-        local filter, key = self.filterPool:AcquireObject()
-        filter.key = key
-
-        local button = filter:GetNamedChild("Check")
-        button.channels = entry.channels
-        table.insert(self.filterButtons, button)
-
-        local label = filter:GetNamedChild("Label")
-        label:SetText(entry.name)
-
-        ZO_Anchor_BoxLayout(filterAnchor, filter, count, FILTERS_PER_ROW, FILTER_PAD_X, FILTER_PAD_Y, FILTER_WIDTH, FILTER_HEIGHT, INITIAL_XOFFS, INITIAL_YOFFS)
-        count = count + 1
-    end
-end
-
 -- use the built-in channel info, just add a field to it
 -- (so we don't have to rewrite it)
 local function ModifyChannelInfo()
@@ -3630,7 +3212,7 @@ local function OnIgnoreAdded(displayName)
 
     -- Only if statusMessage is set
     if statusMessage then
-        return rChat.FormatSysMessage(statusMessage)
+        return FormatSysMessage(statusMessage)
     end
 
 end
@@ -3644,7 +3226,7 @@ local function OnIgnoreRemoved(displayName)
 
     -- Only if statusMessage is set
     if statusMessage then
-        return rChat.FormatSysMessage(statusMessage)
+        return FormatSysMessage(statusMessage)
     end
 
 end
@@ -3673,7 +3255,7 @@ local function OnFriendPlayerStatusChanged(displayName, characterName, oldStatus
 
     -- Only if statusMessage is set
     if statusMessage then
-        return rChat.FormatSysMessage(statusMessage)
+        return FormatSysMessage(statusMessage)
     end
 
 end
@@ -3682,9 +3264,9 @@ end
 local function OnGroupTypeChanged(largeGroup)
 
     if largeGroup then
-        return rChat.FormatSysMessage(L(SI_CHAT_ANNOUNCEMENT_IN_LARGE_GROUP))
+        return FormatSysMessage(L(SI_CHAT_ANNOUNCEMENT_IN_LARGE_GROUP))
     else
-        return rChat.FormatSysMessage(L(SI_CHAT_ANNOUNCEMENT_IN_SMALL_GROUP))
+        return FormatSysMessage(L(SI_CHAT_ANNOUNCEMENT_IN_SMALL_GROUP))
     end
 
 end
@@ -4139,7 +3721,7 @@ local function BuildLAMPanel()
                 type = "dropdown",
                 name = L(RCHAT_DEFAULTTAB),
                 tooltip = L(RCHAT_DEFAULTTABTT),
-                choices = tabNames,
+                choices = rChat.tabNames,
                 width = "full",
                 getFunc = function() return db.defaultTabName end,
                 setFunc =   function(choice)
@@ -5367,12 +4949,6 @@ local function OnPlayerActivated()
             CHAT_SYSTEM.IMLabelMin:SetHidden(true)
         end)
 
-        --local fontPath = ZoFontChat:GetFontInfo()
-        --CHAT_SYSTEM:AddMessage(fontPath)
-        --CHAT_SYSTEM:AddMessage("|C3AF24BLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.|r")
-        --CHAT_SYSTEM:AddMessage("Characters below should be well displayed :")
-        --CHAT_SYSTEM:AddMessage("!\"#$%&'()*+,-./0123456789:;<=>?@ ABCDEFGHIJKLMNOPQRSTUVWXYZ [\]^_`abcdefghijklmnopqrstuvwxyz{|} ~¡£¤¥¦§©«-®°²³´µ¶·»½¿ ÀÁÂÄÆÇÈÉÊËÌÍÎÏÑÒÓÔÖ×ÙÚÛÜßàáâäæçèéêëìíîïñòóôöùúûüÿŸŒœ")
-
         -- AntiSpam
         rChatData.spamLookingForEnabled = true
         rChatData.spamWantToEnabled = true
@@ -5380,7 +4956,7 @@ local function OnPlayerActivated()
 
         -- Show 1000 lines instead of 200 & Change fade delay
         ShowFadedLines()
-        -- Get Chat Tab Namse stored in chatTabNames {}
+        -- Get Chat Tab Names stored in chatTabNames {}
         getTabNames()
         -- Rebuild Lam Panel
         BuildLAMPanel()
@@ -5569,38 +5145,38 @@ end
 
 -- Transfer values from old saved vars configurations to
 -- new saved vars configurations.
-local function SVvers(db)
-    local function convertSpamConfig(db)
+local function SVvers(sv)
+    local function convertSpamConfig(sv1)
     
         -- spam.variables already provided by SF.defaultMissing
         -- just transfer values
-        if db.spamGracePeriod then 
-            db.spam.spamGracePeriod = db.spamGracePeriod
-            db.spamGracePeriod = nil
+        if sv1.spamGracePeriod then 
+            sv1.spam.spamGracePeriod = sv1.spamGracePeriod
+            sv1.spamGracePeriod = nil
         end
-        if db.floodProtect then
-            db.spam.floodProtect = db.floodProtect
-            db.floodProtect = nil
+        if sv1.floodProtect then
+            sv1.spam.floodProtect = sv1.floodProtect
+            sv1.floodProtect = nil
         end
-        if db.floodGracePeriod then
-            db.spam.floodGracePeriod = db.floodGracePeriod
-            db.floodGracePeriod = nil
+        if sv1.floodGracePeriod then
+            sv1.spam.floodGracePeriod = sv1.floodGracePeriod
+            sv1.floodGracePeriod = nil
         end
-        if db.lookingForProtect then
-            db.spam.lookingForProtect = db.lookingForProtect
-            db.lookingForProtect = nil
+        if sv1.lookingForProtect then
+            sv1.spam.lookingForProtect = sv1.lookingForProtect
+            sv1.lookingForProtect = nil
         end
-        if db.wantToProtect then
-            db.spam.wantToProtect = db.wantToProtect
-            db.wantToProtect = nil
+        if sv1.wantToProtect then
+            sv1.spam.wantToProtect = sv1.wantToProtect
+            sv1.wantToProtect = nil
         end
-        if db.guildProtect then
-            db.spam.guildProtect = db.guildProtect
-            db.guildProtect = nil
+        if sv1.guildProtect then
+            sv1.spam.guildProtect = sv1.guildProtect
+            sv1.guildProtect = nil
         end
     end
 
-    convertSpamConfig(db)
+    convertSpamConfig(sv)   -- v 1.4.2
 end
 
 local function clearSV(savedVars)
@@ -5630,7 +5206,7 @@ end
 -- checks the versions of libraries where possible and warn in
 -- debug logger if we detect out of date libraries.
 local function checkLibraryVersions()
-    local logger = LibDebugLogger("AutoCategory")
+    local logger = LibDebugLogger("rChat")
     
     -- check the libraries that still support LibStub
     -- because there we can get versions through a standard 
@@ -5677,8 +5253,15 @@ local function OnAddonLoaded(_, addonName)
 
     --Protect
     if addonName ~= rChat.name then return end
+    
+    -- Unregisters
+    EVENT_MANAGER:UnregisterForEvent(rChat.name, EVENT_ADD_ON_LOADED)
 
     checkLibraryVersions()
+
+    rChat_ZOS.FormatSysMessage = FormatSysMessage
+    rChat_ZOS.FindAutomatedMsg = RAM.FindAutomatedMsg
+    rChat_ZOS.cachedMessages = rChatData.cachedMessages
 
     -- Saved variables
     rChat.save = loadSavedVars(rChat.savedvar, rChat.sv_version, defaults)
@@ -5688,9 +5271,7 @@ local function OnAddonLoaded(_, addonName)
     rChat.setSpamConfig(db.spam)
 
     -- init vars/funcs for ZOS rewritten functions
-    --rChat_ZOS.cachedMessages = rChatData.cachedMessages
-    --rChat_ZOS.FormatSysMessage = rChat.FormatSysMessage
-    --rChat_ZOS.tabwarning_color = ZO_ColorDef:New(string.sub(db.colours["tabwarning"],3,8))
+    rChat_ZOS.tabwarning_color = ZO_ColorDef:New(string.sub(db.colours["tabwarning"],3,8))
 
     --LAM
     BuildLAM()
@@ -5713,8 +5294,8 @@ local function OnAddonLoaded(_, addonName)
         db.LineStrings = {}
     end
 
-    if not tabNames then
-        tabNames = {}
+    if not rChat.tabNames then
+        rChat.tabNames = {}
     end
 
     -- Will set Keybind for "switch to next tab" if needed
@@ -5796,9 +5377,6 @@ local function OnAddonLoaded(_, addonName)
     EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_GROUP_MEMBER_JOINED, OnGroupMemberJoined)
     EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_GROUP_MEMBER_LEFT, OnGroupMemberLeft)
 
-    -- Unregisters
-    EVENT_MANAGER:UnregisterForEvent(rChat.name, EVENT_ADD_ON_LOADED)
-
     isAddonLoaded = true
 
 end
@@ -5823,12 +5401,12 @@ end
 
 -- For compatibility. Called by others addons.
 function rChat.formatSysMessage(statusMessage)
-    return rChat.FormatSysMessage(statusMessage)
+    return FormatSysMessage(statusMessage)
 end
 
 -- For compatibility. Called by others addons.
 function rChat_FormatSysMessage(statusMessage)
-    return rChat.FormatSysMessage(statusMessage)
+    return FormatSysMessage(statusMessage)
 end
 
 -- For compatibility. Called by others addons.

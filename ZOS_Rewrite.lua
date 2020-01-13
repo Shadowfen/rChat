@@ -5,12 +5,13 @@ local L = GetString
 -- affect the operation of the revised core ZOS functions below.
 rChat_ZOS = {
     FormatSysMessage = function() end,     -- function
+    FindAutomatedMsg = function(txt) end,
     cachedMessages = {},        -- table of messages for chat restoring
     messagesWereRestored = false, -- bool  (was messagesHaveBeenRestorated)
     tabwarning_color = ZO_ColorDef:New("76BCC3"), -- tab Warning ~ "Azure" (ZOS default),
 }
 
-
+-- [ [
 -- Rewrite of core function
 function CHAT_SYSTEM:AddMessage(text)
 
@@ -145,6 +146,7 @@ local CHANNEL_ORDERING_WEIGHT = {
     [CHAT_CATEGORY_SYSTEM] = 130,
 }
 
+-- Copy of a core function
 local function FilterComparator(left, right)
     local leftPrimaryCategory = left.channels[1]
     local rightPrimaryCategory = right.channels[1]
@@ -164,7 +166,8 @@ local function FilterComparator(left, right)
 end
 
 -- Copy of a core data
--- (CHAT_CATEGORY_SYSTEM is commented out)
+-- (CHAT_CATEGORY_SYSTEM is commented out from ZOS defaults so we can unselect
+-- system messages in a chat tab)
 local SKIP_CHANNELS = {
     -- [CHAT_CATEGORY_SYSTEM] = true,
     [CHAT_CATEGORY_GUILD_1] = true,
@@ -186,7 +189,7 @@ local FILTER_HEIGHT = 27
 local INITIAL_XOFFS = 0
 local INITIAL_YOFFS = 0
 
--- Rewrite of a core data
+-- Copy of a core data
 -- (Nothing is changed)
 local COMBINED_CHANNELS = {
     [CHAT_CATEGORY_WHISPER_INCOMING] = {parentChannel = CHAT_CATEGORY_WHISPER_INCOMING, name = SI_CHAT_CHANNEL_NAME_WHISPER},
@@ -199,6 +202,7 @@ local COMBINED_CHANNELS = {
 }
 
 -- Rewrite of a core function. Nothing is changed except in SKIP_CHANNELS set as above
+--  (Allows us to be able to set if we want to filter system messages.)
 function CHAT_OPTIONS:InitializeFilterButtons(dialogControl)
     --generate a table of entry data from the chat category header information
     local entryData = {}
@@ -256,3 +260,44 @@ function CHAT_OPTIONS:InitializeFilterButtons(dialogControl)
         count = count + 1
     end
 end
+
+-- Rewrite of a core function
+--  Insert processing for automated messages
+function CHAT_SYSTEM.textEntry:GetText()
+    local text = self.editControl:GetText() -- the original total content of this func
+    
+    -- make sure we have something to work with
+    if not text then return text end
+    local st,en,nm = string.find(text,"%s*(!%a+)")
+    if not st then return text end
+    if string.len(nm) > 12 then return text end
+    
+    -- replace automated message indicator with message
+    local v, k = rChat_ZOS.FindAutomatedMsg(nm)
+    if not v then return text end   -- no such indicator
+    
+    text = v.message    
+    -- replace the am indicator with message
+    local strln = string.len(v.message)
+    if strln > 0 and strln < 352 then
+        text = v.message    
+    end
+    
+    -- this is required to properly display the replaced message in chat
+    CHAT_SYSTEM:OnTextEntryChanged(text)    -- in sharedchatsystem.lua
+    
+    -- adjustments required by automated messages
+    self.ignoreTextEntryChangedEvent = true
+    local spaceStart, spaceEnd = zo_strfind(text, " ", 1, true)
+    if spaceStart and spaceStart > 1 then
+            text = zo_strsub(text, spaceStart + 1)
+            local oldCursorPos = CHAT_SYSTEM.textEntry:GetCursorPosition()
+
+            spaceStart = spaceStartOverride or spaceStart
+    end
+    self.ignoreTextEntryChangedEvent = false
+    return text
+end
+
+
+--]]
