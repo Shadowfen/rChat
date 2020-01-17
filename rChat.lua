@@ -305,18 +305,51 @@ local chatStrings = chatStrings_brackets
 
 local MENU_CATEGORY_RCHAT = nil
 
+-- ------------------------------------------------------
+-- Color conversion functions
+
 -- Turn a ([0,1])^3 RGB colour to "|cABCDEF" form. We could use ZO_ColorDef, but we have so many colors so we don't do it.
 local function ConvertRGBToHex(r, g, b)
     return string.format("|c%.2x%.2x%.2x", zo_floor(r * 255), zo_floor(g * 255), zo_floor(b * 255))
 end
 
--- Convert a colour from "|cABCDEF" form to [0,1] RGB form.
+-- Convert a colour from hexadecimal form to [0,1] RGB form.
 local function ConvertHexToRGBA(colourString)
-    local r=tonumber(string.sub(colourString, 3, 4), 16) or 255
-    local g=tonumber(string.sub(colourString, 5, 6), 16) or 255
-    local b=tonumber(string.sub(colourString, 7, 8), 16) or 255
-    return r/255, g/255, b/255, 1
+    local r, g, b, a
+    if string.sub(colourString,1,1) == "|" then
+        -- format "|crrggbb"
+        r=tonumber(string.sub(colourString, 3, 4), 16) or 255
+        g=tonumber(string.sub(colourString, 5, 6), 16) or 255
+        b=tonumber(string.sub(colourString, 7, 8), 16) or 255
+        a = 255
+    elseif #colourString == 8 then
+        -- format "aarrggbb"
+        a=tonumber(string.sub(colourString, 1, 2), 16) or 255
+        r=tonumber(string.sub(colourString, 3, 4), 16) or 255
+        g=tonumber(string.sub(colourString, 5, 6), 16) or 255
+        b=tonumber(string.sub(colourString, 7, 8), 16) or 255
+    elseif #colourString == 6 then
+        -- format "rrggbb"
+        r=tonumber(string.sub(colourString, 1, 2), 16) or 255
+        g=tonumber(string.sub(colourString, 3, 4), 16) or 255
+        b=tonumber(string.sub(colourString, 5, 6), 16) or 255
+        a = 255
+    else
+        -- unidentified format
+        r = 255
+        g = 255
+        b = 255
+        a = 255
+    end
+    return r/255, g/255, b/255, a/255
 end
+
+-- Convert a colour from "|cABCDEF" form to [0,1] RGB form and return them in a table.
+local function ConvertHexToRGBAPacked(colourString)
+    local r, g, b, a = ConvertHexToRGBA(colourString)
+    return {r = r, g = g, b = b, a = a}
+end
+-- ------------------------------------------------------
 
 -- Return a formatted time
 local function CreateTimestamp(timeStr, formatStr)
@@ -1954,80 +1987,20 @@ end
 --
 -- TODO : Handle LinkHandler + Malformatted strings , such as : "|c87B7CC|c87B7CCUpdated: |H0:achievement:68:5252:0|h|h (Artisanat)."
 local function ReformatSysMessages(text)
-
-    local rawSys = text
-    local startColSys, endColSys
-    local lastTag, lastR, findC, findR
-    local count, countR
-    local firstIsR
-
-    rawSys = rawSys:gsub("||([Cc])", "%1") -- | is the escape char for |, so if an user type |c it will be sent as ||c by the game which will lead to an infinite loading screen because xxxxx||xxxxxx is a lua pattern operator and few gsub will broke the code
-
-    -- First destroy tags with nothing inside
-    rawSys = string.gsub(rawSys, "|[cC]%x%x%x%x%x%x|[rR]", "")
-
-    --Search for Color tags
-    startColSys, endColSys = string.find(rawSys, "|[cC]%x%x%x%x%x%x", 1)
-    _, count = string.gsub(rawSys, "|[cC]%x%x%x%x%x%x", "")
-
-    -- No color tags in the SysMessage
-    if startColSys then
-        -- Found X tag
-        -- Searching for |r after tag color
-
-        _, countR = string.gsub(rawSys, "|[cC]%x%x%x%x%x%x(.-)|[rR]", "")
-
-        -- Start tag found but end tag ~= start tag
-        if count ~= countR then
-
-            -- Add |r before the tag
-            rawSys = string.gsub(rawSys, "|[cC]%x%x%x%x%x%x", "|r%1")
-            firstIsR = string.find(rawSys, "|[cC]%x%x%x%x%x%x")
-
-            --No |r tag at the start of the text if start was |cXXXXXX
-            if firstIsR == 3 then
-                rawSys = string.sub(rawSys, 3)
-            end
-
-            -- Replace
-            rawSys = string.gsub(rawSys, "|r|r", "|r")
-            rawSys = string.gsub(rawSys, "|r |r", " |r")
-
-            lastTag = string.match(rawSys, "^.*()|[cC]%x%x%x%x%x%x")
-            lastR = string.match(rawSys, "^.*()|r")
-
-            -- |r tag found
-            if lastR ~= nil and lastTag ~= nil then
-                if lastTag > lastR then
-                    rawSys = rawSys .. "|r"
-                end
-            else
-                -- Got X tags and 0 |r, happens only when we got 1 tag and 0 |r because we added |r to every tags just before
-                -- So add last "|r"
-                rawSys = rawSys .. "|r"
-            end
-
-            -- Double check
-
-            findC = string.find(rawSys, "|[cC]%x%x%x%x%x%x")
-            findR = string.find(rawSys, "|[rR]")
-
-            while findR ~= nil and findC ~= nil do
-
-                if findC then
-                    if findR < findC then
-                        rawSys = string.sub(rawSys, 1, findR - 1) .. string.sub(rawSys, findR + 2)
-                    end
-
-                    findC = string.find(rawSys, "|[cC]%x%x%x%x%x%x", findR)
-                    findR = string.find(rawSys, "|[rR]", findR + 2)
-                end
-
-            end
-
-        end
-
+     if not text then return "" end
+   
+    -- get positions of all of the desired delimiters
+    local t1 = SF.getAllColorDelim(text) 
+   
+    if #t1 == 0 then
+        -- no delimiters in string
+        return text
     end
+    
+    -- balance and correct color markers
+    SF.regularizeColors(t1, text)
+    
+    rawSys = table.concat(SF.colorsplit(t1, text))
     
     -- |u search (strip out hard padding)
     rawSys = string.gsub(rawSys,"|u%-?%d+%%?:%-?%d+%%?:(.-):|u","%1")
@@ -3341,10 +3314,6 @@ local function BuildLAMPanel()
     local localPlayer = GetUnitName("player")
     local fontsDefined = LMP:List('font')
 
-    local function ConvertHexToRGBAPacked(colourString)
-        local r, g, b, a = ConvertHexToRGBA(colourString)
-        return {r = r, g = g, b = b, a = a}
-    end
         -- Sync Character Select
     rChatData.chatConfSyncChoices = {}
     if db.chatConfSync then
@@ -5203,37 +5172,6 @@ local function loadSavedVars(savedvar, sv_version, defaults)
     return save
 end
 
--- checks the versions of libraries where possible and warn in
--- debug logger if we detect out of date libraries.
-local function checkLibraryVersions()
-    local logger = LibDebugLogger("rChat")
-    
-    -- check the libraries that still support LibStub
-    -- because there we can get versions through a standard 
-    -- mechanism.
-    if LibStub then 
-        local function checkLS(name, expected)
-            local lib, ver
-            lib, ver = LibStub:GetLibrary(name)
-            if not ver or ver < expected then
-                logger:Error("Outdated version of %s detected (%d) - possibly embedded in another older addon.", name, ver or -1) 
-            end
-        end
-
-        checkLS("LibAddonMenu-2.0", 30)
-        checkLS("LibMediaProvider-1.0", 12)
-        checkLS("libChat-1.0", 12)
-    end
-    
-    -- check libraries that do not use LibStub
-    ver = LibSFUtils.LibVersion or -1
-    if ver < 20 then
-        logger:Error("Outdated version of %s detected (%d) - possibly embedded in another older addon.", "LibSFUtils", ver) 
-    end
-    
-    logger:Info("Library %s does not provide version information", "LibDebugLogger")
-end
-
 local function OnAddonHistoryLoaded(_,addonName)
     if addonName ~= "rChat_history" then return end
     EVENT_MANAGER:UnregisterForEvent("rChat_history", EVENT_ADD_ON_LOADED)
@@ -5257,7 +5195,7 @@ local function OnAddonLoaded(_, addonName)
     -- Unregisters
     EVENT_MANAGER:UnregisterForEvent(rChat.name, EVENT_ADD_ON_LOADED)
 
-    checkLibraryVersions()
+    rChat.checkLibraryVersions()
 
     rChat_ZOS.FormatSysMessage = FormatSysMessage
     rChat_ZOS.FindAutomatedMsg = RAM.FindAutomatedMsg

@@ -1,4 +1,10 @@
-﻿[COLOR="DeepSkyBlue"]1.4.2[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.4.3[/COLOR]
+[LIST]
+[*] Added in library version checking where possible to indicate when out-dated versions of the libraries we depend on are detected. Error messages for out-dated libraries are written to LibDebugLogger (required dependency) and can be viewed with the DebugLogViewer addon (recommended addon).
+[*] Rewrote the color stripping and correction for messages to fix the problem in ReformateSysMessages() and the "talk like a pirate Arr" problem reported by Akopian Atrebates. (This change also requires the newest version (22) of LibSFUtil!)
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.4.2[/COLOR]
 [LIST]
 [*] Fixed /rchat.msg to work properly again. I hate when I back out one change too many!
 [*] Moved the spam config settings to a different place in the saved variables. Users should not notice any difference though. If you have changed any of AntiSpam settings they will still be remembered.
