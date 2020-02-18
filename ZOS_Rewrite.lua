@@ -33,11 +33,13 @@ end
 -- Rewrite of core local
 -- (adding restoration of messages)
 local function EmitMessage(text)
+    --if CHAT_ROUTER and rChat_ZOS.messagesWereRestored then
     if CHAT_SYSTEM and CHAT_SYSTEM.primaryContainer and rChat_ZOS.messagesWereRestored then
         if text == "" then
             text = "[Empty String]"
         end
         CHAT_SYSTEM:AddMessage(text)
+        --CHAT_ROUTER:AddDebugMessage(text)
     else
         table.insert(rChat_ZOS.cachedMessages, text)
     end
@@ -78,6 +80,7 @@ function d(...)
         then
             EmitTable(value)
         else
+            --if CHAT_ROUTER and
             if CHAT_SYSTEM and CHAT_SYSTEM.primaryContainer and rChat_ZOS.messagesWereRestored then
                 EmitMessage(tostring (value))
             else
@@ -299,5 +302,9 @@ function CHAT_SYSTEM.textEntry:GetText()
     return text
 end
 
+-- implement the function that is provided by pts 5.3
+function ZO_ChatSystem_GetCategoryColorFromChannel(chan)
+    return CHAT_SYSTEM:GetCategoryColorFromChannel(chan)
+end
 
 --]]

@@ -1,4 +1,11 @@
-﻿[COLOR="DeepSkyBlue"]1.4.3[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.4.4 (14) unreleased[/COLOR]
+[LIST]
+[*] Set AddonVersion in manifest file.
+[*] Clean up link handler code.
+[*] Split out color conversion code into a utils file.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.4.3[/COLOR]
 [LIST]
 [*] Added in library version checking where possible to indicate when out-dated versions of the libraries we depend on are detected. Error messages for out-dated libraries are written to LibDebugLogger (required dependency) and can be viewed with the DebugLogViewer addon (recommended addon).
 [*] Rewrote the color stripping and correction for messages to fix the problem in ReformateSysMessages() and the "talk like a pirate Arr" problem reported by Akopian Atrebates. (This change also requires the newest version (22) of LibSFUtil!)
