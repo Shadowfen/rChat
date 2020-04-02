@@ -46,3 +46,43 @@ function rChat.ConvertHexToRGBAPacked(colourString)
     local r, g, b, a = rChat.ConvertHexToRGBA(colourString)
     return {r = r, g = g, b = b, a = a}
 end
+
+-- ------------------------------------------------------
+-- Timestamp functions
+--
+
+function rChat.CreateTimestamp(formatStr, timeStr)
+    
+    if not timeStr then timeStr = GetTimeString() end
+
+    -- split up default timestamp
+    local hours, minutes, seconds = timeStr:match("([^%:]+):([^%:]+):([^%:]+)")
+    local hoursNoLead = tonumber(hours) -- hours without leading zero
+    local hours12NoLead = (hoursNoLead - 1)%12 + 1
+    local hours12
+    if (hours12NoLead < 10) then
+        hours12 = "0" .. hours12NoLead
+    else
+        hours12 = hours12NoLead
+    end
+    local pUp = "AM"
+    local pLow = "am"
+    if (hoursNoLead >= 12) then
+        pUp = "PM"
+        pLow = "pm"
+    end
+
+    -- create new one
+    local timestamp = formatStr
+    timestamp = timestamp:gsub("HH", hours)
+    timestamp = timestamp:gsub("H", hoursNoLead)
+    timestamp = timestamp:gsub("hh", hours12)
+    timestamp = timestamp:gsub("h", hours12NoLead)
+    timestamp = timestamp:gsub("m", minutes)
+    timestamp = timestamp:gsub("s", seconds)
+    timestamp = timestamp:gsub("A", pUp)
+    timestamp = timestamp:gsub("a", pLow)
+
+    return timestamp
+
+end

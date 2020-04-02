@@ -23,7 +23,7 @@ spammableChannels[CHAT_CHANNEL_ZONE + 1] = true
 spammableChannels[CHAT_CHANNEL_EMOTE + 1] = true
 
 local function IsSpammableChannel(chanCode)
-    if chanCode == nil then return nil end
+    if chanCode == nil or chanCode == 0 then return nil end
     return spammableChannels[chanCode + 1]
 end
 
@@ -45,6 +45,7 @@ local function SpamFlood(from, text, chanCode)
     while checkSpam do
         
         -- Previous line can be a ChanSystem one
+        if db.LineStrings[previousLine] then
         if db.LineStrings[previousLine].channel ~= CHAT_CHANNEL_SYSTEM then
             if (ourMessageTimestamp - db.LineStrings[previousLine].rawTimestamp) < config.floodGracePeriod then
                 -- if our message is sent by our chatter / will be break by "Character" channels and "UserID" Channels
@@ -63,6 +64,7 @@ local function SpamFlood(from, text, chanCode)
                 -- > 30s, stop analysis
                 checkSpam = false
             end
+        end
         end
         
         if previousLine > 1 then

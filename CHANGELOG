@@ -1,4 +1,37 @@
-﻿[COLOR="DeepSkyBlue"]1.4.4 (14) unreleased[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.5.4 (19)[/COLOR]
+[LIST]
+[*] Fix incorrect AddonVersion.
+[*] Revised how the colors are saved in the SaveVariables. This should change over without problems, but if your colors go back to the defaults, the conversion did not work for you and you should reset the colors through the settings.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.5.3 (18)[/COLOR]
+[LIST]
+[*] Fixed "Use same color for all guilds" to work again.
+[*] More work with ensuring messages are displayed in chat.
+[*] Removed dependency on LibDebugLogger to keep it from consuming (hiding) many SYSTEM messages.
+[*] Removed the work-around since the ZOS chat system fix was released.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.5.2 (17)[/COLOR]
+[LIST]
+[*] Fixed error observed when changing guild officer colors (reported by Greevir).
+[*] Fixed missing names when chat is restored after a reload (reported by SimplyArmin).
+[*] The missing system messages on startup appears to be fixed by the latest version of LibChatMessage. If you are getting no system messages at all, check to make sure your tab options allows system messages on the tab; and if you are a new user of LibDebugLogger, that addon can steal system messages from chat to only be displayed in the DebugLogViewer.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.5.1 (16)[/COLOR]
+[LIST]
+[*] Fix error with setting guild color not doing anything (reported by Kazzy-Poo).
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.5 (15)[/COLOR]
+[COLOR="MediumSlateBlue"]Breaking Change[/COLOR]
+[LIST]
+[*] [COLOR="DarkOrange"]Now requires the library LibChatMessage in addition to the libraries LibSFUtils, LibAddonMenu, LibMediaProvider-1.0, and LibMainMenu to be installed separately.[/COLOR]
+[*] The library libChat2 is no longer required.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.4.4 (14)[/COLOR]
 [LIST]
 [*] Set AddonVersion in manifest file.
 [*] Clean up link handler code.

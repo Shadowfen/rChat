@@ -1,7 +1,6 @@
 
 -- Registering libraries
 local LAM = LibAddonMenu2
-local LC2 = LibChat2
 local LMP = LibMediaProvider
 local SF = LibSFUtils
 local RAM = rChat.AutoMsg
@@ -47,15 +46,11 @@ local defaults = {
     carriageReturn = false,
     useESOcolors = true,
     diffforESOcolors = 40,
-    alwaysShowChat = false,
-    augmentHistoryBuffer = true,
-    oneColour = false,
     showTagInEntry = true,
     geoChannelsFormat = 2,
     disableBrackets = true,
     addChannelAndTargetToHistory = true,
     urlHandling = true,
-    enablecopy = true,
     nicknames = "",
     -- ---- Message Settings - End
 
@@ -63,7 +58,7 @@ local defaults = {
     showTimestamp = true,
     timestampcolorislcol = false,
     timestampFormat = "HH:m",
-    -- colors["timestamp"]
+    -- colors["timestamp"],
     -- ---- Timestamp Settings - End
 
     -- ---- Guild Settings
@@ -97,12 +92,16 @@ local defaults = {
     -- ---- Group Settings - End
 
     -- ---- Chat Window Settings specific options
+    windowDarkness = 6,
+    alwaysShowChat = false,
+    augmentHistoryBuffer = true,
+    oneColour = false,
     chatMinimizedAtLaunch = false,
     chatMinimizedInMenus = false,
     chatMaximizedAfterMenus = false,
-    windowDarkness = 6,
     fonts = "ESO Standard Font",
-    -- colours["tabwarning"]
+    enablecopy = true,
+    -- colours["tabwarning"],
     -- ---- Chat Window Settings specific options - End
 
     -- ---- Restore Options
@@ -122,63 +121,43 @@ local defaults = {
     -- localPlayer
     chatConfSync = {},  -- not LAM
     -- ---- Sync Settings - End
-
+    
     -- ----
-    colours = {
-        -- chat colors
-        [2*CHAT_CHANNEL_SAY] = "|cFFFFFF", -- say Left
-        [2*CHAT_CHANNEL_SAY + 1] = "|cFFFFFF", -- say Right
-        [2*CHAT_CHANNEL_YELL] = "|cE974D8", -- yell Left
-        [2*CHAT_CHANNEL_YELL + 1] = "|cFFB5F4", -- yell Right
-        [2*CHAT_CHANNEL_WHISPER] = "|cB27BFF", -- tell in Left
-        [2*CHAT_CHANNEL_WHISPER + 1] = "|cB27BFF", -- tell in Right
-        [2*CHAT_CHANNEL_PARTY] = "|c6EABCA", -- group Left
-        [2*CHAT_CHANNEL_PARTY + 1] = "|cA1DAF7", -- group Right
-        [2*CHAT_CHANNEL_WHISPER_SENT] = "|c7E57B5", -- tell out Left
-        [2*CHAT_CHANNEL_WHISPER_SENT + 1] = "|c7E57B5", -- tell out Right
-        -- other colors
-        [2*CHAT_CHANNEL_EMOTE] = "|cA5A5A5", -- emote Left
-        [2*CHAT_CHANNEL_EMOTE + 1] = "|cA5A5A5", -- emote Right
-        [2*CHAT_CHANNEL_MONSTER_SAY] = "|c879B7D", -- npc Left
-        [2*CHAT_CHANNEL_MONSTER_SAY + 1] = "|c879B7D", -- npc Right
-        [2*CHAT_CHANNEL_MONSTER_YELL] = "|c879B7D", -- npc yell Left
-        [2*CHAT_CHANNEL_MONSTER_YELL + 1] = "|c879B7D", -- npc yell Right
-        [2*CHAT_CHANNEL_MONSTER_WHISPER] = "|c879B7D", -- npc whisper Left
-        [2*CHAT_CHANNEL_MONSTER_WHISPER + 1] = "|c879B7D", -- npc whisper Right
-        [2*CHAT_CHANNEL_MONSTER_EMOTE] = "|c879B7D", -- npc emote Left
-        [2*CHAT_CHANNEL_MONSTER_EMOTE + 1] = "|c879B7D", -- npc emote Right
+    newcolors = {
+        -- player colors
+        [CHAT_CHANNEL_SAY] = {"|cFFFFFF", "|cFFFFFF",},  -- say
+        [CHAT_CHANNEL_YELL] = {"|cE974D8", "|cFFB5F4",},  -- yell
+        [CHAT_CHANNEL_WHISPER] = {"|cB27BFF", "|cB27BFF",},  -- whisper
+        [CHAT_CHANNEL_WHISPER_SENT] = {"|c7E57B5", "|c7E57B5",},  -- whisper out
+        [CHAT_CHANNEL_PARTY] = {"|c6EABCA", "|cA1DAF7",},  -- group
+        [CHAT_CHANNEL_EMOTE] = {"|cA5A5A5", "|cA5A5A5",},  -- emote
+        
+        -- npc colors
+        [CHAT_CHANNEL_MONSTER_SAY] = {"|c879B7D", "|c879B7D",},  -- npc say
+        [CHAT_CHANNEL_MONSTER_YELL] = {"|c879B7D", "|c879B7D",},  -- npc yell
+        [CHAT_CHANNEL_MONSTER_WHISPER] = {"|c879B7D", "|c879B7D",},  -- npc whisper
+        [CHAT_CHANNEL_MONSTER_EMOTE] = {"|c879B7D", "|c879B7D",},  -- npc emote
+        
         -- guild colors
-        [2*CHAT_CHANNEL_GUILD_1] = "|c94E193", -- guild Left
-        [2*CHAT_CHANNEL_GUILD_1 + 1] = "|cC3F0C2", -- guild Right
-        [2*CHAT_CHANNEL_GUILD_2] = "|c94E193",
-        [2*CHAT_CHANNEL_GUILD_2 + 1] = "|cC3F0C2",
-        [2*CHAT_CHANNEL_GUILD_3] = "|c94E193",
-        [2*CHAT_CHANNEL_GUILD_3 + 1] = "|cC3F0C2",
-        [2*CHAT_CHANNEL_GUILD_4] = "|c94E193",
-        [2*CHAT_CHANNEL_GUILD_4 + 1] = "|cC3F0C2",
-        [2*CHAT_CHANNEL_GUILD_5] = "|c94E193",
-        [2*CHAT_CHANNEL_GUILD_5 + 1] = "|cC3F0C2",
-        [2*CHAT_CHANNEL_OFFICER_1] = "|cC3F0C2", -- guild officers Left
-        [2*CHAT_CHANNEL_OFFICER_1 + 1] = "|cC3F0C2", -- guild officers Right
-        [2*CHAT_CHANNEL_OFFICER_2] = "|cC3F0C2",
-        [2*CHAT_CHANNEL_OFFICER_2 + 1] = "|cC3F0C2",
-        [2*CHAT_CHANNEL_OFFICER_3] = "|cC3F0C2",
-        [2*CHAT_CHANNEL_OFFICER_3 + 1] = "|cC3F0C2",
-        [2*CHAT_CHANNEL_OFFICER_4] = "|cC3F0C2",
-        [2*CHAT_CHANNEL_OFFICER_4 + 1] = "|cC3F0C2",
-        [2*CHAT_CHANNEL_OFFICER_5] = "|cC3F0C2",
-        [2*CHAT_CHANNEL_OFFICER_5 + 1] = "|cC3F0C2",
+        [CHAT_CHANNEL_GUILD_1] = {"|c94E193", "|cC3F0C2",},  -- guild
+        [CHAT_CHANNEL_GUILD_2] = {"|c94E193", "|cC3F0C2",},
+        [CHAT_CHANNEL_GUILD_3] = {"|c94E193", "|cC3F0C2",},
+        [CHAT_CHANNEL_GUILD_4] = {"|c94E193", "|cC3F0C2",},
+        [CHAT_CHANNEL_GUILD_5] = {"|c94E193", "|cC3F0C2",},
+        [CHAT_CHANNEL_OFFICER_1] = {"|cC3F0C2", "|cC3F0C2",},  -- guild officers
+        [CHAT_CHANNEL_OFFICER_2] = {"|cC3F0C2", "|cC3F0C2",},
+        [CHAT_CHANNEL_OFFICER_3] = {"|cC3F0C2", "|cC3F0C2",},
+        [CHAT_CHANNEL_OFFICER_4] = {"|cC3F0C2", "|cC3F0C2",},
+        [CHAT_CHANNEL_OFFICER_5] = {"|cC3F0C2", "|cC3F0C2",},
+        
         -- other colors (zone)
-        [2*CHAT_CHANNEL_ZONE] = "|cCEB36F", -- zone Left
-        [2*CHAT_CHANNEL_ZONE + 1] = "|cB0A074", -- zone Right
-        [2*CHAT_CHANNEL_ZONE_LANGUAGE_1] = "|cCEB36F", -- EN zone Left
-        [2*CHAT_CHANNEL_ZONE_LANGUAGE_1 + 1] = "|cB0A074", -- EN zone Right
-        [2*CHAT_CHANNEL_ZONE_LANGUAGE_2] = "|cCEB36F", -- FR zone Left
-        [2*CHAT_CHANNEL_ZONE_LANGUAGE_2 + 1] = "|cB0A074", -- FR zone Right
-        [2*CHAT_CHANNEL_ZONE_LANGUAGE_3] = "|cCEB36F", -- DE zone Left
-        [2*CHAT_CHANNEL_ZONE_LANGUAGE_3 + 1] = "|cB0A074", -- DE zone Right
-        [2*CHAT_CHANNEL_ZONE_LANGUAGE_4] = "|cCEB36F", -- JP zone Left
-        [2*CHAT_CHANNEL_ZONE_LANGUAGE_4 + 1] = "|cB0A074", -- JP zone Right
+        [CHAT_CHANNEL_ZONE] = {"|cCEB36F", "|cB0A074",},
+        [CHAT_CHANNEL_ZONE_LANGUAGE_1] = {"|cCEB36F", "|cB0A074",},  -- EN zone
+        [CHAT_CHANNEL_ZONE_LANGUAGE_2] = {"|cCEB36F", "|cB0A074",},  -- FR zone
+        [CHAT_CHANNEL_ZONE_LANGUAGE_3] = {"|cCEB36F", "|cB0A074",},  -- DE zone
+        [CHAT_CHANNEL_ZONE_LANGUAGE_4] = {"|cCEB36F", "|cB0A074",},  -- JP zone
+    },
+    colours = {
         -- misc
         ["timestamp"] = "|c8F8F8F", -- timestamp
         ["tabwarning"] = "|c76BCC3", -- tab Warning ~ "Azure" (ZOS default)
@@ -187,6 +166,34 @@ local defaults = {
     },
 }
 
+local coloredChannels  = {
+    CHAT_CATEGORY_SAY,
+    CHAT_CATEGORY_YELL,
+    CHAT_CATEGORY_WHISPER,
+    CHAT_CATEGORY_WHISPER_SENT,
+    CHAT_CATEGORY_ZONE,
+    CHAT_CATEGORY_PARTY,
+    CHAT_CATEGORY_EMOTE,
+    CHAT_CATEGORY_SYSTEM,
+    CHAT_CATEGORY_GUILD_1,
+    CHAT_CATEGORY_GUILD_2,
+    CHAT_CATEGORY_GUILD_3,
+    CHAT_CATEGORY_GUILD_4,
+    CHAT_CATEGORY_GUILD_5,
+    CHAT_CATEGORY_OFFICER_1,
+    CHAT_CATEGORY_OFFICER_2,
+    CHAT_CATEGORY_OFFICER_3,
+    CHAT_CATEGORY_OFFICER_4,
+    CHAT_CATEGORY_OFFICER_5,
+    CHAT_CATEGORY_ZONE_ENGLISH,
+    CHAT_CATEGORY_ZONE_FRENCH,
+    CHAT_CATEGORY_ZONE_GERMAN,
+    CHAT_CATEGORY_ZONE_JAPANESE,
+    CHAT_CATEGORY_MONSTER_SAY,
+    CHAT_CATEGORY_MONSTER_YELL,
+    CHAT_CATEGORY_MONSTER_WHISPER,
+    CHAT_CATEGORY_MONSTER_EMOTE,
+}
 -- SV
 local save
 local db
@@ -304,51 +311,38 @@ local chatStrings = chatStrings_brackets
 
 local MENU_CATEGORY_RCHAT = nil
 
--- ------------------------------------------------------
--- Return a formatted time
-local function CreateTimestamp(timeStr, formatStr)
-    formatStr = formatStr or db.timestampFormat
-
-    -- split up default timestamp
-    local hours, minutes, seconds = timeStr:match("([^%:]+):([^%:]+):([^%:]+)")
-    local hoursNoLead = tonumber(hours) -- hours without leading zero
-    local hours12NoLead = (hoursNoLead - 1)%12 + 1
-    local hours12
-    if (hours12NoLead < 10) then
-        hours12 = "0" .. hours12NoLead
-    else
-        hours12 = hours12NoLead
+-- get a color (hex) pair from the chat colors table (indexed by channel id)
+function rChat.getColors(channelId)
+    local colorsEntry = db.newcolors[channelId]
+    if not colorsEntry then
+        colorsEntry = db.newcolors[1]
     end
-    local pUp = "AM"
-    local pLow = "am"
-    if (hoursNoLead >= 12) then
-        pUp = "PM"
-        pLow = "pm"
-    end
-
-    -- create new one
-    local timestamp = formatStr
-    timestamp = timestamp:gsub("HH", hours)
-    timestamp = timestamp:gsub("H", hoursNoLead)
-    timestamp = timestamp:gsub("hh", hours12)
-    timestamp = timestamp:gsub("h", hours12NoLead)
-    timestamp = timestamp:gsub("m", minutes)
-    timestamp = timestamp:gsub("s", seconds)
-    timestamp = timestamp:gsub("A", pUp)
-    timestamp = timestamp:gsub("a", pLow)
-
-    return timestamp
-
+    return colorsEntry[1], colorsEntry[2]    -- left, right
 end
+
+function rChat.setLeftColor(channelId, r, g, b)
+    local colorsEntry = db.newcolors[channelId]
+    colorsEntry[1] = rChat.ConvertRGBToHex(r, g, b)
+end
+
+function rChat.setRightColor(channelId, r, g, b)
+    local colorsEntry = db.newcolors[channelId]
+    colorsEntry[2] = rChat.ConvertRGBToHex(r, g, b)
+end
+
+local function getLeftColorRGB(channelId)
+    local colorsEntry = db.newcolors[channelId]
+    return rChat.ConvertHexToRGBA(colorsEntry[1])
+end
+
+local function getRightColorRGB(channelId)
+    local colorsEntry = db.newcolors[channelId]
+    return rChat.ConvertHexToRGBA(colorsEntry[2])
+end
+
 
 -- Format "From" name
 local function ConvertName(chanCode, from, isCS, fromDisplayName)
-    --logger = LibDebugLogger("rChat")
-    --logger:SetEnabled(true)
-
-    --logger:Debug(debug.traceback())
-    --logger:Debug(string.format("ConvertName: chanCode %s, from %s, displayName %s",(chanCode or "nil"), (from or "nil"),
-    --    (fromDisplayName or "nil")))
 
     local function DisplayWithOrWoBrackets(realFrom, displayed, linkType)
         if not displayed then -- reported. Should not happen, maybe parser error with nicknames.
@@ -474,7 +468,6 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
         new_from = "|t16:16:EsoUI/Art/ChatWindow/csIcon.dds|t" .. new_from
     end
 
-    --logger:Debug(string.format("ConvertName: returning %s",(new_from or "nil")))
     return new_from
 
 end
@@ -496,11 +489,6 @@ end
 -- format ESO text to raw text
 -- IE : Transforms LinkHandlers into their displayed value
 function rChat.FormatRawText(text)
-    --logger = LibDebugLogger("rChat")
-    --logger:SetEnabled(true)
-    
-    --logger:Debug(debug.traceback())
-    --logger:Debug(string.format("FormatRawText: text %s",(text or "nil")))
 
     -- Strip colors from chat
     local newtext = stripColours(text)
@@ -559,7 +547,6 @@ function rChat.FormatRawText(text)
         end
     end)
 
-    --logger:Debug(string.format("FormatRawText: newtext %s",(newtext or "nil")))
     return newtext
 
 end
@@ -583,9 +570,7 @@ local automatedMessagesList = ZO_SortFilterList:Subclass()
 -- Init Automated Messages
 function automatedMessagesList:Init(control)
 
-	--ZO_SortFilterList.Initialize(self, control)
-    ZO_SortFilterList.InitializeSortFilterList(self, control)
-    --self:SetAlternateRowBackgrounds(true)
+	ZO_SortFilterList.InitializeSortFilterList(self, control)
     local SortKeys = {
         ["name"] = {},
         ["message"] = {tiebreaker = "name"}
@@ -644,7 +629,6 @@ function automatedMessagesList:FilterScrollList()
     end
 end
 
--- Uses:  db, db.automatedMessages, rChatData.automatedMessagesList
 function rChat.SaveAutomatedMessage(name, message, isNew)
 
     if db then
@@ -702,8 +686,6 @@ function rChat.SaveAutomatedMessage(name, message, isNew)
 end
 
 -- Init Automated messages, build the scene and handle array of automated strings
--- Uses:  rChat.name, MENU_CATEGORY_RCHAT, rChatData.autoMessagesShowKeybind, 
---   db.automatedMessages, rChatData.automatedMessagesList 
 function rChat.InitAutomatedMessages()
 
     -- Create Scene
@@ -1275,31 +1257,6 @@ local function OnLinkClicked(rawLink, mouseButton, linkText, color, linkType, li
         -- Context Menu
         if chanCode and mouseButton == MOUSE_BUTTON_INDEX_LEFT then
 
-            --[[
-            -- Only Linkable channel - TODO use .playerLinkable or channelLinkable?
-            if chanNumber == CHAT_CHANNEL_SAY       -- p=true c=false
-            or chanNumber == CHAT_CHANNEL_YELL       -- p=true c=false
-            or chanNumber == CHAT_CHANNEL_PARTY       -- p=true c=true
-            or chanNumber == CHAT_CHANNEL_ZONE               -- p=true c=false
-            or chanNumber == CHAT_CHANNEL_ZONE_LANGUAGE_1       -- p=true c=false
-            or chanNumber == CHAT_CHANNEL_ZONE_LANGUAGE_2       -- p=true c=false
-            or chanNumber == CHAT_CHANNEL_ZONE_LANGUAGE_3       -- p=true c=false
-            or chanNumber == CHAT_CHANNEL_ZONE_LANGUAGE_4       -- p=true c=false
-            or (chanNumber >= CHAT_CHANNEL_GUILD_1 and chanNumber <= CHAT_CHANNEL_GUILD_5)       -- p=true c=true
-            or (chanNumber >= CHAT_CHANNEL_OFFICER_1 and chanNumber <= CHAT_CHANNEL_OFFICER_5) then       -- p=true c=true
-                IgnoreMouseDownEditFocusLoss()
-                CHAT_SYSTEM:StartTextEntry(nil, chanNumber)
-                
-            elseif chanNumber == CHAT_CHANNEL_WHISPER then       -- p=true c=false
-                local target = zo_strformat(SI_UNIT_NAME, db.LineStrings[numLine].rawFrom)
-                IgnoreMouseDownEditFocusLoss()
-                CHAT_SYSTEM:StartTextEntry(nil, chanNumber, target)
-                
-            elseif chanNumber == RCHAT_URL_CHAN then
-                RequestOpenUnsafeURL(linkText)
-            end
-            --]]
-            
             if chanNumber == CHAT_CHANNEL_WHISPER then 
                 local target = zo_strformat(SI_UNIT_NAME, db.LineStrings[numLine].rawFrom)
                 IgnoreMouseDownEditFocusLoss()
@@ -1469,12 +1426,12 @@ function rChat.ChangeTab(tabToSet)
     
     container.tabGroup:SetClickedButton(container.windows[tabToSet].tab)
     if CHAT_SYSTEM:IsMinimized() then CHAT_SYSTEM:Maximize() end
-    --container=CHAT_SYSTEM.primaryContainer
-    --if not container then return end
-    --local tabToSet=container.currentBuffer:GetParent().tab.tabToSet
-
 end
 
+
+-- Prune lines from saved cache
+-- Lines must be no older than our threshold,
+-- and we keep no more than 5000
 local function StripLinesFromLineStrings(typeOfExit)
 
     local function removeLine(index)
@@ -1484,8 +1441,18 @@ local function StripLinesFromLineStrings(typeOfExit)
         return index
     end
     
+    -- 1st loop is size based. If dump is too big, just delete old ones
+    if #db.LineStrings > 5000 then
+        local linesToDelete = #db.LineStrings - 5000
+        for l=1, linesToDelete do
+            if db.LineStrings[1] then
+                removeLine(1)
+            end
+        end
+    end
+
     local k = 1
-    -- First loop is time based. If message is older than our limit, it will be stripped.
+    -- 2nd loop is time based. If message is older than our limit, it will be stripped.
     local curtime= GetTimeStamp()
     while k <= #db.LineStrings do
 
@@ -1510,15 +1477,6 @@ local function StripLinesFromLineStrings(typeOfExit)
 
     end
 
-    -- 2nd loop is size based. If dump is too big, just delete old ones
-    if #db.LineStrings > 5000 then
-        local linesToDelete = #db.LineStrings - 5000
-        for l=1, linesToDelete do
-            if db.LineStrings[1] then
-                removeLine(1)
-            end
-        end
-    end
 
 end
 
@@ -1577,7 +1535,7 @@ local function SaveChatHistory(typeOf)
 
 end
 
-local function CreateNewChatTabPostHook()
+local function CreateNewChatTab_PostHook()
 
     for tabIndex, tabObject in ipairs(CHAT_SYSTEM.primaryContainer.windows) do
         if db.augmentHistoryBuffer then
@@ -1592,12 +1550,9 @@ end
 
 local function ShowFadedLines()
 
-    local origChatSystemCreateNewChatTab = CHAT_SYSTEM.CreateNewChatTab
-    CHAT_SYSTEM.CreateNewChatTab = function(self, ...)
-        origChatSystemCreateNewChatTab(self, ...)
-        CreateNewChatTabPostHook()
-    end
-
+	SecurePostHook(CHAT_SYSTEM, "CreateNewChatTab", function()
+		CreateNewChatTab_PostHook()
+	end)
 end
 
 local function OnReticleTargetChanged()
@@ -2174,8 +2129,8 @@ local function RestoreChatMessagesFromHistory(wasReloadUI)
                             for tabIndex=1, #CHAT_SYSTEM.containers[containerIndex].windows do
                                 if IsChatContainerTabCategoryEnabled(CHAT_SYSTEM.containers[containerIndex].id, tabIndex, category) then
                                     if not db.chatConfSync[localPlayer].tabs[tabIndex].notBefore or db.LineStrings[historyIndex].rawTimestamp > db.chatConfSync[localPlayer].tabs[tabIndex].notBefore then
-                                    	if db.LineStrings[historyIndex].rawValue then
-                                        	CHAT_SYSTEM.containers[containerIndex]:AddEventMessageToWindow(CHAT_SYSTEM.containers[containerIndex].windows[tabIndex], AddLinkHandler(db.LineStrings[historyIndex].rawValue, channelToRestore, historyIndex), category)
+                                    	if db.LineStrings[historyIndex].rawDisplayed then
+                                        	CHAT_SYSTEM.containers[containerIndex]:AddEventMessageToWindow(CHAT_SYSTEM.containers[containerIndex].windows[tabIndex], AddLinkHandler(db.LineStrings[historyIndex].rawDisplayed, channelToRestore, historyIndex), category)
                                         end
                                     end
                                 end
@@ -2274,7 +2229,7 @@ local function RestoreChatHistory()
             for index=1, indexMessages do
                 rmsg = rChatData.cachedMessages[index]
                 if rmsg and rmsg ~= "" then
-                    CHAT_SYSTEM:AddMessage(rChatData.cachedMessages[index])
+                    CHAT_SYSTEM:Zo_AddMessage(rChatData.cachedMessages[index])
                 end
             end
         end
@@ -2306,8 +2261,9 @@ local function StorelineNumber(rawTimestamp, rawFrom, text, chanCode, originalFr
 
         -- Timestamp cannot be nil anymore with SpamFilter, so use the option itself
         if db.showTimestamp then
-            -- Format for Copy
-            formattedMessage = "[" .. CreateTimestamp(GetTimeString()) .. "] "
+            -- Format for Copy 
+            formattedMessage = "[" .. rChat.CreateTimestamp(db.timestampFormat) .. "] "
+            --formattedMessage = "[" .. CreateTimestamp(GetTimeString()) .. "] "
         end
 
         -- Strip DDS tags for GM
@@ -2369,7 +2325,8 @@ local function FormatSysMessage(statusMessage)
         if db.showTimestamp then
 
             -- Timestamp formatted
-            timestamp = CreateTimestamp(GetTimeString())
+            timestamp = rChat.CreateTimestamp(db.timestampFormat)
+            --timestamp = CreateTimestamp(GetTimeString())
 
             local timecol
             -- Timestamp color is chanCode so no coloring
@@ -2391,45 +2348,46 @@ local function FormatSysMessage(statusMessage)
 
     end
 
-        -- Only if there something to display
-        if string.len(statusMessage) > 0 then
+    -- Only if there something to display
+    if string.len(statusMessage) > 0 then
 
-            local sysMessage
+        local sysMessage
 
-            -- Some addons are quicker than rChat
-        if not db then return sysMessage end
+        -- Some addons are quicker than rChat
+        if not db then return statusMessage end
 
-                -- Show Message
-                statusMessage = ShowTimestamp() .. statusMessage
+        -- Show Message
+        --statusMessage = ShowTimestamp() .. statusMessage
 
-                if not db.lineNumber then
-                    db.lineNumber = 1
-                end
+        if not db.lineNumber then
+            db.lineNumber = 1
+        end
 
-                --  for CopySystem
-                db.LineStrings[db.lineNumber] = {}
+        --  for CopySystem
+        db.LineStrings[db.lineNumber] = {}
 
-                -- Make it Linkable
-
-                if db.enablecopy then
-                    sysMessage = AddLinkHandler(statusMessage, CHAT_CHANNEL_SYSTEM, db.lineNumber)
-                else
-                    sysMessage = statusMessage
-                end
+        -- Make it Linkable
+        if db.enablecopy then
+            sysMessage = ShowTimestamp() .. AddLinkHandler(statusMessage, CHAT_CHANNEL_SYSTEM, db.lineNumber)
+        else
+            --sysMessage = statusMessage
+            sysMessage = ShowTimestamp() .. statusMessage
+        end
 
         db.LineStrings[db.lineNumber].rawFrom = db.LineStrings[db.lineNumber].rawFrom or ""
         db.LineStrings[db.lineNumber].rawMessage = db.LineStrings[db.lineNumber].rawMessage or ""
         db.LineStrings[db.lineNumber].rawLine = db.LineStrings[db.lineNumber].rawLine or ""
         db.LineStrings[db.lineNumber].rawValue = db.LineStrings[db.lineNumber].rawValue or statusMessage
         db.LineStrings[db.lineNumber].rawDisplayed = db.LineStrings[db.lineNumber].rawDisplayed or sysMessage
+        db.LineStrings[db.lineNumber].rawTimestamp = db.LineStrings[db.lineNumber].rawTimestamp or ShowTimestamp()
 
-                -- No From, rawTimestamp is in statusMessage, sent as arg for SpamFiltering even if SysMessages are not filtered
-                StorelineNumber(GetTimeStamp(), nil, statusMessage, CHAT_CHANNEL_SYSTEM, nil)
+        -- No From, rawTimestamp is in statusMessage, sent as arg for SpamFiltering even if SysMessages are not filtered
+        StorelineNumber(GetTimeStamp(), nil, statusMessage, CHAT_CHANNEL_SYSTEM, nil)
 
-            end
+    end
 
-            -- Show Message
-            return sysMessage
+    -- Show Message
+    return sysMessage
 end
 
 -- Add a rChat handler for URL's
@@ -2496,9 +2454,9 @@ local npc_channels = {
 local guild_mem_channels = {
     [CHAT_CHANNEL_GUILD_1] = true,
     [CHAT_CHANNEL_GUILD_2] = true,
-    [CHAT_CHANNEL_GUILD_2] = true,
-    [CHAT_CHANNEL_GUILD_2] = true,
-    [CHAT_CHANNEL_GUILD_2] = true,
+    [CHAT_CHANNEL_GUILD_3] = true,
+    [CHAT_CHANNEL_GUILD_4] = true,
+    [CHAT_CHANNEL_GUILD_5] = true,
 }
 local guild_ofc_channels = {
     [CHAT_CHANNEL_OFFICER_1] = true,
@@ -2566,23 +2524,18 @@ local function GetChannelColors(channel, from)
         -- rChat Colors
         -- Handle the same-colour options.
         if db.allNPCSameColour and npc_channels[channel] then
-            lcol = db.colours[2*CHAT_CHANNEL_MONSTER_SAY]
-            rcol = db.colours[2*CHAT_CHANNEL_MONSTER_SAY + 1]
+            lcol, rcol = rChat.getColors(CHAT_CHANNEL_MONSTER_SAY)
         elseif db.allGuildsSameColour and guild_mem_channels[channel] then
-            lcol = db.colours[2*CHAT_CHANNEL_GUILD_1]
-            rcol = db.colours[2*CHAT_CHANNEL_GUILD_1 + 1]
+            lcol, rcol = rChat.getColors(CHAT_CHANNEL_GUILD_1)
         elseif db.allGuildsSameColour and guild_ofc_channels[channel] then
-            lcol = db.colours[2*CHAT_CHANNEL_OFFICER_1]
-            rcol = db.colours[2*CHAT_CHANNEL_OFFICER_1 + 1]
+            lcol, rcol = rChat.getColors(CHAT_CHANNEL_OFFICER_1)
         elseif db.allZonesSameColour and lang_zone_channels[channel] then
-            lcol = db.colours[2*CHAT_CHANNEL_ZONE]
-            rcol = db.colours[2*CHAT_CHANNEL_ZONE + 1]
+            lcol, rcol = rChat.getColors(CHAT_CHANNEL_ZONE)
         elseif channel == CHAT_CHANNEL_PARTY and from and db.groupLeader and zo_strformat(SI_UNIT_NAME, from) == GetUnitName(GetGroupLeaderUnitTag()) then
             lcol = db.colours["groupleader"]
             rcol = db.colours["groupleader1"]
         else
-            lcol = db.colours[2*channel]
-            rcol = db.colours[2*channel + 1]
+            lcol, rcol = rChat.getColors(channel)
         end
 
         -- Set right colour to left colour
@@ -2606,33 +2559,16 @@ end
 
 -- Executed when EVENT_CHAT_MESSAGE_CHANNEL triggers
 -- Formats the message
-local function FormatMessage(chanCode, from, text, isCS, fromDisplayName, originalFrom, originalText, DDSBeforeAll, TextBeforeAll, DDSBeforeSender, TextBeforeSender, TextAfterSender, DDSAfterSender, DDSBeforeText, TextBeforeText, TextAfterText, DDSAfterText)
-
-    --local logger = LibDebugLogger("rChat")
-    --logger:SetEnabled(true)
-    --logger:Debug(debug.traceback())
-    --logger:Debug(string.format("FormatMessage: chanCode %s, from %s, text %s, displayName %s, origFrom %s, origText %s", (chanCode or "nil"),(from or "nil"),(text or "nil"),(fromDisplayName or "nil"),(originalFrom or "nil"),(originalText or "nil")))
-    --logger:Debug(string.format("FormatMessage: DDSB4All %s, TextB4All %s, DDSB4Sender %s, TextB4Sender %s, TextAftSender %s",(DDSBeforeAll or "nil"), (TextBeforeAll or "nil"), (DDSBeforeSender or "nil"), (TextBeforeSender or "nil"), (TextAfterSender or "nil")))
-    --logger:Debug(string.format("FormatMessage: DDSAftSender %s, DDSB4Text %s, TextB4Text %s, TextAftText %s, DDSAftText %s", (DDSAfterSender or "nil"),(DDSBeforeText or "nil"),(TextBeforeText or "nil"),(TextAfterText or "nil"),(DDSAfterText or "nil")))
+--local function FormatMessage(chanCode, from, text, isCS, fromDisplayName, originalFrom, originalText, DDSBeforeAll, TextBeforeAll, DDSBeforeSender, TextBeforeSender, TextAfterSender, DDSAfterSender, DDSBeforeText, TextBeforeText, TextAfterText, DDSAfterText)
+local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
 
     if not text or text == "nil" then return end
     if chanCode == nil or chanCode == "nil" then chanCode = 0 end
     fromDisplayName = fromDisplayName or from
     isCS = isCS or false
-    originalFrom = originalFrom or from
-    originalText = originalText or text
-    DDSBeforeAll = DDSBeforeAll or ""
-    TextBeforeAll = TextBeforeAll or ""
-    DDSBeforeSender = DDSBeforeSender or ""
-    TextBeforeSender = TextBeforeSender or ""
-    TextAfterSender = TextAfterSender or ""
-    DDSAfterSender = DDSAfterSender or ""
-    DDSBeforeText = DDSBeforeText or ""
-    TextBeforeText = TextBeforeText or ""
-    TextAfterText = TextAfterText or ""
-    DDSAfterText = DDSAfterText or ""
+    local originalFrom = from
+    local originalText = text
     
-
     -- Will calculate if this message is a spam
     local isSpam = rChat.SpamFilter(chanCode, from, text, isCS)
     if isSpam then return end
@@ -2650,10 +2586,7 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName, origin
     end
 
     -- Init message with other addons stuff
-    local message = DDSBeforeAll .. TextBeforeAll
-
-    -- Init text with other addons stuff. Note : text can also be modified by other addons. Only originalText is the string the game has receive
-    newtext = table.concat({DDSBeforeText, TextBeforeText, newtext, TextAfterText, DDSAfterText})
+    local message = ""
 
     if db.disableBrackets then
         chatStrings = chatStrings_nobrackets
@@ -2671,9 +2604,6 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName, origin
 
     local new_from = ConvertName(chanCode, from, isCS, fromDisplayName)
     local displayedFrom = db.LineStrings[db.lineNumber].rawFrom
-
-    -- Add other addons stuff related to sender
-    new_from = table.concat({DDSBeforeSender, TextBeforeSender, new_from, TextAfterSender, DDSAfterSender})
 
     -- Guild tag
     local tag
@@ -2715,12 +2645,15 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName, origin
         end
 
         -- Message is timestamp for now
-        -- Add RCHAT_HANDLER for display
-        local timestamp = ZO_LinkHandler_CreateLink(CreateTimestamp(GetTimeString()), nil, RCHAT_LINK, db.lineNumber .. ":" .. chanCode) .. " "
+        -- Add RCHAT_HANDLER for display 
+        local timestamp = ZO_LinkHandler_CreateLink( rChat.CreateTimestamp(db.timestampFormat), 
+                                nil, RCHAT_LINK, db.lineNumber .. ":" .. chanCode ) .. " "
+        --local timestamp = ZO_LinkHandler_CreateLink(CreateTimestamp(GetTimeString()), nil, RCHAT_LINK, db.lineNumber .. ":" .. chanCode) .. " "
 
         -- Timestamp color
         message = message .. string.format("%s%s|r", timecol, timestamp)
-        db.LineStrings[db.lineNumber].rawValue = string.format("%s[%s] |r", timecol, CreateTimestamp(GetTimeString()))
+        db.LineStrings[db.lineNumber].rawValue = string.format("%s[%s] |r", timecol, rChat.CreateTimestamp(db.timestampFormat))
+        --db.LineStrings[db.lineNumber].rawValue = string.format("%s[%s] |r", timecol, CreateTimestamp(GetTimeString()))
 
     end
 
@@ -3864,7 +3797,7 @@ local function BuildLAMPanel()
             },
         },
     }
-    -- Chat Appearance
+    -- Window Appearance
     optionsData[#optionsData + 1] = {
         type = "submenu",
         name = SF.GetIconized(RCHAT_APPEARANCEMH, SF.hex.bronze),
@@ -4178,6 +4111,23 @@ local function BuildLAMPanel()
             },
         },
     } -- Timestamp options
+    
+    local function isDisabled_NPCColors()
+        if db.useESOcolors then
+            return true
+        else
+            return db.allNPCSameColour
+        end
+    end
+
+    local function isDisabled_ZoneColors()
+        if db.useESOcolors then
+            return true
+        else
+            return db.allZonesSameColour
+        end
+    end
+
     -- Chat Colors
     optionsData[#optionsData + 1] = {
         type = "submenu",
@@ -4214,124 +4164,124 @@ local function BuildLAMPanel()
                 type = "description",
                 text = RCHAT_CHATCOLORTT,
             },
-            {-- Say players
+            {-- Say players left
                 type = "colorpicker",
                 name = L(RCHAT_SAY),
                 tooltip = L(RCHAT_SAYTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_SAY]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_SAY] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_SAY]),
+                getFunc = function() return getLeftColorRGB(CHAT_CHANNEL_SAY) end,
+                setFunc = function(r, g, b) rChat.setLeftColor(CHAT_CHANNEL_SAY, r, g, b) end,
+                default = getLeftColorRGB(CHAT_CHANNEL_SAY),
                 disabled = function() return db.useESOcolors end,
             },
-            {--Say Chat Color
+            {-- Say players right
                 type = "colorpicker",
                 name = L(RCHAT_SAYCHAT),
                 tooltip = L(RCHAT_SAYCHATTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_SAY + 1]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_SAY + 1] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_SAY + 1]),
+                getFunc = function() return getRightColorRGB(CHAT_CHANNEL_SAY) end,
+                setFunc = function(r, g, b) rChat.setRightColor(CHAT_CHANNEL_SAY, r, g, b) end,
+                default = getRightColorRGB(CHAT_CHANNEL_SAY),
                 disabled = function() return db.useESOcolors end,
             },
-            {-- Zone Player
+            {-- Zone Player left
                 type = "colorpicker",
                 name = L(RCHAT_ZONE),
                 tooltip = L(RCHAT_ZONETT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_ZONE]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_ZONE] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_ZONE]),
+                getFunc = function() return getLeftColorRGB(CHAT_CHANNEL_ZONE) end,
+                setFunc = function(r, g, b) rChat.setLeftColor(CHAT_CHANNEL_ZONE, r, g, b) end,
+                default = getLeftColorRGB(CHAT_CHANNEL_ZONE),
                 disabled = function() return db.useESOcolors end,
             },
-            {
+            {-- Zone Player right
                 type = "colorpicker",
                 name = L(RCHAT_ZONECHAT),
                 tooltip = L(RCHAT_ZONECHATTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_ZONE + 1]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_ZONE + 1] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_ZONE + 1]),
+                getFunc = function() return getRightColorRGB(CHAT_CHANNEL_ZONE) end,
+                setFunc = function(r, g, b) rChat.setRightColor(CHAT_CHANNEL_ZONE, r, g, b) end,
+                default = getRightColorRGB(CHAT_CHANNEL_ZONE),
                 disabled = function() return db.useESOcolors end,
             },
-            {-- Yell Player
+            {-- Yell Player left
                 type = "colorpicker",
                 name = L(RCHAT_YELL),
                 tooltip = L(RCHAT_YELLTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_YELL]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_YELL] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_YELL]),
+                getFunc = function() return getLeftColorRGB(CHAT_CHANNEL_YELL) end,
+                setFunc = function(r, g, b) rChat.setLeftColor(CHAT_CHANNEL_YELL, r, g, b) end,
+                default = getLeftColorRGB(CHAT_CHANNEL_YELL),
                 disabled = function() return db.useESOcolors end,
             },
-            {--Yell Chat
+            {-- Yell Player right
                 type = "colorpicker",
                 name = L(RCHAT_YELLCHAT),
                 tooltip = L(RCHAT_YELLCHATTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_YELL + 1]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_YELL + 1] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_YELL + 1]),
+                getFunc = function() return getRightColorRGB(CHAT_CHANNEL_YELL) end,
+                setFunc = function(r, g, b) rChat.setRightColor(CHAT_CHANNEL_YELL, r, g, b) end,
+                default = getRightColorRGB(CHAT_CHANNEL_YELL),
                 disabled = function() return db.useESOcolors end,
             },
-            {--
+            {-- Whisper Incoming left
                 type = "colorpicker",
                 name = L(RCHAT_INCOMINGWHISPERS),
                 tooltip = L(RCHAT_INCOMINGWHISPERSTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_WHISPER]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_WHISPER] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_WHISPER]),
+                getFunc = function() return getLeftColorRGB(CHAT_CHANNEL_WHISPER) end,
+                setFunc = function(r, g, b) rChat.setLeftColor(CHAT_CHANNEL_WHISPER, r, g, b) end,
+                default = getLeftColorRGB(CHAT_CHANNEL_WHISPER),
                 disabled = function() return db.useESOcolors end,
             },
-            {--
+            {-- Whisper Incoming right
                 type = "colorpicker",
                 name = L(RCHAT_INCOMINGWHISPERSCHAT),
                 tooltip = L(RCHAT_INCOMINGWHISPERSCHATTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_WHISPER + 1]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_WHISPER + 1] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_WHISPER + 1]),
+                getFunc = function() return getRightColorRGB(CHAT_CHANNEL_WHISPER) end,
+                setFunc = function(r, g, b) rChat.setRightColor(CHAT_CHANNEL_WHISPER, r, g, b) end,
+                default = getRightColorRGB(CHAT_CHANNEL_WHISPER),
                 disabled = function() return db.useESOcolors end,
             },
-            {--
+            {-- Whisper Outgoing left
                 type = "colorpicker",
                 name = L(RCHAT_OUTGOINGWHISPERS),
                 tooltip = L(RCHAT_OUTGOINGWHISPERSTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_WHISPER_SENT]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_WHISPER_SENT] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_WHISPER_SENT]),
+                getFunc = function() return getLeftColorRGB(CHAT_CHANNEL_WHISPER_SENT) end,
+                setFunc = function(r, g, b) rChat.setLeftColor(CHAT_CHANNEL_WHISPER_SENT, r, g, b) end,
+                default = getLeftColorRGB(CHAT_CHANNEL_WHISPER_SENT),
                 disabled = function() return db.useESOcolors end,
             },
-            {--
+            {-- Whisper Outgoing right
                 type = "colorpicker",
                 name = L(RCHAT_OUTGOINGWHISPERSCHAT),
                 tooltip = L(RCHAT_OUTGOINGWHISPERSCHATTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_WHISPER_SENT + 1]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_WHISPER_SENT + 1] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_WHISPER_SENT + 1]),
+                getFunc = function() return getRightColorRGB(CHAT_CHANNEL_WHISPER_SENT) end,
+                setFunc = function(r, g, b) rChat.setRightColor(CHAT_CHANNEL_WHISPER_SENT, r, g, b) end,
+                default = getRightColorRGB(CHAT_CHANNEL_WHISPER_SENT),
                 disabled = function() return db.useESOcolors end,
             },
-            {--
+            {-- Group left
                 type = "colorpicker",
                 name = L(RCHAT_GROUP),
                 tooltip = L(RCHAT_GROUPTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_PARTY]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_PARTY] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_PARTY]),
+                getFunc = function() return getLeftColorRGB(CHAT_CHANNEL_PARTY) end,
+                setFunc = function(r, g, b) rChat.setLeftColor(CHAT_CHANNEL_PARTY, r, g, b) end,
+                default = getLeftColorRGB(CHAT_CHANNEL_PARTY),
                 disabled = function() return db.useESOcolors end,
             },
-            {--
+            {-- Group right
                 type = "colorpicker",
                 name = L(RCHAT_GROURCHAT),
                 tooltip = L(RCHAT_GROURCHATTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_PARTY + 1]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_PARTY + 1] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_PARTY + 1]),
+                getFunc = function() return getRightColorRGB(CHAT_CHANNEL_PARTY) end,
+                setFunc = function(r, g, b) rChat.setRightColor(CHAT_CHANNEL_PARTY, r, g, b) end,
+                default = getRightColorRGB(CHAT_CHANNEL_PARTY),
                 disabled = function() return db.useESOcolors end,
             },
             {
@@ -4343,24 +4293,24 @@ local function BuildLAMPanel()
                 type = "description",
                 text = RCHAT_OTHERCOLORTT,
             },
-            {
+            {-- Emote left
                 type = "colorpicker",
                 name = L(RCHAT_EMOTES),
                 tooltip = L(RCHAT_EMOTESTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_EMOTE]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_EMOTE] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_EMOTE]),
+                getFunc = function() return getLeftColorRGB(CHAT_CHANNEL_EMOTE) end,
+                setFunc = function(r, g, b) rChat.setLeftColor(CHAT_CHANNEL_EMOTE, r, g, b) end,
+                default = getLeftColorRGB(CHAT_CHANNEL_EMOTE),
                 disabled = function() return db.useESOcolors end,
             },
-            {--
+            {-- Emote right
                 type = "colorpicker",
                 name = L(RCHAT_EMOTESCHAT),
                 tooltip = L(RCHAT_EMOTESCHATTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_EMOTE + 1]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_EMOTE + 1] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_EMOTE + 1]),
+                getFunc = function() return getRightColorRGB(CHAT_CHANNEL_EMOTE) end,
+                setFunc = function(r, g, b) rChat.setRightColor(CHAT_CHANNEL_EMOTE, r, g, b) end,
+                default = getRightColorRGB(CHAT_CHANNEL_EMOTE),
                 disabled = function() return db.useESOcolors end,
             },
             {
@@ -4368,24 +4318,24 @@ local function BuildLAMPanel()
                 name = SF.GetIconized(RCHAT_NPC, SF.hex.superior),
                 width = "full",
             },
-            {--
+            {-- NPC Say left
                 type = "colorpicker",
                 name = L(RCHAT_NPCSAY),
                 tooltip = L(RCHAT_NPCSAYTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_MONSTER_SAY]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_MONSTER_SAY] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_MONSTER_SAY]),
+                getFunc = function() return getLeftColorRGB(CHAT_CHANNEL_MONSTER_SAY) end,
+                setFunc = function(r, g, b) rChat.setLeftColor(CHAT_CHANNEL_MONSTER_SAY, r, g, b) end,
+                default = getLeftColorRGB(CHAT_CHANNEL_MONSTER_SAY),
                 disabled = function() return db.useESOcolors end,
             },
-            {--
+            {-- NPC Say right
                 type = "colorpicker",
                 name = L(RCHAT_NPCSAYCHAT),
                 tooltip = L(RCHAT_NPCSAYCHATTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_MONSTER_SAY + 1]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_MONSTER_SAY + 1] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_MONSTER_SAY + 1]),
+                getFunc = function() return getRightColorRGB(CHAT_CHANNEL_MONSTER_SAY) end,
+                setFunc = function(r, g, b) rChat.setRightColor(CHAT_CHANNEL_MONSTER_SAY, r, g, b) end,
+                default = getRightColorRGB(CHAT_CHANNEL_MONSTER_SAY),
                 disabled = function() return db.useESOcolors end,
             },
             {-- LAM Option Use same color for all NPC
@@ -4397,101 +4347,65 @@ local function BuildLAMPanel()
                 width = "full",
                 default = defaults.allNPCSameColour,
             },
-            {--
+            {-- NPC Yell left
                 type = "colorpicker",
                 name = L(RCHAT_NPCYELL),
                 tooltip = L(RCHAT_NPCYELLTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_MONSTER_YELL]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_MONSTER_YELL] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_MONSTER_YELL]),
-                disabled = function()
-                    if db.useESOcolors then
-                        return true
-                    else
-                        return db.allNPCSameColour
-                    end
-                end,
+                getFunc = function() return getLeftColorRGB(CHAT_CHANNEL_MONSTER_YELL) end,
+                setFunc = function(r, g, b) rChat.setLeftColor(CHAT_CHANNEL_MONSTER_YELL, r, g, b) end,
+                default = getRightColorRGB(CHAT_CHANNEL_MONSTER_YELL),
+                disabled = isDisabled_NPCColors,
             },
-            {--
+            {-- NPC Yell right
                 type = "colorpicker",
                 name = L(RCHAT_NPCYELLCHAT),
                 tooltip = L(RCHAT_NPCYELLCHATTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_MONSTER_YELL + 1]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_MONSTER_YELL + 1] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_MONSTER_YELL + 1]),
-                disabled = function()
-                            if db.useESOcolors then
-                                return true
-                            else
-                                return db.allNPCSameColour
-                            end
-                            end,
+                getFunc = function() return getRightColorRGB(CHAT_CHANNEL_MONSTER_YELL) end,
+                setFunc = function(r, g, b) rChat.setRightColor(CHAT_CHANNEL_MONSTER_YELL, r, g, b) end,
+                default = getRightColorRGB(CHAT_CHANNEL_MONSTER_YELL),
+                disabled = isDisabled_NPCColors,
             },
-            {--
+            {-- NPC Whisper left
                 type = "colorpicker",
                 name = L(RCHAT_NPCWHISPER),
                 tooltip = L(RCHAT_NPCWHISPERTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_MONSTER_WHISPER]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_MONSTER_WHISPER] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_MONSTER_WHISPER]),
-                disabled = function()
-                    if db.useESOcolors then
-                        return true
-                    else
-                        return db.allNPCSameColour
-                    end
-                end,
+                getFunc = function() return getLeftColorRGB(CHAT_CHANNEL_MONSTER_WHISPER) end,
+                setFunc = function(r, g, b) rChat.setLeftColor(CHAT_CHANNEL_MONSTER_WHISPER, r, g, b) end,
+                default = getLeftColorRGB(CHAT_CHANNEL_MONSTER_WHISPER),
+                disabled = isDisabled_NPCColors,
             },
-            {--
+            {-- NPC Whisper right
                 type = "colorpicker",
                 name = L(RCHAT_NPCWHISPERCHAT),
                 tooltip = L(RCHAT_NPCWHISPERCHATTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_MONSTER_WHISPER + 1]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_MONSTER_WHISPER + 1] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_MONSTER_WHISPER + 1]),
-                disabled = function()
-                    if db.useESOcolors then
-                        return true
-                    else
-                        return db.allNPCSameColour
-                    end
-                end,
+                getFunc = function() return getRightColorRGB(CHAT_CHANNEL_MONSTER_WHISPER) end,
+                setFunc = function(r, g, b) rChat.setRightColor(CHAT_CHANNEL_MONSTER_WHISPER, r, g, b) end,
+                default = getRightColorRGB(CHAT_CHANNEL_MONSTER_WHISPER),
+                disabled = isDisabled_NPCColors,
             },
-            {--
+            {-- NPC Emote left
                 type = "colorpicker",
                 name = L(RCHAT_NPCEMOTES),
                 tooltip = L(RCHAT_NPCEMOTESTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_MONSTER_EMOTE]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_MONSTER_EMOTE] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_MONSTER_EMOTE]),
-                disabled = function()
-                    if db.useESOcolors then
-                        return true
-                    else
-                        return db.allNPCSameColour
-                    end
-                end,
+                getFunc = function() return getLeftColorRGB(CHAT_CHANNEL_MONSTER_EMOTE) end,
+                setFunc = function(r, g, b) rChat.setLeftColor(CHAT_CHANNEL_MONSTER_EMOTE, r, g, b) end,
+                default = getLeftColorRGB(CHAT_CHANNEL_MONSTER_EMOTE),
+                disabled = isDisabled_NPCColors,
             },
-            {--
+            {-- NPC Emote right
                 type = "colorpicker",
                 name = L(RCHAT_NPCEMOTESCHAT),
                 tooltip = L(RCHAT_NPCEMOTESCHATTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_MONSTER_EMOTE + 1]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_MONSTER_EMOTE + 1] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_MONSTER_EMOTE + 1]),
-                disabled = function()
-                    if db.useESOcolors then
-                        return true
-                    else
-                        return db.allNPCSameColour
-                    end
-                end,
+                getFunc = function() return getRightColorRGB(CHAT_CHANNEL_MONSTER_EMOTE) end,
+                setFunc = function(r, g, b) rChat.setRightColor(CHAT_CHANNEL_MONSTER_EMOTE, r, g, b) end,
+                default = getRightColorRGB(CHAT_CHANNEL_MONSTER_EMOTE),
+                disabled = isDisabled_NPCColors,
             },
             {
                 type = "header",
@@ -4507,133 +4421,85 @@ local function BuildLAMPanel()
                 width = "full",
                 default = defaults.allZonesSameColour,
             },
-            {--
+            {-- Zone English left
                 type = "colorpicker",
                 name = L(RCHAT_ENZONE),
                 tooltip = L(RCHAT_ENZONETT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_1]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_1] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_1]),
-                disabled = function()
-                    if db.useESOcolors then
-                        return true
-                    else
-                        return db.allZonesSameColour
-                    end
-                end,
+                getFunc = function() return getLeftColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_1) end,
+                setFunc = function(r, g, b) rChat.setLeftColor(CHAT_CHANNEL_ZONE_LANGUAGE_1, r, g, b) end,
+                default = getLeftColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_1),
+                disabled = isDisabled_ZoneColors,
             },
-            {--
+            {-- Zone English right
                 type = "colorpicker",
                 name = L(RCHAT_ENZONECHAT),
                 tooltip = L(RCHAT_ENZONECHATTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_1 + 1]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_1 + 1] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_1 + 1]),
-                disabled = function()
-                    if db.useESOcolors then
-                        return true
-                    else
-                        return db.allZonesSameColour
-                    end
-                end,
+                getFunc = function() return getRightColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_1) end,
+                setFunc = function(r, g, b) rChat.setRightColor(CHAT_CHANNEL_ZONE_LANGUAGE_1, r, g, b) end,
+                default = getRightColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_1),
+                disabled = isDisabled_ZoneColors,
             },
-            {--
+            {-- Zone French left
                 type = "colorpicker",
                 name = L(RCHAT_FRZONE),
                 tooltip = L(RCHAT_FRZONETT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_2]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_2] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_2]),
-                disabled = function()
-                    if db.useESOcolors then
-                        return true
-                    else
-                        return db.allZonesSameColour
-                    end
-                end,
+                getFunc = function() return getLeftColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_2) end,
+                setFunc = function(r, g, b) rChat.setLeftColor(CHAT_CHANNEL_ZONE_LANGUAGE_2, r, g, b) end,
+                default = getLeftColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_2),
+                disabled = isDisabled_ZoneColors,
             },
-            {--
+            {-- Zone French right
                 type = "colorpicker",
                 name = L(RCHAT_FRZONECHAT),
                 tooltip = L(RCHAT_FRZONECHATTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_2 + 1]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_2 + 1] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_2 + 1]),
-                disabled = function()
-                    if db.useESOcolors then
-                        return true
-                    else
-                        return db.allZonesSameColour
-                    end
-                end,
+                getFunc = function() return getRightColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_2) end,
+                setFunc = function(r, g, b) rChat.setRightColor(CHAT_CHANNEL_ZONE_LANGUAGE_2, r, g, b) end,
+                default = getRightColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_2),
+                disabled = isDisabled_ZoneColors,
             },
-            {--
+            {-- Zone German left
                 type = "colorpicker",
                 name = L(RCHAT_DEZONE),
                 tooltip = L(RCHAT_DEZONETT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_3]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_3] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_3]),
-                disabled = function()
-                    if db.useESOcolors then
-                        return true
-                    else
-                        return db.allZonesSameColour
-                    end
-                end,
+                getFunc = function() return getLeftColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_3) end,
+                setFunc = function(r, g, b) rChat.setLeftColor(CHAT_CHANNEL_ZONE_LANGUAGE_3, r, g, b) end,
+                default = getLeftColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_3),
+                disabled = isDisabled_ZoneColors,
             },
-            {--
+            {-- Zone German right
                 type = "colorpicker",
                 name = L(RCHAT_DEZONECHAT),
                 tooltip = L(RCHAT_DEZONECHATTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_3 + 1]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_3 + 1] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_3 + 1]),
-                disabled = function()
-                    if db.useESOcolors then
-                        return true
-                    else
-                        return db.allZonesSameColour
-                    end
-                end,
+                getFunc = function() return getRightColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_3) end,
+                setFunc = function(r, g, b) rChat.setRightColor(CHAT_CHANNEL_ZONE_LANGUAGE_3, r, g, b) end,
+                default = getRightColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_3),
+                disabled = isDisabled_ZoneColors,
             },
-            {--
+            {-- Zone Japanese left
                 type = "colorpicker",
                 name = L(RCHAT_JPZONE),
                 tooltip = L(RCHAT_JPZONETT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_4]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_4] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_4]),
-                disabled = function()
-                    if db.useESOcolors then
-                        return true
-                    else
-                        return db.allZonesSameColour
-                    end
-                end,
+                getFunc = function() return getLeftColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_4) end,
+                setFunc = function(r, g, b) rChat.setLeftColor(CHAT_CHANNEL_ZONE_LANGUAGE_4, r, g, b) end,
+                default = getLeftColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_4),
+                disabled = isDisabled_ZoneColors,
             },
-            {--
+            {-- Zone Japanese right
                 type = "colorpicker",
                 name = L(RCHAT_JPZONECHAT),
                 tooltip = L(RCHAT_JPZONECHATTT),
                 width = "half",
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_4 + 1]) end,
-                setFunc = function(r, g, b) db.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_4 + 1] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*CHAT_CHANNEL_ZONE_LANGUAGE_4 + 1]),
-                disabled = function()
-                    if db.useESOcolors then
-                        return true
-                    else
-                        return db.allZonesSameColour
-                    end
-                end,
+                getFunc = function() return getRightColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_4) end,
+                setFunc = function(r, g, b) rChat.setRightColor(CHAT_CHANNEL_ZONE_LANGUAGE_4, r, g, b) end,
+                default = getRightColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_4),
+                disabled = isDisabled_ZoneColors,
             },
         },
     }
@@ -4641,6 +4507,14 @@ local function BuildLAMPanel()
 -- Guilds
 
 --  Guild Stuff
+    local function isDisabled_GuildColors()
+        if db.useESOcolors then return true end
+        if guild ~= 1 then
+            return db.allGuildsSameColour
+        end
+        return false
+    end
+
 --
     local guildOptionsData = {
         type = "submenu",
@@ -4662,7 +4536,9 @@ local function BuildLAMPanel()
                 name = L(RCHAT_ALLGUILDSSAMECOLOUR),
                 tooltip = L(RCHAT_ALLGUILDSSAMECOLOURTT),
                 getFunc = function() return db.allGuildsSameColour end,
-                setFunc = function(newValue) db.allGuildsSameColour = newValue end,
+                setFunc = function(newValue) 
+                        db.allGuildsSameColour = newValue 
+                    end,
                 width = "half",
                 default = defaults.allGuildsSameColour,
             },
@@ -4721,7 +4597,7 @@ local function BuildLAMPanel()
                 setFunc = function(newValue)
                     db.switchFor[guildName] = newValue
                     UpdateCharCorrespondanceTableSwitches()
-                    CHAT_SYSTEM:CreateChannelData()
+                    ZOS_CreateChannelData()
                 end,
                 width = "full",
                 default = "",
@@ -4736,11 +4612,9 @@ local function BuildLAMPanel()
                 setFunc = function(newValue)
                     db.officerSwitchFor[guildName] = newValue
                     UpdateCharCorrespondanceTableSwitches()
-                    CHAT_SYSTEM:CreateChannelData()
+                    ZOS_CreateChannelData()
                 end
             },
-        -- Config store 1/2/3 to avoid language switches
-        -- TODO : Optimize
             -- Name Format
             {
                 type = "dropdown",
@@ -4775,65 +4649,41 @@ local function BuildLAMPanel()
                 width = "full",
                 default = defaults.formatguild[0],
             },
-            {
+            {-- guild left
                 type = "colorpicker",
                 name = zo_strformat(RCHAT_MEMBERS, guildName),
                 tooltip = zo_strformat(RCHAT_SETCOLORSFORTT, guildName),
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*(CHAT_CHANNEL_GUILD_1 + guild - 1)]) end,
-                setFunc = function(r, g, b) db.colours[2*(CHAT_CHANNEL_GUILD_1 + guild - 1)] = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*(CHAT_CHANNEL_GUILD_1 + guild - 1)]),
-                disabled = function()
-                    if db.useESOcolors then return true end
-                    if guild ~= 1 then
-                        return db.allGuildsSameColour
-                    end
-                    return false
-                    end,
+                getFunc = function() return getLeftColorRGB(CHAT_CHANNEL_GUILD_1 + guild - 1) end,
+                setFunc = function(r, g, b) rChat.setLeftColor(CHAT_CHANNEL_GUILD_1 + guild - 1, r, g, b) end,
+                default = getLeftColorRGB(CHAT_CHANNEL_GUILD_1 + guild - 1),
+                disabled = isDisabled_GuildColors,
             },
-            {
+            {-- guild right
                 type = "colorpicker",
                 name = zo_strformat(RCHAT_CHAT, guildName),
                 tooltip = zo_strformat(RCHAT_SETCOLORSFORCHATTT, guildName),
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*(CHAT_CHANNEL_GUILD_1 + guild - 1) + 1]) end,
-                setFunc = function(r, g, b) db.colours[2*(CHAT_CHANNEL_GUILD_1 + guild - 1) + 1] = rChat.rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*(CHAT_CHANNEL_GUILD_1 + guild - 1) + 1]),
-                disabled = function()
-                    if db.useESOcolors then return true end
-                    if guild ~= 1 then
-                        return db.allGuildsSameColour
-                    end
-                    return false
-                    end,
+                getFunc = function() return getRightColorRGB(CHAT_CHANNEL_GUILD_1 + guild - 1) end,
+                setFunc = function(r, g, b) rChat.setRightColor(CHAT_CHANNEL_GUILD_1 + guild - 1, r, g, b) end,
+                default = getLeftColorRGB(CHAT_CHANNEL_GUILD_1 + guild - 1),
+                disabled = isDisabled_GuildColors,
             },
-            {
+            {-- officer left
                 type = "colorpicker",
                 name = zo_strformat(RCHAT_MEMBERS, guildName..L(RCHAT_OFFICERSTT)),
                 tooltip = zo_strformat(RCHAT_SETCOLORSFOROFFICIERSTT, guildName),
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*(CHAT_CHANNEL_OFFICER_1 + guild - 1)]) end,
-                setFunc = function(r, g, b) db.colours[2*(CHAT_CHANNEL_OFFICER_1 + guild - 1)] = rChat.rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*(CHAT_CHANNEL_OFFICER_1 + guild - 1)]),
-                disabled = function()
-                    if db.useESOcolors then return true end
-                    if guild ~= 1 then
-                        return db.allGuildsSameColour
-                    end
-                    return false
-                    end,
+                getFunc = function() return getLeftColorRGB(CHAT_CHANNEL_OFFICER_1 + guild - 1) end,
+                setFunc = function(r, g, b) rChat.setLeftColor(CHAT_CHANNEL_OFFICER_1 + guild - 1, r, g, b) end,
+                default = getLeftColorRGB(CHAT_CHANNEL_OFFICER_1 + guild - 1),
+                disabled = isDisabled_GuildColors,
             },
-            {
+            {-- officer right
                 type = "colorpicker",
                 name = zo_strformat(RCHAT_CHAT, guildName..L(RCHAT_OFFICERSTT)),
                 tooltip = zo_strformat(RCHAT_SETCOLORSFOROFFICIERSCHATTT, guildName),
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours[2*(CHAT_CHANNEL_OFFICER_1 + guild - 1) + 1]) end,
-                setFunc = function(r, g, b) db.colours[2*(CHAT_CHANNEL_OFFICER_1 + guild - 1) + 1] = rChat.rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours[2*(CHAT_CHANNEL_OFFICER_1 + guild - 1) + 1]),
-                disabled = function()
-                    if db.useESOcolors then return true end
-                    if guild ~= 1 then
-                        return db.allGuildsSameColour
-                    end
-                    return false
-                    end,
+                getFunc = function() return getRightColorRGB(CHAT_CHANNEL_OFFICER_1 + guild - 1) end,
+                setFunc = function(r, g, b) rChat.setRightColor(CHAT_CHANNEL_OFFICER_1 + guild - 1, r, g, b) end,
+                default = getRightColorRGB(CHAT_CHANNEL_OFFICER_1 + guild - 1),
+                disabled = isDisabled_GuildColors,
             },
         },
     }
@@ -4942,10 +4792,31 @@ local function RevertCategories(guildName)
 
 end
 
+local function RegisterChatEvents()
+    local evthdlrs = {
+        [EVENT_CHAT_MESSAGE_CHANNEL] = FormatMessage,
+        [EVENT_GROUP_TYPE_CHANGED] = OnGroupTypeChanged,
+        [EVENT_FRIEND_PLAYER_STATUS_CHANGED] = OnFriendPlayerStatusChanged,
+        [EVENT_IGNORE_ADDED] = OnIgnoreAdded,
+        [EVENT_IGNORE_REMOVED] = OnIgnoreRemoved,
+        [EVENT_GROUP_MEMBER_LEFT] = OnGroupMemberLeftLC
+    }
+    
+    if evthdlrs and CHAT_ROUTER and CHAT_ROUTER.RegisterMessageFormatter then
+        for evtId, evthdlr in pairs(evthdlrs) do
+            if evtId and evthdlr and type(evthdlr) == "function" then
+                CHAT_ROUTER:RegisterMessageFormatter(evtId, evthdlr)
+            end
+        end
+    end
+end
+
 -- Registers the formatMessage function with the libChat to handle chat formatting.
 local function OnPlayerActivated()
 
     --ModifyChannelInfo()
+    EVENT_MANAGER:UnregisterForEvent(rChat.name, EVENT_PLAYER_ACTIVATED)
+
     rChatData.sceneFirst = false
 
     if isAddonLoaded then
@@ -4973,6 +4844,10 @@ local function OnPlayerActivated()
             end)
 
 
+        SecurePostHook("ZO_ChatSystem_ScrollToBottom", function(ctrl)
+            rChat_RemoveIMNotification()
+        end)
+
         -- Visual Notification PreHook
         ZO_PreHook(CHAT_SYSTEM, "Maximize", function(self)
             CHAT_SYSTEM.IMLabelMin:SetHidden(true)
@@ -4990,7 +4865,7 @@ local function OnPlayerActivated()
         -- Rebuild Lam Panel
         BuildLAMPanel()
         --
-        CreateNewChatTabPostHook()
+        CreateNewChatTab_PostHook()
 
         -- Should we minimize ?
         MinimizeChatAtLaunch()
@@ -5007,7 +4882,7 @@ local function OnPlayerActivated()
 
         -- Update Swtches
         UpdateCharCorrespondanceTableSwitches()
-        CHAT_SYSTEM:CreateChannelData()
+        ZOS_CreateChannelData()
 
         -- Set default channel at login
         SetToDefaultChannel()
@@ -5025,26 +4900,7 @@ local function OnPlayerActivated()
         -- Change Window apparence
         ChangeChatWindowDarkness()
 
-        -- libChat
-        -- All those events outputs to the ChatSystem
-
-        -- registerFormat = message for EVENT_CHAT_MESSAGE_CHANNEL
-        LC2:registerFormat(FormatMessage,  rChat.name)
-
-        -- registerFriendStatus = message for EVENT_FRIEND_PLAYER_STATUS_CHANGED
-        if not LC2.manager.registerFriendStatus then
-            LC2:registerFriendStatus(OnFriendPlayerStatusChanged, rChat.name)
-        end
-
-        -- registerIgnoreAdd = message for EVENT_IGNORE_ADDED, registerIgnoreRemove = message for EVENT_IGNORE_REMOVED
-        LC2:registerIgnoreAdd(OnIgnoreAdded, rChat.name)
-        LC2:registerIgnoreRemove(OnIgnoreRemoved, rChat.name)
-        LC2:registerGroupMemberLeft(OnGroupMemberLeftLC, rChat.name)
-        -- registerGroupTypeChanged = message for EVENT_GROUP_TYPE_CHANGED
-        LC2:registerGroupTypeChanged(OnGroupTypeChanged, rChat.name)
-
-        EVENT_MANAGER:UnregisterForEvent(rChat.name, EVENT_PLAYER_ACTIVATED)
-
+        RegisterChatEvents()
     end
 
 end
@@ -5244,6 +5100,25 @@ local function OnAddonHistoryLoaded(_,addonName)
     end
 end
 
+-- conversion for saved variables from version 2.4.3 to 2.4.4
+local function convertSavedColors()
+    for k,v  in pairs(coloredChannels) do
+        d(k.."  "..v)
+        if db.colours[2*v] then
+            d("found db.colors for "..v)
+            db.newcolors[v] =  { db.colours[2*v], db.colours[2*v+1] }
+        end
+        --
+        local sav = {}
+        sav["groupleader"] = db.colours["groupleader"]
+        sav["timestamp"] = db.colours["timestamp"]
+        sav["groupleader1"] = db.colours["groupleader1"]
+        sav["tabwarning"] = db.colours["tabwarning"]
+        db.colours = sav
+        --]]
+    end
+end
+
 -- Please note that some things are delayed in OnPlayerActivated() because Chat isn't ready when this function triggers
 local function OnAddonLoaded(_, addonName)
 
@@ -5254,7 +5129,7 @@ local function OnAddonLoaded(_, addonName)
     
     -- Unregisters
     EVENT_MANAGER:UnregisterForEvent(rChat.name, EVENT_ADD_ON_LOADED)
-
+    
     rChat_ZOS.FormatSysMessage = FormatSysMessage
     rChat_ZOS.FormatMessage = FormatMessage
     rChat_ZOS.FindAutomatedMsg = RAM.FindAutomatedMsg
@@ -5269,6 +5144,8 @@ local function OnAddonLoaded(_, addonName)
     -- Saved variables
     rChat.save = loadSavedVars(rChat.savedvar, rChat.sv_version, defaults)
     db = rChat.save
+    
+    convertSavedColors()
     
     -- init vars for antispam
     rChat.setSpamConfig(db.spam)
@@ -5419,4 +5296,3 @@ function rChat_GetChannelColors(channel, from)
 end
 
 EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_ADD_ON_LOADED, OnAddonLoaded)
---EVENT_MANAGER:RegisterForEvent("rChat_history", EVENT_ADD_ON_LOADED, OnAddonHistoryLoaded)
