@@ -12,7 +12,7 @@
 ## AddOnVersion: 19
 ## Author: Shadowfen
 ## APIVersion: 100030 
-## SavedVariables: RCHAT_OPTS
+## SavedVariables: RCHAT_OPTS RCHAT_HIST
 ## DependsOn: LibSFUtils LibAddonMenu-2.0 LibMediaProvider-1.0
 ## OptionalDependsOn: LibDebugLogger LibChatMessage
 
@@ -25,6 +25,7 @@ fonts.lua
 rChat_Global.lua
 
 ZOS_Rewrite-5.3.lua
+rChat_History.lua
 rChat_AutomatedMsgs.lua
 rChat.lua
 rChat_Spam.lua

@@ -5,7 +5,7 @@
 
 
 local SF = LibSFUtils
- 
+
 rChat = {
     name = "rChat",
     version = "1.5.4",
@@ -13,6 +13,7 @@ rChat = {
     settingDisplayName = "rChat",
     author = "Shadowfen",
     savedvar = "RCHAT_OPTS",
+    histvar = "RCHAT_HIST",
     sv_version = 2,
 }
 rChat.settingDisplayName = SF.GetIconized(rChat.settingDisplayName, SF.colors.gold.hex)
@@ -30,24 +31,24 @@ rChat_Logger = {
     Warn = function(self,...)  self.chatter:systemMessage("WARN: "..string.format(...)) end,
     Info = function(self,...)  self.chatter:debugMsg("INFO: "..string.format(...)) end,
     Debug = function(self,...)  self.chatter:debugMsg("DEBUG: "..string.format(...)) end,
-    
+
     Create = function(self, addon_name)
-        o = {} 
+        local o = {}
         setmetatable(o, self)
         self.__index = self
         o.addonName = addon_name
         o.chatter = SF.addonChatter:New(addon_name)
         return o
     end,
-    
+
     enableDebug = function(self,...) self.chatter:enableDebug() end,
     disableDebug = function(self,...) self.chatter:disableDebug() end,
-    SetEnabled = function(self, val) 
-            if val == true then 
-                self.chatter:enableDebug() 
-            else 
-                self.chatter:disableDebug() 
-            end 
+    SetEnabled = function(self, val)
+            if val == true then
+                self.chatter:enableDebug()
+            else
+                self.chatter:disableDebug()
+            end
         end,
 }
 

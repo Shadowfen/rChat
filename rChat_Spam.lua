@@ -33,38 +33,52 @@ local function SpamFlood(from, text, chanCode)
 
     -- 2+ messages identical in less than 30 seconds on Character channels = spam
         
-    -- Should not happen
-    if db.LineStrings == nil then return false end
-    if db.lineNumber == nil or db.lineNumber == 1 then return false end   -- 1st message cannot be a spam
-        
+    -- local versions of LineStrings functions
+    local function getChatCacheSize()
+        if db.LineStrings == nil then return 0 end
+        if db.lineNumber == nil or db.lineNumber == 1 then return 0 end
+        return db.lineNumber - 1
+    end
     
-    local previousLine = db.lineNumber - 1
+    -- local versions of LineStrings functions
+    -- only returns an entry for previously written entries, nil otherwise
+    local function getEntry(line)
+        if db.LineStrings == nil then return nil end
+        if not line or line <= 1 then return nil end
+        return db.LineStrings[line]
+    end
+    
+    --if db.LineStrings == nil then return false end
+    --if db.lineNumber == nil or db.lineNumber == 1 then return false end   -- 1st message cannot be a spam
+    --local previousLine = db.lineNumber - 1
+    local previousLine = getChatCacheSize()
+    if previousLine == 0 then return false end
     local ourMessageTimestamp = GetTimeStamp()
     
     local checkSpam = true
     while checkSpam do
-        
+        local entry = getEntry(previousLine)
         -- Previous line can be a ChanSystem one
-        if db.LineStrings[previousLine] then
-        if db.LineStrings[previousLine].channel ~= CHAT_CHANNEL_SYSTEM then
-            if (ourMessageTimestamp - db.LineStrings[previousLine].rawTimestamp) < config.floodGracePeriod then
-                -- if our message is sent by our chatter / will be break by "Character" channels and "UserID" Channels
-                if from == db.LineStrings[previousLine].rawFrom then
-                    -- if our message is eq of last message
-                    if text == db.LineStrings[previousLine].rawText then
-                        -- Previous and current must be in zone(s), yell, say, emote (Character Channels except party)
-                        if IsSpammableChannel(spamChanCode) and IsSpammableChannel(db.LineStrings[previousLine].channel) then
-                            -- Spam
-                            --CHAT_SYSTEM:Zo_AddMessage("Spam detected ( " .. text ..  " )")
-                            return true
+        if entry then
+            if entry.channel ~= CHAT_CHANNEL_SYSTEM then
+                if (type(entry.rawTimestamp) == "number") and ((ourMessageTimestamp - entry.rawTimestamp) < config.floodGracePeriod) then
+                    -- if our message is sent by our chatter / will be break by "Character" channels and "UserID" Channels
+                    if from == entry.rawFrom then
+                        -- if our message is eq of last message
+                        if text == entry.rawText then
+                            -- Previous and current must be in zone(s), yell, say, emote (Character Channels except party)
+                            if IsSpammableChannel(spamChanCode) and IsSpammableChannel(entry.channel) then
+                                -- Spam
+                                --CHAT_SYSTEM:Zo_AddMessage("Spam detected ( " .. text ..  " )")
+                                return true
+                            end
                         end
                     end
+                else
+                    -- > 30s, stop analysis
+                    checkSpam = false
                 end
-            else
-                -- > 30s, stop analysis
-                checkSpam = false
             end
-        end
         end
         
         if previousLine > 1 then

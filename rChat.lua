@@ -7,6 +7,7 @@ local RAM = rChat.AutoMsg
 
 local L = GetString
 
+local HRS_TO_SEC = 3600
 
 -- Init
 local isAddonLoaded         = false -- OnAddonLoaded() done
@@ -340,87 +341,124 @@ local function getRightColorRGB(channelId)
     return rChat.ConvertHexToRGBA(colorsEntry[2])
 end
 
+-- ----------------------------------------------------
+-- local versions of LineStrings functions
+local function getChatCacheSize()
+    if db.LineStrings == nil then return 0 end
+    if db.lineNumber == nil or db.lineNumber == 1 then return 0 end
+    return db.lineNumber - 1
+end
+
+-- local versions of LineStrings functions
+-- only returns an entry for previously written entries, nil otherwise
+local function getCacheEntry(line)
+    if db.LineStrings == nil then return nil end
+    if not line or line <= 1 then return nil end
+    return db.LineStrings[line]
+end
+
+-- local versions of LineStrings functions
+-- Returns reference to a new entry for populating (and increments line count in cache)
+local function getNewCacheEntry()
+    if db.LineStrings == nil then 
+        db.LineStrings = {} 
+    end
+    if not db.lineNumber or db.lineNumber <= 1 then 
+        db.lineNumber = #db.LineStrings + 1 
+    end
+    local lineno = db.lineNumber
+    db.lineNumber = db.lineNumber + 1
+    db.LineStrings[lineno] = {}
+    return db.LineStrings[lineno], lineno
+end
+-------------------------------------------------------
+
+local function GetGuildIndex(channel)
+    local index = 0
+    if channel >= CHAT_CHANNEL_GUILD_1 and channel <= CHAT_CHANNEL_OFFICER_5 then
+        index = channel - CHAT_CHANNEL_GUILD_1 + 1
+    elseif channel >= CHAT_CHANNEL_OFFICER_1 and channel <= CHAT_CHANNEL_OFFICER_5 then
+        index = channel - CHAT_CHANNEL_OFFICER_1 + 1
+    end
+    return index
+end
 
 -- Format "From" name
 local function ConvertName(chanCode, from, isCS, fromDisplayName)
 
-    local function DisplayWithOrWoBrackets(realFrom, displayed, linkType)
-        if not displayed then -- reported. Should not happen, maybe parser error with nicknames.
+    local function GetNameLink(realFrom, displayed, linkType)
+        if not displayed then -- Should not happen, maybe parser error with nicknames.
             displayed = realFrom
         end
+        local linkedFrom
         if db.disableBrackets then
-            return ZO_LinkHandler_CreateLinkWithoutBrackets(displayed, nil, linkType, realFrom)
+            linkedFrom = ZO_LinkHandler_CreateLinkWithoutBrackets(displayed, nil, linkType, realFrom)
         else
-            return ZO_LinkHandler_CreateLink(displayed, nil, linkType, realFrom)
+            linkedFrom = ZO_LinkHandler_CreateLink(displayed, nil, linkType, realFrom)
         end
+        return linkedFrom, displayed
     end
 
     -- "From" can be UserID or Character name depending on which channel we are
     local new_from = from
-    local chatline = db.LineStrings[db.lineNumber]  -- aliasing
+    local chatline = getNewCacheEntry()  -- remember: increments lineNumber
 
     -- Messages from @Someone (guild / whisps)
     if IsDecoratedDisplayName(from) then
 
-        -- Guild / Officer chat only
-        if chanCode >= CHAT_CHANNEL_GUILD_1 and chanCode <= CHAT_CHANNEL_OFFICER_5 then
+        local guildIndex = GetGuildIndex(chanCode)
+        if guildIndex > 0 then  -- Guild / Officer chat only
 
             -- Get guild ID based on channel id
-            local guildId = GetGuildId((chanCode - CHAT_CHANNEL_GUILD_1) % 5 + 1)
-            local guildName = GetGuildName(guildId)
+            local guildName,guildId = rChat.SafeGetGuildName(guildIndex)
+            if guildId then
+                if rChatData.nicknames[new_from] then -- @UserID Nicknamed
+                    new_from, chatline.rawFrom = GetNameLink(new_from, rChatData.nicknames[new_from], DISPLAY_NAME_LINK_TYPE)
+                    
+                elseif db.formatguild[guildName] == 2 then -- Char
+                    local _, characterName = GetGuildMemberCharacterInfo(guildId, GetGuildMemberIndexFromDisplayName(guildId, new_from))
+                    characterName = zo_strformat(SI_UNIT_NAME, characterName)
+                    local nickNamedName
+                    if rChatData.nicknames[characterName] then -- Char Nicknammed
+                        nickNamedName = rChatData.nicknames[characterName]
+                    end
+                    new_from, chatline.rawFrom = GetNameLink(characterName, nickNamedName or characterName, CHARACTER_LINK_TYPE)
+                    
+                elseif db.formatguild[guildName] == 3 then -- Char@UserID
+                    local _, characterName = GetGuildMemberCharacterInfo(guildId, GetGuildMemberIndexFromDisplayName(guildId, new_from))
+                    characterName = zo_strformat(SI_UNIT_NAME, characterName)
+                    if characterName == "" then characterName = new_from end -- Some buggy rosters
 
-            if rChatData.nicknames[new_from] then -- @UserID Nicknamed
-                chatline.rawFrom = rChatData.nicknames[new_from]
-                new_from = DisplayWithOrWoBrackets(new_from, rChatData.nicknames[new_from], DISPLAY_NAME_LINK_TYPE)
-                
-            elseif db.formatguild[guildName] == 2 then -- Char
-                local _, characterName = GetGuildMemberCharacterInfo(guildId, GetGuildMemberIndexFromDisplayName(guildId, new_from))
-                characterName = zo_strformat(SI_UNIT_NAME, characterName)
-                local nickNamedName
-                if rChatData.nicknames[characterName] then -- Char Nicknammed
-                    nickNamedName = rChatData.nicknames[characterName]
-                end
-                chatline.rawFrom = nickNamedName or characterName
-                new_from = DisplayWithOrWoBrackets(characterName, nickNamedName or characterName, CHARACTER_LINK_TYPE)
-                
-            elseif db.formatguild[guildName] == 3 then -- Char@UserID
-                local _, characterName = GetGuildMemberCharacterInfo(guildId, GetGuildMemberIndexFromDisplayName(guildId, new_from))
-                characterName = zo_strformat(SI_UNIT_NAME, characterName)
-                if characterName == "" then characterName = new_from end -- Some buggy rosters
+                    if rChatData.nicknames[characterName] then -- Char Nicknamed
+                        characterName = rChatData.nicknames[characterName]
+                    else
+                        characterName = characterName .. new_from
+                    end
 
-                if rChatData.nicknames[characterName] then -- Char Nicknammed
-                    characterName = rChatData.nicknames[characterName]
+                    new_from, chatline.rawFrom = GetNameLink(new_from, characterName, DISPLAY_NAME_LINK_TYPE)
+                    
                 else
-                    characterName = characterName .. new_from
+                    new_from, chatline.rawFrom = GetNameLink(new_from, new_from, DISPLAY_NAME_LINK_TYPE)
                 end
-
-                chatline.rawFrom = characterName
-                new_from = DisplayWithOrWoBrackets(new_from, characterName, DISPLAY_NAME_LINK_TYPE)
-                
-            else
-                chatline.rawFrom = new_from
-                new_from = DisplayWithOrWoBrackets(new_from, new_from, DISPLAY_NAME_LINK_TYPE)
             end
-
         else
             -- Wisps with @ We can't guess characterName for those ones
             if rChatData.nicknames[new_from] then -- @UserID Nicknamed
-                chatline.rawFrom = rChatData.nicknames[new_from]
-                new_from = DisplayWithOrWoBrackets(new_from, rChatData.nicknames[new_from], DISPLAY_NAME_LINK_TYPE)
+                new_from, chatline.rawFrom = GetNameLink(new_from, rChatData.nicknames[new_from], DISPLAY_NAME_LINK_TYPE)
                 
             else
-                chatline.rawFrom = new_from
-                new_from = DisplayWithOrWoBrackets(new_from, new_from, DISPLAY_NAME_LINK_TYPE)
+                new_from, chatline.rawFrom = GetNameLink(new_from, new_from, DISPLAY_NAME_LINK_TYPE)
             end
 
         end
 
     -- Geo chat, Group, Whisps with characterName
     else
+        -- strip gender postfix from toon name
         new_from = zo_strformat(SI_UNIT_NAME, new_from)
 
         local nicknamedFrom
-        if rChatData.nicknames[new_from] then -- Character or Account Nicknamed
+        if rChatData.nicknames[new_from] then -- Character Nicknamed
             nicknamedFrom = rChatData.nicknames[new_from]
         elseif rChatData.nicknames[fromDisplayName] then
             nicknamedFrom = rChatData.nicknames[fromDisplayName]
@@ -436,27 +474,21 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
 
             if chanCode == CHAT_CHANNEL_PARTY then
                 if db.groupNames == 1 then
-                    db.LineStrings[db.lineNumber].rawFrom = nicknamedFrom or fromDisplayName
-                    new_from = DisplayWithOrWoBrackets(fromDisplayName, nicknamedFrom or fromDisplayName, DISPLAY_NAME_LINK_TYPE)
+                    new_from, chatline.rawFrom = GetNameLink(fromDisplayName, nicknamedFrom or fromDisplayName, DISPLAY_NAME_LINK_TYPE)
                 elseif db.groupNames == 3 then
                     new_from = new_from .. fromDisplayName
-                    chatline.rawFrom = nicknamedFrom or new_from
-                    new_from = DisplayWithOrWoBrackets(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
+                    new_from, chatline.rawFrom = GetNameLink(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
                 else
-                    chatline.rawFrom = nicknamedFrom or new_from
-                    new_from = DisplayWithOrWoBrackets(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
+                    new_from, chatline.rawFrom = GetNameLink(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
                 end
             else
                 if db.geoChannelsFormat == 1 then
-                    chatline.rawFrom = nicknamedFrom or fromDisplayName
-                    new_from = DisplayWithOrWoBrackets(fromDisplayName, nicknamedFrom or fromDisplayName, DISPLAY_NAME_LINK_TYPE)
+                    new_from, chatline.rawFrom = GetNameLink(fromDisplayName, nicknamedFrom or fromDisplayName, DISPLAY_NAME_LINK_TYPE)
                 elseif db.geoChannelsFormat == 3 then
                     new_from = new_from .. fromDisplayName
-                    chatline.rawFrom = nicknamedFrom or new_from
-                    new_from = DisplayWithOrWoBrackets(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
+                    new_from, chatline.rawFrom = GetNameLink(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
                 else
-                    chatline.rawFrom = nicknamedFrom or new_from
-                    new_from = DisplayWithOrWoBrackets(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
+                    new_from, chatline.rawFrom = GetNameLink(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
                 end
             end
 
@@ -896,7 +928,7 @@ end
 -- Show IM notification tooltip
 local function ShowIMTooltip(self, lineNumber)
 
-    local chatline = db.LineStrings[lineNumber]
+    local chatline = getCacheEntry(lineNumber)
     if not chatline then return end
 
     local sender = chatline.rawFrom
@@ -1051,14 +1083,20 @@ end
 
 -- Copy message (only message)
 local function CopyMessage(numLine)
-    -- Args are passed as string trought LinkHandlerSystem
-    CopyToTextEntry(db.LineStrings[numLine].rawMessage)
+    -- Args are passed as string through LinkHandlerSystem
+    local entry = getCacheEntry(numLine)
+    if entry then 
+        CopyToTextEntry(entry.rawMessage)
+    end
 end
 
 --Copy line (including timestamp, from, channel, message, etc)
 local function CopyLine(numLine)
     -- Args are passed as string trought LinkHandlerSystem
-    CopyToTextEntry(db.LineStrings[numLine].rawLine)
+    local entry = getCacheEntry(numLine)
+    if entry then 
+        CopyToTextEntry(entry.rawLine)
+    end
 end
 
 -- Popup a dialog message with text to copy
@@ -1174,14 +1212,16 @@ end
 -- It will copy all text mark with the same chanCode
 -- Todo : Whisps by person
 local function CopyDiscussion(chanNumber, numLine)
-
+    local entry = getCacheEntry(numLine)
+    if not entry then return end
+    
     -- Args are passed as string through LinkHandlerSystem
     local numChanCode = tonumber(chanNumber)
     -- Whispers sent and received together
     if numChanCode == CHAT_CHANNEL_WHISPER_SENT then
         numChanCode = CHAT_CHANNEL_WHISPER
     elseif numChanCode == RCHAT_URL_CHAN then
-        numChanCode = db.LineStrings[numLine].channel
+        numChanCode = entry.channel
     end
 
     local stringToCopy = ""
@@ -1189,16 +1229,16 @@ local function CopyDiscussion(chanNumber, numLine)
         if numChanCode == CHAT_CHANNEL_WHISPER or numChanCode == CHAT_CHANNEL_WHISPER_SENT then
             if data.channel == CHAT_CHANNEL_WHISPER or data.channel == CHAT_CHANNEL_WHISPER_SENT then
                 if stringToCopy == "" then
-                    stringToCopy = db.LineStrings[k].rawLine
+                    stringToCopy = data.rawLine
                 else
-                    stringToCopy = stringToCopy .. "\r\n" .. db.LineStrings[k].rawLine
+                    stringToCopy = stringToCopy .. "\r\n" .. data.rawLine
                 end
             end
         elseif data.channel == numChanCode then
             if stringToCopy == "" then
-                stringToCopy = db.LineStrings[k].rawLine
+                stringToCopy = data.rawLine
             else
-                stringToCopy = stringToCopy .. "\r\n" .. db.LineStrings[k].rawLine
+                stringToCopy = stringToCopy .. "\r\n" .. data.rawLine
             end
         end
     end
@@ -1213,9 +1253,9 @@ local function CopyWholeChat()
     local stringToCopy = ""
     for k, data in ipairs(db.LineStrings) do
         if stringToCopy == "" then
-            stringToCopy = db.LineStrings[k].rawLine
+            stringToCopy = data.rawLine
         else
-            stringToCopy = stringToCopy .. "\r\n" .. db.LineStrings[k].rawLine
+            stringToCopy = stringToCopy .. "\r\n" .. data.rawLine
         end
     end
 
@@ -1252,13 +1292,16 @@ local function OnLinkClicked(rawLink, mouseButton, linkText, color, linkType, li
 
         local chanNumber = tonumber(chanCode)
         local numLine = tonumber(lineNumber)
+        local entry = getCacheEntry(lineNumber)
+        if not entry then return end
+        
         -- RCHAT_LINK also handle a linkable channel feature for linkable channels
 
         -- Context Menu
         if chanCode and mouseButton == MOUSE_BUTTON_INDEX_LEFT then
 
             if chanNumber == CHAT_CHANNEL_WHISPER then 
-                local target = zo_strformat(SI_UNIT_NAME, db.LineStrings[numLine].rawFrom)
+                local target = zo_strformat(SI_UNIT_NAME, entry.rawFrom)
                 IgnoreMouseDownEditFocusLoss()
                 CHAT_SYSTEM:StartTextEntry(nil, chanNumber, target)
                 
@@ -1464,10 +1507,11 @@ local function StripLinesFromLineStrings(typeOfExit)
                 k = removeLine(k)
             elseif (channel == CHAT_CHANNEL_WHISPER or channel == CHAT_CHANNEL_WHISPER_SENT) and (not db.restoreWhisps) then
                 k = removeLine(k)
-            elseif typeOfExit ~= 1 and db.LineStrings[k].rawTimestamp then
-                if (curtime - db.LineStrings[k].rawTimestamp) > (db.timeBeforeRestore * 60 * 60) then
+            -- bad bad bad
+            elseif typeOfExit ~= 1 and type(db.LineStrings[k].timestamp) == "number" then
+                if (curtime - db.LineStrings[k].timestamp) > (db.timeBeforeRestore * HRS_TO_SEC) then
                     k = removeLine(k)
-                elseif db.LineStrings[k].rawTimestamp > curtime then -- System clock of users computer badly set and msg received meanwhile.
+                elseif db.LineStrings[k].timestamp > curtime then -- System clock of users computer badly set and msg received meanwhile.
                     k = removeLine(k)
                 end
             end
@@ -2100,7 +2144,6 @@ local function RestoreChatMessagesFromHistory(wasReloadUI)
     
     -- Restore Chat
     local lastInsertionWas = 0
-
     if db.LineStrings then
 
         local historyIndex = 1
@@ -2111,24 +2154,24 @@ local function RestoreChatMessagesFromHistory(wasReloadUI)
                 local channelToRestore = db.LineStrings[historyIndex].channel
 
                 if channelToRestore == CHAT_CHANNEL_SYSTEM and not db.restoreSystem then
-                    historyIndex = deleteChatLine(historyIndex)
+                    --historyIndex = deleteChatLine(historyIndex)
                 elseif channelToRestore ~= CHAT_CHANNEL_SYSTEM and db.restoreSystemOnly then
-                    historyIndex = deleteChatLine(historyIndex)
+                    --historyIndex = deleteChatLine(historyIndex)
                 elseif (channelToRestore == CHAT_CHANNEL_WHISPER or channelToRestore == CHAT_CHANNEL_WHISPER_SENT) 
                         and not db.restoreWhisps then
-                    historyIndex = deleteChatLine(historyIndex)
+                    --historyIndex = deleteChatLine(historyIndex)
                 else
-
+                    -- the only branch where we restore a line
                     local category = categories[EVENT_CHAT_MESSAGE_CHANNEL][channelToRestore]
 
-                    if GetTimeStamp() - (db.LineStrings[historyIndex].rawTimestamp or 0) < db.timeBeforeRestore * 60 * 60 and (db.LineStrings[historyIndex].rawTimestamp or 0) < GetTimeStamp() then
-                        lastInsertionWas = math.max(lastInsertionWas, db.LineStrings[historyIndex].rawTimestamp)
+                    if GetTimeStamp() - (db.LineStrings[historyIndex].timestamp or 0) < db.timeBeforeRestore * HRS_TO_SEC and (db.LineStrings[historyIndex].timestamp or 0) < GetTimeStamp() then
+                        lastInsertionWas = math.max(lastInsertionWas, db.LineStrings[historyIndex].timestamp)
                         local localPlayer = GetUnitName("player")
                         for containerIndex=1, #CHAT_SYSTEM.containers do
 
                             for tabIndex=1, #CHAT_SYSTEM.containers[containerIndex].windows do
                                 if IsChatContainerTabCategoryEnabled(CHAT_SYSTEM.containers[containerIndex].id, tabIndex, category) then
-                                    if not db.chatConfSync[localPlayer].tabs[tabIndex].notBefore or db.LineStrings[historyIndex].rawTimestamp > db.chatConfSync[localPlayer].tabs[tabIndex].notBefore then
+                                    if not db.chatConfSync[localPlayer].tabs[tabIndex].notBefore or db.LineStrings[historyIndex].timestamp > db.chatConfSync[localPlayer].tabs[tabIndex].notBefore then
                                     	if db.LineStrings[historyIndex].rawDisplayed then
                                         	CHAT_SYSTEM.containers[containerIndex]:AddEventMessageToWindow(CHAT_SYSTEM.containers[containerIndex].windows[tabIndex], AddLinkHandler(db.LineStrings[historyIndex].rawDisplayed, channelToRestore, historyIndex), category)
                                         end
@@ -2150,7 +2193,6 @@ local function RestoreChatMessagesFromHistory(wasReloadUI)
         local PRESSED = 1
         local UNPRESSED = 2
         local numTabs = #CHAT_SYSTEM.primaryContainer.windows
-
         for numTab, container in pairs (CHAT_SYSTEM.primaryContainer.windows) do
             if numTab > 1 then
                 CHAT_SYSTEM.primaryContainer:HandleTabClick(container.tab)
@@ -2180,7 +2222,7 @@ local function RestoreChatMessagesFromHistory(wasReloadUI)
 
         if db.history.textEntry.entries then
 
-            if lastInsertionWas and ((GetTimeStamp() - lastInsertionWas) < (db.timeBeforeRestore * 60 * 60)) then
+            if lastInsertionWas and ((GetTimeStamp() - lastInsertionWas) < (db.timeBeforeRestore * HRS_TO_SEC)) then
                 for _, text in pairs(db.history.textEntry.entries) do
                     CHAT_SYSTEM.textEntry:AddCommandHistory(text)
                 end
@@ -2246,7 +2288,7 @@ end
 
 -- Store line number
 -- Create an array for the copy functions, spam functions and revert history functions
-local function StorelineNumber(rawTimestamp, rawFrom, text, chanCode, originalFrom)
+local function StorelineNumber(epochtime, rawFrom, text, chanCode, originalFrom)
 
     -- Strip DDS tag from Copy text
     local function StripDDStags(text)
@@ -2255,6 +2297,8 @@ local function StorelineNumber(rawTimestamp, rawFrom, text, chanCode, originalFr
 
     local formattedMessage = ""
     local rawText = text
+    
+    local entry,lineno = getNewCacheEntry()
 
     -- SysMessages does not have a from
     if chanCode ~= CHAT_CHANNEL_SYSTEM then
@@ -2270,7 +2314,7 @@ local function StorelineNumber(rawTimestamp, rawFrom, text, chanCode, originalFr
         rawFrom = StripDDStags(rawFrom)
 
         -- Needed for SpamFilter
-        db.LineStrings[db.lineNumber].rawFrom = originalFrom
+        entry.rawFrom = originalFrom
 
         -- formattedMessage is only rawFrom for now
         formattedMessage = formattedMessage .. rawFrom
@@ -2282,16 +2326,16 @@ local function StorelineNumber(rawTimestamp, rawFrom, text, chanCode, originalFr
     end
 
     -- Needed for SpamFilter & Restoration, UNIX timestamp
-    db.LineStrings[db.lineNumber].rawTimestamp = rawTimestamp
+    entry.timestamp = epochtime
 
     -- Store CopyMessage / Used for SpamFiltering.
-    db.LineStrings[db.lineNumber].channel = chanCode
+    entry.channel = chanCode
 
     -- Store CopyMessage
-    db.LineStrings[db.lineNumber].rawText = rawText
+    entry.rawText = rawText
 
     -- Store CopyMessage
-    db.LineStrings[db.lineNumber].rawValue = text
+    entry.rawValue = text
 
     -- Strip DDS tags
     rawText = StripDDStags(rawText)
@@ -2300,13 +2344,13 @@ local function StorelineNumber(rawTimestamp, rawFrom, text, chanCode, originalFr
     rawText = rChat.FormatRawText(rawText)
 
     -- Store CopyMessage
-    db.LineStrings[db.lineNumber].rawMessage = rawText
+    entry.rawMessage = rawText
 
     -- Store CopyLine
-    db.LineStrings[db.lineNumber].rawLine = formattedMessage .. rawText
+    entry.rawLine = formattedMessage .. rawText
 
     --Increment at each message handled
-    db.lineNumber = db.lineNumber + 1
+    --db.lineNumber = db.lineNumber + 1
 
 end
 
@@ -2319,32 +2363,32 @@ local function FormatSysMessage(statusMessage)
     -- Display Timestamp if needed
     local function ShowTimestamp()
 
-        local timestamp = ""
+        local timestr = ""
 
         -- Add timestamp
         if db.showTimestamp then
 
             -- Timestamp formatted
-            timestamp = rChat.CreateTimestamp(db.timestampFormat)
-            --timestamp = CreateTimestamp(GetTimeString())
+            timestr = rChat.CreateTimestamp(db.timestampFormat)
+            --timestr = CreateTimestamp(GetTimeString())
 
             local timecol
             -- Timestamp color is chanCode so no coloring
             if db.timestampcolorislcol then
                  -- Show Message
-                timestamp = string.format("[%s] ", timestamp)
+                timestr = string.format("[%s] ", timestr)
             else
                 -- Timestamp color is our setting color
                 timecol = db.colours.timestamp
 
                 -- Show Message
-                timestamp = string.format("%s[%s] |r", timecol, timestamp)
+                timestr = string.format("%s[%s] |r", timecol, timestr)
             end
         else
-            timestamp = ""
+            timestr = ""
         end
 
-        return timestamp
+        return timestr
 
     end
 
@@ -2359,12 +2403,13 @@ local function FormatSysMessage(statusMessage)
         -- Show Message
         --statusMessage = ShowTimestamp() .. statusMessage
 
-        if not db.lineNumber then
-            db.lineNumber = 1
-        end
+        local entry, ndx = getNewCacheEntry()
+        --if not db.lineNumber then
+        --    db.lineNumber = 1
+        --end
 
         --  for CopySystem
-        db.LineStrings[db.lineNumber] = {}
+        --db.LineStrings[db.lineNumber] = {}
 
         -- Make it Linkable
         if db.enablecopy then
@@ -2374,12 +2419,13 @@ local function FormatSysMessage(statusMessage)
             sysMessage = ShowTimestamp() .. statusMessage
         end
 
-        db.LineStrings[db.lineNumber].rawFrom = db.LineStrings[db.lineNumber].rawFrom or ""
-        db.LineStrings[db.lineNumber].rawMessage = db.LineStrings[db.lineNumber].rawMessage or ""
-        db.LineStrings[db.lineNumber].rawLine = db.LineStrings[db.lineNumber].rawLine or ""
-        db.LineStrings[db.lineNumber].rawValue = db.LineStrings[db.lineNumber].rawValue or statusMessage
-        db.LineStrings[db.lineNumber].rawDisplayed = db.LineStrings[db.lineNumber].rawDisplayed or sysMessage
-        db.LineStrings[db.lineNumber].rawTimestamp = db.LineStrings[db.lineNumber].rawTimestamp or ShowTimestamp()
+        entry.rawFrom = ""
+        entry.rawMessage = ""
+        entry.rawLine = ""
+        entry.rawValue = statusMessage
+        entry.rawDisplayed = sysMessage
+        entry.rawTimestamp = ShowTimestamp()
+        entry.timestamp = GetTimeStamp()
 
         -- No From, rawTimestamp is in statusMessage, sent as arg for SpamFiltering even if SysMessages are not filtered
         StorelineNumber(GetTimeStamp(), nil, statusMessage, CHAT_CHANNEL_SYSTEM, nil)
@@ -2568,6 +2614,7 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
     isCS = isCS or false
     local originalFrom = from
     local originalText = text
+    local db = rChat.save
     
     -- Will calculate if this message is a spam
     local isSpam = rChat.SpamFilter(chanCode, from, text, isCS)
@@ -2595,15 +2642,15 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
     end
 
     --  for CopySystem
-    db.LineStrings[db.lineNumber] = {}
-    if not db.LineStrings[db.lineNumber].rawFrom then db.LineStrings[db.lineNumber].rawFrom = from end
-    if not db.LineStrings[db.lineNumber].rawValue then db.LineStrings[db.lineNumber].rawValue = text end
-    if not db.LineStrings[db.lineNumber].rawMessage then db.LineStrings[db.lineNumber].rawMessage = text end
-    if not db.LineStrings[db.lineNumber].rawLine then db.LineStrings[db.lineNumber].rawLine = newtext end
-    if not db.LineStrings[db.lineNumber].rawDisplayed then db.LineStrings[db.lineNumber].rawDisplayed = newtext end
+    local entry, ndx = getNewCacheEntry()
+    entry.rawFrom = from
+    entry.rawValue = text
+    entry.rawMessage = text
+    entry.rawLine = newtext
+    entry.rawDisplayed = newtext
 
     local new_from = ConvertName(chanCode, from, isCS, fromDisplayName)
-    local displayedFrom = db.LineStrings[db.lineNumber].rawFrom
+    local displayedFrom = entry.rawFrom
 
     -- Guild tag
     local tag
@@ -2647,12 +2694,12 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
         -- Message is timestamp for now
         -- Add RCHAT_HANDLER for display 
         local timestamp = ZO_LinkHandler_CreateLink( rChat.CreateTimestamp(db.timestampFormat), 
-                                nil, RCHAT_LINK, db.lineNumber .. ":" .. chanCode ) .. " "
+                                nil, RCHAT_LINK, ndx .. ":" .. chanCode ) .. " "
         --local timestamp = ZO_LinkHandler_CreateLink(CreateTimestamp(GetTimeString()), nil, RCHAT_LINK, db.lineNumber .. ":" .. chanCode) .. " "
 
         -- Timestamp color
         message = message .. string.format("%s%s|r", timecol, timestamp)
-        db.LineStrings[db.lineNumber].rawValue = string.format("%s[%s] |r", timecol, rChat.CreateTimestamp(db.timestampFormat))
+        entry.rawValue = string.format("%s[%s] |r", timecol, rChat.CreateTimestamp(db.timestampFormat))
         --db.LineStrings[db.lineNumber].rawValue = string.format("%s[%s] |r", timecol, CreateTimestamp(GetTimeString()))
 
     end
@@ -2679,10 +2726,10 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
         if db.delzonetags then
 
             -- Used for Copy
-            db.LineStrings[db.lineNumber].rawFrom = string.format(chatStrings.copystandard, db.LineStrings[db.lineNumber].rawFrom)
+            entry.rawFrom = string.format(chatStrings.copystandard, entry.rawFrom)
 
             message = message .. string.format(chatStrings.standard, lcol, new_from, carriageReturn, rcol, linkedText)
-            db.LineStrings[db.lineNumber].rawValue = db.LineStrings[db.lineNumber].rawValue .. string.format(chatStrings.standard, lcol, new_from, carriageReturn, rcol, text)
+            entry.rawValue = entry.rawValue .. string.format(chatStrings.standard, lcol, new_from, carriageReturn, rcol, text)
         -- Keep them
         else
             -- Init zonetag to keep the channel tag
@@ -2692,13 +2739,13 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
                 zonetag = L(RCHAT_ZONETAGPARTY)
 
                 -- Used for Copy
-                db.LineStrings[db.lineNumber].rawFrom = string.format(chatStrings.copyesoparty, zonetag, db.LineStrings[db.lineNumber].rawFrom)
+                entry.rawFrom = string.format(chatStrings.copyesoparty, zonetag, entry.rawFrom)
 
                 -- PartyHandler
                 zonetag = ZO_LinkHandler_CreateLink(zonetag, nil, CHANNEL_LINK_TYPE, chanCode)
 
                 message = message .. string.format(chatStrings.esoparty, lcol, zonetag, new_from, carriageReturn, rcol, linkedText)
-                db.LineStrings[db.lineNumber].rawValue = db.LineStrings[db.lineNumber].rawValue .. string.format(chatStrings.esoparty, lcol, zonetag, new_from, carriageReturn, rcol, text)
+                entry.rawValue = entry.rawValue .. string.format(chatStrings.esoparty, lcol, zonetag, new_from, carriageReturn, rcol, text)
             else
                 -- Pattern for say/yell/zone is "player says:" ..
                 if chanCode == CHAT_CHANNEL_SAY then zonetag = L(RCHAT_ZONETAGSAY)
@@ -2707,13 +2754,13 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
                 end
 
                 -- Used for Copy
-                db.LineStrings[db.lineNumber].rawFrom = string.format(chatStrings.copyesostandard, db.LineStrings[db.lineNumber].rawFrom, zonetag)
+                entry.rawFrom = string.format(chatStrings.copyesostandard, entry.rawFrom, zonetag)
 
                 -- rChat Handler
                 zonetag = string.format("|H1:p:%s|h%s|h", chanCode, zonetag)
 
                 message = message .. string.format(chatStrings.esostandard, lcol, new_from, zonetag, carriageReturn, rcol, linkedText)
-                db.LineStrings[db.lineNumber].rawValue = db.LineStrings[db.lineNumber].rawValue .. string.format(chatStrings.esostandard, lcol, new_from, zonetag, carriageReturn, rcol, newtext)
+                entry.rawValue = entry.rawValue .. string.format(chatStrings.esostandard, lcol, new_from, zonetag, carriageReturn, rcol, newtext)
             end
         end
 
@@ -2721,10 +2768,10 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
     elseif chanCode == CHAT_CHANNEL_MONSTER_SAY or chanCode == CHAT_CHANNEL_MONSTER_YELL or chanCode == CHAT_CHANNEL_MONSTER_WHISPER then
 
         -- Used for Copy
-        db.LineStrings[db.lineNumber].rawFrom = string.format(chatStrings.copynpc, db.LineStrings[db.lineNumber].rawFrom)
+        entry.rawFrom = string.format(chatStrings.copynpc, entry.rawFrom)
 
         message = message .. string.format(chatStrings.standard, lcol, new_from, carriageReturn, rcol, linkedText)
-        db.LineStrings[db.lineNumber].rawValue = db.LineStrings[db.lineNumber].rawValue .. string.format(chatStrings.standard, lcol, new_from, carriageReturn, rcol, newtext)
+        entry.rawValue = entry.rawValue .. string.format(chatStrings.standard, lcol, new_from, carriageReturn, rcol, newtext)
 
     -- Incoming whispers
     elseif chanCode == CHAT_CHANNEL_WHISPER then
@@ -2735,19 +2782,19 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
         end
 
         -- Used for Copy
-        db.LineStrings[db.lineNumber].rawFrom = string.format(chatStrings.copytellIn, db.LineStrings[db.lineNumber].rawFrom)
+        entry.rawFrom = string.format(chatStrings.copytellIn, entry.rawFrom)
 
         message = message .. string.format(chatStrings.tellIn, lcol, new_from, carriageReturn, rcol, linkedText)
-        db.LineStrings[db.lineNumber].rawValue = db.LineStrings[db.lineNumber].rawValue .. string.format(chatStrings.tellIn, lcol, new_from, carriageReturn, rcol, newtext)
+        entry.rawValue = entry.rawValue .. string.format(chatStrings.tellIn, lcol, new_from, carriageReturn, rcol, newtext)
 
     -- Outgoing whispers
     elseif chanCode == CHAT_CHANNEL_WHISPER_SENT then
 
         -- Used for Copy
-        db.LineStrings[db.lineNumber].rawFrom = string.format(chatStrings.copytellOut, db.LineStrings[db.lineNumber].rawFrom)
+        entry.rawFrom = string.format(chatStrings.copytellOut, entry.rawFrom)
 
         message = message .. string.format(chatStrings.tellOut, lcol, new_from, carriageReturn, rcol, linkedText)
-        db.LineStrings[db.lineNumber].rawValue = db.LineStrings[db.lineNumber].rawValue .. string.format(chatStrings.tellOut, lcol, new_from, carriageReturn, rcol, newtext)
+        entry.rawValue = entry.rawValue .. string.format(chatStrings.tellOut, lcol, new_from, carriageReturn, rcol, newtext)
 
     -- Guild chat
     elseif chanCode >= CHAT_CHANNEL_GUILD_1 and chanCode <= CHAT_CHANNEL_GUILD_5 then
@@ -2757,23 +2804,23 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
             gtag = (chanCode - CHAT_CHANNEL_GUILD_1 + 1) .. "-" .. tag
 
             -- Used for Copy
-            db.LineStrings[db.lineNumber].rawFrom = string.format(chatStrings.copyguild, gtag, db.LineStrings[db.lineNumber].rawFrom)
+            entry.rawFrom = string.format(chatStrings.copyguild, gtag, entry.rawFrom)
 
             -- GuildHandler
             gtag = ZO_LinkHandler_CreateLink(gtag, nil, CHANNEL_LINK_TYPE, chanCode)
             message = message .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, linkedText)
-            db.LineStrings[db.lineNumber].rawValue = db.LineStrings[db.lineNumber].rawValue .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, newtext)
+            entry.rawValue = entry.rawValue .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, newtext)
 
         else
 
             -- Used for Copy
-            db.LineStrings[db.lineNumber].rawFrom = string.format(chatStrings.copyguild, gtag, db.LineStrings[db.lineNumber].rawFrom)
+            entry.rawFrom = string.format(chatStrings.copyguild, gtag, entry.rawFrom)
 
             -- GuildHandler
             gtag = ZO_LinkHandler_CreateLink(gtag, nil, CHANNEL_LINK_TYPE, chanCode)
 
             message = message .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, linkedText)
-            db.LineStrings[db.lineNumber].rawValue = db.LineStrings[db.lineNumber].rawValue .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, newtext)
+            entry.rawValue = entry.rawValue .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, newtext)
 
         end
 
@@ -2785,40 +2832,40 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
             gtag = (chanCode - CHAT_CHANNEL_OFFICER_1 + 1) .. "-" .. tag
 
             -- Used for Copy
-            db.LineStrings[db.lineNumber].rawFrom = string.format(chatStrings.copyguild, gtag, db.LineStrings[db.lineNumber].rawFrom)
+            entry.rawFrom = string.format(chatStrings.copyguild, gtag, entry.rawFrom)
 
             -- GuildHandler
             gtag = ZO_LinkHandler_CreateLink(gtag, nil, CHANNEL_LINK_TYPE, chanCode)
 
             message = message .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, linkedText)
-            db.LineStrings[db.lineNumber].rawValue = db.LineStrings[db.lineNumber].rawValue .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, newtext)
+            entry.rawValue = entry.rawValue .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, newtext)
             
         else
             -- Used for Copy
-            db.LineStrings[db.lineNumber].rawFrom = string.format(chatStrings.copyguild, gtag, db.LineStrings[db.lineNumber].rawFrom)
+            entry.rawFrom = string.format(chatStrings.copyguild, gtag, entry.rawFrom)
 
             -- GuildHandler
             gtag = ZO_LinkHandler_CreateLink(gtag, nil, CHANNEL_LINK_TYPE, chanCode)
 
             message = message .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, linkedText)
-            db.LineStrings[db.lineNumber].rawValue = db.LineStrings[db.lineNumber].rawValue .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, newtext)
+            entry.rawValue = entry.rawValue .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, newtext)
         end
 
     -- Player emotes
     elseif chanCode == CHAT_CHANNEL_EMOTE then
 
-        db.LineStrings[db.lineNumber].rawFrom = string.format(chatStrings.copyemote, db.LineStrings[db.lineNumber].rawFrom)
+        entry.rawFrom = string.format(chatStrings.copyemote, entry.rawFrom)
         message = message .. string.format(chatStrings.emote, lcol, new_from, rcol, linkedText)
-        db.LineStrings[db.lineNumber].rawValue = db.LineStrings[db.lineNumber].rawValue .. string.format(chatStrings.emote, lcol, new_from, rcol, newtext)
+        entry.rawValue = entry.rawValue .. string.format(chatStrings.emote, lcol, new_from, rcol, newtext)
 
     -- NPC emotes
     elseif chanCode == CHAT_CHANNEL_MONSTER_EMOTE then
 
         -- Used for Copy
-        db.LineStrings[db.lineNumber].rawFrom = string.format(chatStrings.copyemote, db.LineStrings[db.lineNumber].rawFrom)
+        entry.rawFrom = string.format(chatStrings.copyemote, entry.rawFrom)
 
         message = message .. string.format(chatStrings.emote, lcol, new_from, rcol, linkedText)
-        db.LineStrings[db.lineNumber].rawValue = db.LineStrings[db.lineNumber].rawValue .. string.format(chatStrings.emote, lcol, new_from, rcol, newtext)
+        entry.rawValue = entry.rawValue .. string.format(chatStrings.emote, lcol, new_from, rcol, newtext)
 
     -- Language zones
     elseif chanCode >= CHAT_CHANNEL_ZONE_LANGUAGE_1 and chanCode <= CHAT_CHANNEL_ZONE_LANGUAGE_4 then
@@ -2830,10 +2877,10 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
         end
 
         -- Used for Copy
-        db.LineStrings[db.lineNumber].rawFrom = string.format(chatStrings.copylanguage, lang, db.LineStrings[db.lineNumber].rawFrom)
+        entry.rawFrom = string.format(chatStrings.copylanguage, lang, entry.rawFrom)
 
         message = message .. string.format(chatStrings.language, lcol, lang, new_from, carriageReturn, rcol, linkedText)
-        db.LineStrings[db.lineNumber].rawValue = db.LineStrings[db.lineNumber].rawValue .. string.format(chatStrings.language, lcol, lang, new_from, carriageReturn, rcol, newtext)
+        entry.rawValue = entry.rawValue .. string.format(chatStrings.language, lcol, lang, new_from, carriageReturn, rcol, newtext)
 
     -- Unknown messages - just pass it through, no changes.
     else
@@ -2841,13 +2888,13 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
         message = newtext
     end
 
-    db.LineStrings[db.lineNumber].rawDisplayed = message
+    entry.rawDisplayed = message
 
     -- Only if handled by rChat
 
     if not notHandled then
         -- Store message and params into an array for copy system and SpamFiltering
-        StorelineNumber(GetTimeStamp(), db.LineStrings[db.lineNumber].rawFrom, newtext, chanCode, originalFrom)
+        StorelineNumber(GetTimeStamp(), entry.rawFrom, newtext, chanCode, originalFrom)
     end
 
     -- Needs to be after StorelineNumber()
@@ -5084,20 +5131,6 @@ local function loadSavedVars(savedvar, sv_version, defaults)
     save.AddonEpoch = rChat.epoch
 	
     return save
-end
-
-local function OnAddonHistoryLoaded(_,addonName)
-    if addonName ~= "rChat_history" then return end
-    EVENT_MANAGER:UnregisterForEvent("rChat_history", EVENT_ADD_ON_LOADED)
-    
-    -- Saved Variables
-	_G["rChat_hist"] = _G["rChat_hist"] or {}
-	rChat.history = _G["rChat_hist"]
-    local dbh = rChat.history
-    if not dbh.LineStrings then
-        dbh.LineStrings = {}
-        dbh.lineNumber = 1
-    end
 end
 
 -- conversion for saved variables from version 2.4.3 to 2.4.4

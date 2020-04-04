@@ -3,6 +3,24 @@ rChat = rChat or {}
 local SF = LibSFUtils
 
 -- ------------------------------------------------------
+-- Guild functions
+
+-- does not return nil for name! - if bad then return nil guildId
+function rChat.SafeGetGuildName(index)
+    if index < 1 or index > 5 then return ("Invalid guild " .. index),nil end
+    
+    -- Guildname
+    local guildId = GetGuildId(index)
+    local guildName = GetGuildName(guildId)
+
+    -- Occurs sometimes
+    if(not guildName or (guildName):len() < 1) then
+        guildName = "Guild " .. guildId
+    end
+    return guildName, guildId
+end
+
+-- ------------------------------------------------------
 -- Color conversion functions
 
 -- Turn a ([0,1])^3 RGB colour to "|cABCDEF" form. We could use ZO_ColorDef, but we have so many colors so we don't do it.

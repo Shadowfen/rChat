@@ -1,4 +1,10 @@
-﻿[COLOR="DeepSkyBlue"]1.5.4 (19)[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.6 (20) Unreleased[/COLOR]
+[LIST]
+[*] Revised how chat history is collected, accessed, and saved. This changes the way that chat history is stored in saved variables, so the first time you run this version the old chat history variables will not be accessed.
+[*] Standardized on a SafeGetGuildName() which can handle the rare occasions where GetGuildName() returns an empty value.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.5.4 (19)[/COLOR]
 [LIST]
 [*] Fix incorrect AddonVersion.
 [*] Revised how the colors are saved in the SaveVariables. This should change over without problems, but if your colors go back to the defaults, the conversion did not work for you and you should reset the colors through the settings.

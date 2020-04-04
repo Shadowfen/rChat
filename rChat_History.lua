@@ -20,7 +20,7 @@ function RH.SetChatLine(chatLine, timestamp, from, text, channel, originalFrom)
 end
 
 function RH:GetLine(lineNumber)
-    return self:LineStrings[lineNumber] 
+    return self.LineStrings[lineNumber] 
 end
 
 function RH:SaveLine(line)
