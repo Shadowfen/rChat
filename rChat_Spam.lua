@@ -69,7 +69,6 @@ local function SpamFlood(from, text, chanCode)
                             -- Previous and current must be in zone(s), yell, say, emote (Character Channels except party)
                             if IsSpammableChannel(spamChanCode) and IsSpammableChannel(entry.channel) then
                                 -- Spam
-                                --CHAT_SYSTEM:Zo_AddMessage("Spam detected ( " .. text ..  " )")
                                 return true
                             end
                         end
@@ -108,7 +107,6 @@ local function SpamLookingFor(text)
     local lowertext = string.lower(text)
     for _, spamString in ipairs(spamStrings) do
         if string.find(lowertext, spamString) then
-            --CHAT_SYSTEM:Zo_AddMessage("spamLookingFor:" .. text .." ;spamString=" .. spamString)
             return true
         end
     end
@@ -126,19 +124,16 @@ local function SpamWantTo(text)
         -- Item Handler
         if string.find(text, "|H(.-):item:(.-)|h(.-)|h") then
             -- Match
-            --CHAT_SYSTEM:Zo_AddMessage("WT detected ( " .. text .. " )")
             return true
             
         -- Werewolf Bite
         elseif string.find(text, "[Ww][Ww][%s]+[Bb][Ii][Tt][Ee]") then
             -- Match
-            --CHAT_SYSTEM:Zo_AddMessage("WT WW Bite detected ( " .. text .. " )")
             return true
             
         -- Crowns
         elseif string.find(text, "[Cc][Rr][Oo][Ww][Nn][Ss]") then
             -- Match
-            --CHAT_SYSTEM:Zo_AddMessage("WT Crowns detected ( " .. text .. " )")
             return true
             
         end
@@ -158,10 +153,8 @@ local function SpamGuildRecruit(text)
         [GUILD_LINK_TYPE] = true,
     }
     linksTable = {}     -- returned
-    --CHAT_SYSTEM:Zo_AddMessage("Looking for guild link")
     ZO_ExtractLinksFromText(text, validLinkTypes, linksTable)
     if next(linksTable) ~= nil then
-        --CHAT_SYSTEM:Zo_AddMessage("Found guild link "..guildHeuristics)
         return true
     end
     return false
@@ -177,12 +170,10 @@ local function IsSpamEnabledForCategory(category)
     
         -- Enabled in Options?
         if config.floodProtect then
-            --CHAT_SYSTEM:Zo_AddMessage("floodProtect enabled")
             -- AntiSpam is enabled
             return true
         end
         
-        --CHAT_SYSTEM:Zo_AddMessage("floodProtect disabled")
         -- AntiSpam is disabled
         return false
     
@@ -192,16 +183,11 @@ local function IsSpamEnabledForCategory(category)
         if config.lookingForProtect then
             -- Enabled in reality?
             if rChatData.spamLookingForEnabled then
-                --CHAT_SYSTEM:Zo_AddMessage("lookingForProtect enabled")
                 -- AntiSpam is enabled
                 return true
             else
-            
-                --CHAT_SYSTEM:Zo_AddMessage("lookingForProtect is temporary disabled since " .. rChat.spamTempLookingForStopTimestamp)
-                
                 -- AntiSpam is disabled .. since -/+ grace time ?
                 if GetTimeStamp() - rChatData.spamTempLookingForStopTimestamp > (config.spamGracePeriod * 60) then
-                    --CHAT_SYSTEM:Zo_AddMessage("lookingForProtect enabled again")
                     -- Grace period outdatted -> we need to re-enable it
                     rChatData.spamLookingForEnabled = true
                     return true
@@ -209,7 +195,6 @@ local function IsSpamEnabledForCategory(category)
             end
         end
         
-        --CHAT_SYSTEM:Zo_AddMessage("lookingForProtect disabled")
         -- AntiSpam is disabled
         return false
     
@@ -219,13 +204,11 @@ local function IsSpamEnabledForCategory(category)
         if config.wantToProtect then
             -- Enabled in reality?
             if rChatData.spamWantToEnabled then
-                --CHAT_SYSTEM:Zo_AddMessage("wantToProtect enabled")
                 -- AntiSpam is enabled
                 return true
             else
                 -- AntiSpam is disabled .. since -/+ grace time ?
                 if GetTimeStamp() - rChatData.spamTempWantToStopTimestamp > (config.spamGracePeriod * 60) then
-                    --CHAT_SYSTEM:Zo_AddMessage("wantToProtect enabled again")
                     -- Grace period outdatted -> we need to re-enable it
                     rChatData.spamWantToEnabled = true
                     return true
@@ -233,7 +216,6 @@ local function IsSpamEnabledForCategory(category)
             end
         end
         
-        --CHAT_SYSTEM:Zo_AddMessage("wantToProtect disabled")
         -- AntiSpam is disabled
         return false
     
@@ -277,7 +259,6 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
     -- Spam (I'm not allowed to flood even for testing)
     if IsSpamEnabledForCategory("Flood") then
         if SpamFlood(from, text, chanCode) then 
-            --CHAT_SYSTEM:Zo_AddMessage("Blocked flood 1")
             return true 
         end
     end
@@ -287,17 +268,14 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
     if zo_strformat(SI_UNIT_NAME, from) == GetUnitName("player") or from == GetDisplayName() then
         -- I'm allowed to do spammable things
         isMe = true
-        --CHAT_SYSTEM:Zo_AddMessage("I saw something ( " .. text .. " )")
     end
 
     -- Looking For
     if IsSpamEnabledForCategory("LookingFor") then
         if SpamLookingFor(text) then 
             if isMe == false then
-                --CHAT_SYSTEM:Zo_AddMessage("Blocked LFG 1")
                 return true 
             else
-                --CHAT_SYSTEM:Zo_AddMessage("I saw a LF Message ( " .. text .. " )")
                 rChatData.spamTempLookingForStopTimestamp = GetTimeStamp()
                 rChatData.spamLookingForEnabled = false
                 return false 
@@ -310,10 +288,8 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
     if IsSpamEnabledForCategory("WantTo") then
         if SpamWantTo(text) then 
             if isMe == false then
-                --CHAT_SYSTEM:Zo_AddMessage("Blocked WTT 1")
                 return true 
             else
-                --CHAT_SYSTEM:Zo_AddMessage("I saw a WT Message ( " .. text .. " )")
                 rChatData.spamTempWantToStopTimestamp = GetTimeStamp()
                 rChatData.spamWantToStop = true
                 return false 
@@ -325,10 +301,8 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
     if IsSpamEnabledForCategory("GuildRecruit") then
         if SpamGuildRecruit(text, chanCode) then  
             if isMe == false then
-                --CHAT_SYSTEM:Zo_AddMessage("Blocked GR 1")
                 return true 
             else
-                --CHAT_SYSTEM:Zo_AddMessage("I saw a GR Message ( " .. text .. " )")
                 rChatData.spamTempGuildRecruitStopTimestamp = GetTimeStamp()
                 rChatData.spamGuildRecruitStop = true
                 return false 

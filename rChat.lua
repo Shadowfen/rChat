@@ -341,7 +341,7 @@ local function getRightColorRGB(channelId)
     return rChat.ConvertHexToRGBA(colorsEntry[2])
 end
 
--- ----------------------------------------------------
+--[[ ----------------------------------------------------
 -- local versions of LineStrings functions
 local function getChatCacheSize()
     if db.LineStrings == nil then return 0 end
@@ -371,8 +371,12 @@ local function getNewCacheEntry()
     db.LineStrings[lineno] = {}
     return db.LineStrings[lineno], lineno
 end
--------------------------------------------------------
+--]]
 
+-------------------------------------------------------
+-- return the index of the guild associated with the channel
+-- that was passed in. If the channel is not associated with a 
+-- guild, then return 0.
 local function GetGuildIndex(channel)
     local index = 0
     if channel >= CHAT_CHANNEL_GUILD_1 and channel <= CHAT_CHANNEL_OFFICER_5 then
@@ -381,6 +385,22 @@ local function GetGuildIndex(channel)
         index = channel - CHAT_CHANNEL_OFFICER_1 + 1
     end
     return index
+end
+
+-- Strip all of the color markers out of the
+-- provided text, returning what is left.
+--
+local function stripColours(text)
+        -- get positions of all of the desired delimiters
+    local t1 = SF.getAllColorDelim(text) 
+   
+    if #t1 == 0 then
+        -- no delimiters in string
+        return text
+    end
+    
+    -- remove color markers
+    return SF.stripColors(t1, text)
 end
 
 -- Format "From" name
@@ -401,7 +421,7 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
 
     -- "From" can be UserID or Character name depending on which channel we are
     local new_from = from
-    local chatline = getNewCacheEntry()  -- remember: increments lineNumber
+    local chatline = rChat.getNewCacheEntry(chanCode)  -- remember: increments lineNumber
 
     -- Messages from @Someone (guild / whisps)
     if IsDecoratedDisplayName(from) then
@@ -504,20 +524,6 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
 
 end
 
-
-local function stripColours(text)
-        -- get positions of all of the desired delimiters
-    local t1 = SF.getAllColorDelim(text) 
-   
-    if #t1 == 0 then
-        -- no delimiters in string
-        return text
-    end
-    
-    -- remove color markers
-    return SF.stripColors(t1, text)
-end
-
 -- format ESO text to raw text
 -- IE : Transforms LinkHandlers into their displayed value
 function rChat.FormatRawText(text)
@@ -531,9 +537,9 @@ function rChat.FormatRawText(text)
     -- Achievement |H1:achievement:33753|h|h etc (not searched a lot, was easy)
     -- DisplayName = |H1:display:Ayantir|h[@Ayantir]|h = [@Ayantir] -> link to DisplayName @Ayantir
     -- Book = |H1:book:186|h|h = [Climat de guerre] in french -> Link to book 186 .. GetLoreBookTitleFromLink()
-    -- rChat = |H1:RCHAT_LINK:124:11|h[06:18]|h = [06:18] (here 0 is the line number reference and 11 is the chanCode) - URL handling : if chanCode = 97, it will popup a dialog to open internet browser
-    -- Character = |H1:character:salhamandhil^Mx|h[salhamandhil]|h = text (is there anything which link Characters into a message ?) (here salhamandhil is with brackets volontary)
-    -- Need to do quest_items too. |H1:quest_item:4275|h|h
+    -- rChat = |H1:RCHAT_LINK:124:11|h[06:18]|h = [06:18] (here 124 is the line number reference and 11 is the chanCode) - URL handling : if chanCode = 97, it will popup a dialog to open internet browser
+    -- Character = |H1:character:salhamandhil^Mx|h[salhamandhil]|h = text(here salhamandhil is with brackets voluntary)
+    -- Quest_items = |H1:quest_item:4275|h|h
 
     newtext = string.gsub(newtext, "|H(.-):(.-)|h(.-)|h", function (linkStyle, data, text)
         -- linkStyle = style (ignored by game, seems to be often 1)
@@ -565,7 +571,7 @@ function rChat.FormatRawText(text)
             return text
         elseif linkType == BOOK_LINK_TYPE then
             return "[" .. GetLoreBookTitleFromLink(newtext) .. "]"
-        -- SysMessages Links DysplayNames
+        -- SysMessages Links DisplayNames
         elseif linkType == DISPLAY_NAME_LINK_TYPE then
             -- No formatting here
             return "[@" .. param1 .. "]"
@@ -585,6 +591,7 @@ end
 
 -- ------------------------------------------------------
 -- Automated Messages
+
 -- Also called by bindings
 function rChat.ShowAutoMsg()
     if RAM then
@@ -890,6 +897,9 @@ local function ChangeChatWindowDarkness(changeSetting)
     end
 end
 
+-- ----------------------------------------------------------------
+-- Whisper functions
+
 -- Add IM label on XML Initialization, set anchor and set it hidden
 function rChat_AddIMLabel(control)
 
@@ -928,7 +938,7 @@ end
 -- Show IM notification tooltip
 local function ShowIMTooltip(self, lineNumber)
 
-    local chatline = getCacheEntry(lineNumber)
+    local chatline = rChat.getCacheEntry(lineNumber)
     if not chatline then return end
 
     local sender = chatline.rawFrom
@@ -1064,6 +1074,7 @@ function rChat_TryToJumpToIm(isMinimized)
     end
 
 end
+-- ----------------------------------------------------------------
 
 -- ------------------------------------------------------
 -- Copy functions
@@ -1084,7 +1095,7 @@ end
 -- Copy message (only message)
 local function CopyMessage(numLine)
     -- Args are passed as string through LinkHandlerSystem
-    local entry = getCacheEntry(numLine)
+    local entry = rChat.getCacheEntry(numLine)
     if entry then 
         CopyToTextEntry(entry.rawMessage)
     end
@@ -1093,7 +1104,7 @@ end
 --Copy line (including timestamp, from, channel, message, etc)
 local function CopyLine(numLine)
     -- Args are passed as string trought LinkHandlerSystem
-    local entry = getCacheEntry(numLine)
+    local entry = rChat.getCacheEntry(numLine)
     if entry then 
         CopyToTextEntry(entry.rawLine)
     end
@@ -1212,7 +1223,7 @@ end
 -- It will copy all text mark with the same chanCode
 -- Todo : Whisps by person
 local function CopyDiscussion(chanNumber, numLine)
-    local entry = getCacheEntry(numLine)
+    local entry = rChat.getCacheEntry(numLine)
     if not entry then return end
     
     -- Args are passed as string through LinkHandlerSystem
@@ -1262,6 +1273,37 @@ local function CopyWholeChat()
     ShowCopyDialog(stringToCopy)
 
 end
+
+local function CopyToTextEntryText()
+    LINK_HANDLER:RegisterCallback(LINK_HANDLER.LINK_CLICKED_EVENT, OnLinkClicked)
+    LINK_HANDLER:RegisterCallback(LINK_HANDLER.LINK_MOUSE_UP_EVENT, OnLinkClicked)
+end
+
+-- Called by XML
+function rChat_ShowCopyDialogNext()
+
+    rChatData.messageTableId = rChatData.messageTableId + 1
+
+    -- Security
+    if rChatData.messageTable[rChatData.messageTableId] then
+
+        -- Build button
+        rChatCopyDialogTLCNoteNext:SetText(L(RCHAT_COPYXMLNEXT) .. " ( " .. rChatData.messageTableId .. " / " .. #rChatData.messageTable .. " )")
+        rChatCopyDialogTLCNoteEdit:SetText(rChatData.messageTable[rChatData.messageTableId])
+        rChatCopyDialogTLCNoteEdit:SetEditEnabled(false)
+        rChatCopyDialogTLCNoteEdit:SelectAll()
+
+        -- Don't show next button if its the last
+        if not rChatData.messageTable[rChatData.messageTableId + 1] then
+            rChatCopyDialogTLCNoteNext:SetHidden(true)
+        end
+
+        rChatCopyDialogTLCNoteEdit:TakeFocus()
+
+    end
+
+end
+
 -- ------------------------------------------------------
 
 
@@ -1286,15 +1328,16 @@ end
 
 -- Triggers when right clicking on a LinkHandler
 local function OnLinkClicked(rawLink, mouseButton, linkText, color, linkType, lineNumber, chanCode)
-
-    -- Only executed on LinkType = RCHAT_LINK
-    if linkType == RCHAT_LINK then
-
+    
+    if linkType ~= RCHAT_LINK then return end
+    if db.enablecopy then
+        
+        -- Only executed on LinkType = RCHAT_LINK
         local chanNumber = tonumber(chanCode)
         local numLine = tonumber(lineNumber)
-        local entry = getCacheEntry(lineNumber)
-        if not entry then return end
+        local entry = rChat.getCacheEntry(numLine)
         
+        if not entry then return end
         -- RCHAT_LINK also handle a linkable channel feature for linkable channels
 
         -- Context Menu
@@ -1324,43 +1367,10 @@ local function OnLinkClicked(rawLink, mouseButton, linkText, color, linkType, li
 
         -- Don't execute LinkHandler code
         return true
-
     end
-
 end
 -- ------------------------------------------------------
-
-local function CopyToTextEntryText()
-    if db.enablecopy then
-        LINK_HANDLER:RegisterCallback(LINK_HANDLER.LINK_CLICKED_EVENT, OnLinkClicked)
-        LINK_HANDLER:RegisterCallback(LINK_HANDLER.LINK_MOUSE_UP_EVENT, OnLinkClicked)
-    end
-end
-
--- Called by XML
-function rChat_ShowCopyDialogNext()
-
-    rChatData.messageTableId = rChatData.messageTableId + 1
-
-    -- Security
-    if rChatData.messageTable[rChatData.messageTableId] then
-
-        -- Build button
-        rChatCopyDialogTLCNoteNext:SetText(L(RCHAT_COPYXMLNEXT) .. " ( " .. rChatData.messageTableId .. " / " .. #rChatData.messageTable .. " )")
-        rChatCopyDialogTLCNoteEdit:SetText(rChatData.messageTable[rChatData.messageTableId])
-        rChatCopyDialogTLCNoteEdit:SetEditEnabled(false)
-        rChatCopyDialogTLCNoteEdit:SelectAll()
-
-        -- Don't show next button if its the last
-        if not rChatData.messageTable[rChatData.messageTableId + 1] then
-            rChatCopyDialogTLCNoteNext:SetHidden(true)
-        end
-
-        rChatCopyDialogTLCNoteEdit:TakeFocus()
-
-    end
-
-end
+-- Tab functions
 
 -- Needed to bind Shift+Tab in SetSwitchToNextBinding
 function KEYBINDING_MANAGER:IsChordingAlwaysEnabled()
@@ -1471,6 +1481,20 @@ function rChat.ChangeTab(tabToSet)
     if CHAT_SYSTEM:IsMinimized() then CHAT_SYSTEM:Maximize() end
 end
 
+local function CreateNewChatTab_PostHook()
+
+    for tabIndex, tabObject in ipairs(CHAT_SYSTEM.primaryContainer.windows) do
+        if db.augmentHistoryBuffer then
+            tabObject.buffer:SetMaxHistoryLines(1000) -- 1000 = max of control
+        end
+        if db.alwaysShowChat then
+            tabObject.buffer:SetLineFade(3600, 2)
+        end
+    end
+
+end
+-- ------------------------------------------------------
+
 
 -- Prune lines from saved cache
 -- Lines must be no older than our threshold,
@@ -1579,19 +1603,6 @@ local function SaveChatHistory(typeOf)
 
 end
 
-local function CreateNewChatTab_PostHook()
-
-    for tabIndex, tabObject in ipairs(CHAT_SYSTEM.primaryContainer.windows) do
-        if db.augmentHistoryBuffer then
-            tabObject.buffer:SetMaxHistoryLines(1000) -- 1000 = max of control
-        end
-        if db.alwaysShowChat then
-            tabObject.buffer:SetLineFade(3600, 2)
-        end
-    end
-
-end
-
 local function ShowFadedLines()
 
 	SecurePostHook(CHAT_SYSTEM, "CreateNewChatTab", function()
@@ -1672,18 +1683,19 @@ local function UpdateCharCorrespondanceTableChannelNames()
         if db.showTagInEntry then
 
             -- Get saved string
-            local tag = db.guildTags[GetGuildName(GetGuildId(i))]
+            local gname = rChat.SafeGetGuildName(i)
+            local tag = db.guildTags[gname]
 
             -- No SavedVar
             if not tag then
-                tag = GetGuildName(GetGuildId(i))
+                tag = gname
             -- SavedVar, but no tag
             elseif tag == "" then
-                tag = GetGuildName(GetGuildId(i))
+                tag = gname
             end
 
             -- Get saved string
-            local officertag = db.officertag[GetGuildName(GetGuildId(i))]
+            local officertag = db.officertag[gname]
 
             -- No SavedVar
             if not officertag then
@@ -1702,8 +1714,8 @@ local function UpdateCharCorrespondanceTableChannelNames()
 
         else
             -- /g1 is 12 /g5 is 16, /o1=17, etc
-            ChanInfoArray[CHAT_CHANNEL_GUILD_1 - 1 + i].name = GetGuildName(GetGuildId(i))
-            ChanInfoArray[CHAT_CHANNEL_OFFICER_1 - 1 + i].name = GetGuildName(GetGuildId(i))
+            ChanInfoArray[CHAT_CHANNEL_GUILD_1 - 1 + i].name = gname
+            ChanInfoArray[CHAT_CHANNEL_OFFICER_1 - 1 + i].name = gname
             --Deactivating
             ChanInfoArray[CHAT_CHANNEL_GUILD_1 - 1 + i].dynamicName = true
             ChanInfoArray[CHAT_CHANNEL_OFFICER_1 - 1 + i].dynamicName = true
@@ -1803,14 +1815,12 @@ local function AddLinkHandlerToStringWithoutDDS(textToCheck, numLine, chanCode)
     local stillToParse = true
     local noColorlen = textToCheck:len()
 
-    -- this var seems to get some rework
     local startNoColor = 1
     local textLinked = ""
     local preventLoopsCol = 0
     local handledText = ""
 
     while stillToParse do
-
         -- Prevent infinite loops while its still in beta
         if preventLoopsCol > 10 then
             stillToParse = false
@@ -1835,17 +1845,17 @@ local function AddLinkHandlerToStringWithoutDDS(textToCheck, numLine, chanCode)
 
             textLinked = SplitTextForLinkHandler(textToCheck, numLine, chanCode)
             handledText = handledText .. textLinked
-
+            
             -- No need to parse after
             stillToParse = false
 
         else
 
-            -- Link is at the begginning of the string
+            -- Link is at the beginning of the string
             if startpos == 1 then
                 -- New text is (only handler because its at the pos 1)
                 handledText = handledText .. textToCheck:sub(startpos, endpos)
-
+                
                 -- Do we need to continue ?
                 if endpos == noColorlen then
                     -- We're at the end
@@ -1861,15 +1871,15 @@ local function AddLinkHandlerToStringWithoutDDS(textToCheck, numLine, chanCode)
 
                 -- We Handle string from startNoColor of the message up to the Handle link
                 local textToHandle = textToCheck:sub(1, startpos - 1)
-
+                
                 -- Add ours
                 -- Maybe we need a split due to 106 chars restriction
                 textLinked = SplitTextForLinkHandler(textToHandle, numLine, chanCode)
-
+                
                 -- New text is handledText + (textLinked .. LinkHandler)
                 handledText = handledText .. textLinked
                 handledText = handledText .. textToCheck:sub(startpos, endpos)
-
+                
                 -- Do we need to continue ?
                 if endpos == noColorlen then
                     -- We're at the end
@@ -1922,19 +1932,17 @@ local function AddLinkHandlerToString(textToCheck, numLine, chanCode)
             -- If nil, then we won't have new link after startposition = startNoDDS , so add ours until the end
 
             textLinked = AddLinkHandlerToStringWithoutDDS(textToCheck, numLine, chanCode)
-
             textTReformated = textTReformated .. textLinked
 
             -- No need to parse after
             stillToParseDDS = false
 
         else
-
-            -- DDS is at the begginning of the string
+            -- DDS is at the beginning of the string
             if startpos == 1 then
                 -- New text is (only DDS because its at the pos 1)
                 textTReformated = textTReformated .. textToCheck:sub(startpos, endpos)
-
+                
                 -- Do we need to continue ?
                 if endpos == noDDSlen then
                     -- We're at the end
@@ -1953,7 +1961,7 @@ local function AddLinkHandlerToString(textToCheck, numLine, chanCode)
 
                 -- Add ours
                 textLinked = AddLinkHandlerToStringWithoutDDS(textToHandle, numLine, chanCode)
-
+                
                 -- New text is formattedText + (textLinked .. DDS)
                 textTReformated = textTReformated .. textLinked
 
@@ -1973,7 +1981,6 @@ local function AddLinkHandlerToString(textToCheck, numLine, chanCode)
             end
         end
     end
-
     return textTReformated
 
 end
@@ -1984,92 +1991,42 @@ end
 --
 -- TODO : Handle LinkHandler + Malformatted strings , such as : "|c87B7CC|c87B7CCUpdated: |H0:achievement:68:5252:0|h|h (Artisanat)."
 local function ReformatSysMessages(text)
-     if not text then return "" end
+     if not text then return "",{} end
    
     -- get positions of all of the desired delimiters
     local t1 = SF.getAllColorDelim(text) 
    
     if #t1 == 0 then
         -- no delimiters in string
-        return text
+        return text,{text}
     end
     
     -- balance and correct color markers
     SF.regularizeColors(t1, text)
-    
-    rawSys = table.concat(SF.colorsplit(t1, text))
+    local splitcolors = SF.colorsplit(t1, text)
+    rawSys = table.concat(splitcolors)
     
     -- |u search (strip out hard padding)
     rawSys = string.gsub(rawSys,"|u%-?%d+%%?:%-?%d+%%?:(.-):|u","%1")
 
-    return rawSys
+    return rawSys, splitcolors
 
 end
 
 -- Add rChatLinks Handlers on the whole text except LinkHandlers already here
 local function AddLinkHandlerToLine(text, chanCode, numLine)
 
-    local rawText = ReformatSysMessages(text)
-
-    local start = 1
-    local rawTextlen = string.len(rawText)
-    local stillToParseCol = true
-    local formattedText
-    local noColorText = ""
     local textToCheck = ""
-
-    local startColortag = ""
-
-    local preventLoops = 0
-    local colorizedText = true
-    local newText = ""
-
-    while stillToParseCol do
-
-        -- Prevent infinite loops while its still in beta
-        if preventLoops > 10 then
-            stillToParseCol = false
-        else
-            preventLoops = preventLoops + 1
+    local newtext = ""
+    
+    local rawText, colorsplit = ReformatSysMessages(text)
+    for k,textToCheck in ipairs(colorsplit) do
+        if textToCheck:sub(1,1) ~= "|" then
+            colorsplit[k] = AddLinkHandlerToString(textToCheck, numLine, chanCode)
         end
-
-        -- Handling Colors, search for color tag
-        local startcol, endcol = string.find(rawText, "|[cC]%x%x%x%x%x%x(.-)|[rR]", start)
-
-        -- Not Found
-        if startcol == nil then
-            startColortag = ""
-            textToCheck = string.sub(rawText, start)
-            stillToParseCol = false
-            newText = newText .. AddLinkHandlerToString(textToCheck, numLine, chanCode)
-        else
-            startColortag = string.sub(rawText, startcol, startcol + 7)
-            -- rChat format all strings
-            if start == startcol then
-                -- textToCheck is only (.-)
-                textToCheck = string.sub(rawText, (startcol + 8), (endcol - 2))
-                -- Change our start -> pos of (.-)
-                start = endcol + 1
-                newText = newText .. startColortag .. AddLinkHandlerToString(textToCheck, numLine, chanCode) .. "|r"
-
-                -- Do we need to continue ?
-                if endcol == rawTextlen then
-                    -- We're at the end
-                    stillToParseCol = false
-                end
-
-            else
-                -- We will check colorized text at next loop
-                textToCheck = string.sub(rawText, start, startcol-1)
-                start = startcol
-                -- Tag color found but need to check some strings before
-                newText = newText .. AddLinkHandlerToString(textToCheck, numLine, chanCode)
-            end
-        end
-
-    end
-
-    return newText
+   end
+    newtext = table.concat(colorsplit)
+    return newtext
 
 end
 
@@ -2082,7 +2039,6 @@ local function AddLinkHandler(text, chanCode, numLine)
 
     -- Init
     local formattedText = ""
-
     -- Recheck setting if copy is disabled for chat dump
     if db.enablecopy then
 
@@ -2098,7 +2054,7 @@ local function AddLinkHandler(text, chanCode, numLine)
             local lines = {zo_strsplit("\n", crtext)}
             local first = true
             local strippedLine
-            local nunmRows = 0
+            local numRows = 0
 
             for _, line in pairs(lines) do
 
@@ -2112,11 +2068,11 @@ local function AddLinkHandler(text, chanCode, numLine)
                         formattedText = formattedText .. "\n" .. AddLinkHandlerToLine(line, chanCode, numLine)
                     end
 
-                    if nunmRows > 10 then
+                    if numRows > 10 then
                         CHAT_SYSTEM:Zo_AddMessage("rChat has triggered 10 packed lines with text=" .. text .. "-- rChat - Message truncated")
                         return
                     else
-                        nunmRows = nunmRows + 1
+                        numRows = numRows + 1
                     end
 
                 end
@@ -2180,8 +2136,8 @@ local function RestoreChatMessagesFromHistory(wasReloadUI)
                             end
 
                         end
-                    else
-                        historyIndex = deleteChatLine(historyIndex)
+                    --else
+                        --historyIndex = deleteChatLine(historyIndex)
                     end
 
                 end
@@ -2242,47 +2198,47 @@ local function RestoreChatHistory()
     -- Set default tab at login
     SetDefaultTab(db.defaultTab)
     -- Restore History
-    if db.history then
-
-        if db.lastWasReloadUI and db.restoreOnReloadUI then
-
-            -- RestoreChannel
-            if db.defaultchannel ~= RCHAT_CHANNEL_NONE then
-                CHAT_SYSTEM:SetChannel(db.history.currentChannel, db.history.currentTarget)
-            end
-
-            -- restore TextEntry and Chat
-            RestoreChatMessagesFromHistory(true)
-
-            -- Restore tab when ReloadUI
-            --** blocking for now
-            --SetDefaultTab(db.history.currentTab)
-
-        elseif (db.lastWasLogOut and db.restoreOnLogOut) or (db.lastWasAFK and db.restoreOnAFK) or (db.lastWasQuit and db.restoreOnQuit) then
-            -- restore TextEntry and Chat
-            RestoreChatMessagesFromHistory(false)
-        end
-
+    if not db.history then 
         rChat_ZOS.messagesWereRestored = true
-
-        local indexMessages = #rChatData.cachedMessages
-        if indexMessages > 0 then
-            local rmsg
-            for index=1, indexMessages do
-                rmsg = rChatData.cachedMessages[index]
-                if rmsg and rmsg ~= "" then
-                    CHAT_SYSTEM:Zo_AddMessage(rChatData.cachedMessages[index])
-                end
-            end
-        end
-
-        db.lastWasReloadUI = false
-        db.lastWasLogOut = false
-        db.lastWasQuit = false
-        db.lastWasAFK = true
-    else
-        rChat_ZOS.messagesWereRestored = true
+        return 
     end
+
+    if db.lastWasReloadUI and db.restoreOnReloadUI then
+
+        -- RestoreChannel
+        if db.defaultchannel ~= RCHAT_CHANNEL_NONE then
+            CHAT_SYSTEM:SetChannel(db.history.currentChannel, db.history.currentTarget)
+        end
+
+        -- restore TextEntry and Chat
+        RestoreChatMessagesFromHistory(true)
+
+        -- Restore tab when ReloadUI
+        --** blocking for now
+        --SetDefaultTab(db.history.currentTab)
+
+    elseif (db.lastWasLogOut and db.restoreOnLogOut) or (db.lastWasAFK and db.restoreOnAFK) or (db.lastWasQuit and db.restoreOnQuit) then
+        -- restore TextEntry and Chat
+        RestoreChatMessagesFromHistory(false)
+    end
+
+    rChat_ZOS.messagesWereRestored = true
+
+    local indexMessages = #rChatData.cachedMessages
+    if indexMessages > 0 then
+        local rmsg
+        for index=1, indexMessages do
+            rmsg = rChatData.cachedMessages[index]
+            if rmsg and rmsg ~= "" then
+                CHAT_SYSTEM:Zo_AddMessage(rChatData.cachedMessages[index])
+            end
+        end
+    end
+
+    db.lastWasReloadUI = false
+    db.lastWasLogOut = false
+    db.lastWasQuit = false
+    db.lastWasAFK = true
 
 end
 
@@ -2298,7 +2254,7 @@ local function StorelineNumber(epochtime, rawFrom, text, chanCode, originalFrom)
     local formattedMessage = ""
     local rawText = text
     
-    local entry,lineno = getNewCacheEntry()
+    local entry,lineno = rChat.getNewCacheEntry(chanCode)
 
     -- SysMessages does not have a from
     if chanCode ~= CHAT_CHANNEL_SYSTEM then
@@ -2348,91 +2304,60 @@ local function StorelineNumber(epochtime, rawFrom, text, chanCode, originalFrom)
 
     -- Store CopyLine
     entry.rawLine = formattedMessage .. rawText
-
-    --Increment at each message handled
-    --db.lineNumber = db.lineNumber + 1
-
 end
 
 -- WARNING : Since AddMessage is bypassed, this function and all its subfunctions DOES NOT CALL d() / Emitmessage() / AddMessage() or it will result an infinite loop and crash the game
 -- Debug must call CHAT_SYSTEM:Zo_AddMessage() wich is backed up copy of CHAT_SYSTEM.AddMessage
 local function FormatSysMessage(statusMessage)
 
-    if not statusMessage then return end
+    if not statusMessage or string.len(statusMessage) == 0 then return end
     
     -- Display Timestamp if needed
-    local function ShowTimestamp()
-
+    local function ShowTimestamp(timevalue)
         local timestr = ""
 
         -- Add timestamp
         if db.showTimestamp then
-
             -- Timestamp formatted
-            timestr = rChat.CreateTimestamp(db.timestampFormat)
-            --timestr = CreateTimestamp(GetTimeString())
+            timestr = rChat.CreateTimestamp(db.timestampFormat,timevalue)
 
             local timecol
             -- Timestamp color is chanCode so no coloring
             if db.timestampcolorislcol then
-                 -- Show Message
                 timestr = string.format("[%s] ", timestr)
             else
                 -- Timestamp color is our setting color
                 timecol = db.colours.timestamp
-
-                -- Show Message
                 timestr = string.format("%s[%s] |r", timecol, timestr)
             end
-        else
-            timestr = ""
         end
-
         return timestr
+    end -- ShowTimestamp()
 
+
+    local sysMessage
+
+    -- Some addons are quicker than rChat
+    if not db then return statusMessage end
+
+    local entry, ndx = rChat.getNewCacheEntry(CHAT_CHANNEL_SYSTEM)
+    entry.rawValue = statusMessage
+    entry.timestamp = GetTimeStamp()
+    entry.rawTimestamp = ShowTimestamp(GetTimeString())
+
+    -- Make it Linkable
+    if db.enablecopy then
+        sysMessage = entry.rawTimestamp..AddLinkHandler(statusMessage, CHAT_CHANNEL_SYSTEM, db.lineNumber)
+    else
+        --sysMessage = statusMessage
+        sysMessage = entry.rawTimestamp..statusMessage
     end
+    entry.rawDisplayed = sysMessage
 
-    -- Only if there something to display
-    if string.len(statusMessage) > 0 then
 
-        local sysMessage
+    -- No From, rawTimestamp is in statusMessage, sent as arg for SpamFiltering even if SysMessages are not filtered
+    StorelineNumber(entry.timestamp, nil, statusMessage, CHAT_CHANNEL_SYSTEM, nil)
 
-        -- Some addons are quicker than rChat
-        if not db then return statusMessage end
-
-        -- Show Message
-        --statusMessage = ShowTimestamp() .. statusMessage
-
-        local entry, ndx = getNewCacheEntry()
-        --if not db.lineNumber then
-        --    db.lineNumber = 1
-        --end
-
-        --  for CopySystem
-        --db.LineStrings[db.lineNumber] = {}
-
-        -- Make it Linkable
-        if db.enablecopy then
-            sysMessage = ShowTimestamp() .. AddLinkHandler(statusMessage, CHAT_CHANNEL_SYSTEM, db.lineNumber)
-        else
-            --sysMessage = statusMessage
-            sysMessage = ShowTimestamp() .. statusMessage
-        end
-
-        entry.rawFrom = ""
-        entry.rawMessage = ""
-        entry.rawLine = ""
-        entry.rawValue = statusMessage
-        entry.rawDisplayed = sysMessage
-        entry.rawTimestamp = ShowTimestamp()
-        entry.timestamp = GetTimeStamp()
-
-        -- No From, rawTimestamp is in statusMessage, sent as arg for SpamFiltering even if SysMessages are not filtered
-        StorelineNumber(GetTimeStamp(), nil, statusMessage, CHAT_CHANNEL_SYSTEM, nil)
-
-    end
-
-    -- Show Message
     return sysMessage
 end
 
@@ -2642,7 +2567,7 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
     end
 
     --  for CopySystem
-    local entry, ndx = getNewCacheEntry()
+    local entry, ndx = rChat.getNewCacheEntry(chanCode)
     entry.rawFrom = from
     entry.rawValue = text
     entry.rawMessage = text
@@ -3560,7 +3485,6 @@ local function BuildLAMPanel()
                     db.mention.sound = SF.getSound(value)
                     local ctrl = WINDOW_MANAGER:GetControlByName("RCHAT_MENTION_SOUND")
                     if ctrl ~= nil then
-                        --CHAT_SYSTEM:Zo_AddMessage("found RCHAT_MENTION_SOUND")
                         ctrl.data.text = SF.ColorText(db.mention.sound, SF.hex.normal)
                     end
                     SF.PlaySound(db.mention.sound) 
@@ -3973,13 +3897,11 @@ local function BuildLAMPanel()
                     db.soundforincwhisps = SF.getSound(value)
                     local descCtrl = WINDOW_MANAGER:GetControlByName("RCHAT_WHISP_SOUND")
                     if descCtrl ~= nil then
-                        --CHAT_SYSTEM:Zo_AddMessage("found RCHAT_WHISP_SOUND")
                         descCtrl.data.text = SF.ColorText(db.soundforincwhisps, SF.hex.normal)
                     end
                     SF.PlaySound(db.soundforincwhisps) 
                 end,
                 width = "half",
-                --disabled = function() return not db.mention.mentionEnabled end,
                 default = defaults.soundforincwhisps,
             },
             {
@@ -4866,7 +4788,7 @@ local function OnPlayerActivated()
 
     rChatData.sceneFirst = false
 
-    if isAddonLoaded then
+    --if isAddonLoaded then
     
 
         rChatData.activeTab = 1
@@ -4937,9 +4859,6 @@ local function OnPlayerActivated()
         -- Save all category colors
         SaveGuildIndexes()
 
-        -- Handle Copy text
-        CopyToTextEntryText()
-
         -- Restore History if needed
         RestoreChatHistory()
         -- Default Tab
@@ -4947,8 +4866,13 @@ local function OnPlayerActivated()
         -- Change Window apparence
         ChangeChatWindowDarkness()
 
+        -- Handle Copy text
+        --CopyToTextEntryText()
+        LINK_HANDLER:RegisterCallback(LINK_HANDLER.LINK_CLICKED_EVENT, OnLinkClicked)
+        LINK_HANDLER:RegisterCallback(LINK_HANDLER.LINK_MOUSE_UP_EVENT, OnLinkClicked)
+
         RegisterChatEvents()
-    end
+    --end
 
 end
 
@@ -5168,10 +5092,10 @@ local function OnAddonLoaded(_, addonName)
     rChat_ZOS.FindAutomatedMsg = RAM.FindAutomatedMsg
     rChat_ZOS.cachedMessages = rChatData.cachedMessages
     rChat_ZOS.saveMsg = function(text) 
-        local dbh=rChat.history
-        dbh.LineStrings = dbh.LineStrings or {}
-        table.insert(dbh.LineStrings,text)
-        dbh.lineNumber = dbh.lineNumber + 1
+        --local dbh=rChat.history
+        --dbh.LineStrings = dbh.LineStrings or {}
+        --table.insert(dbh.LineStrings,text)
+        --dbh.lineNumber = dbh.lineNumber + 1
     end
 
     -- Saved variables
@@ -5189,22 +5113,14 @@ local function OnAddonLoaded(_, addonName)
     --LAM
     BuildLAM()
 
-    -- Used for CopySystem
-    if not db.lineNumber then
-        db.lineNumber = 1
-    elseif type(db.lineNumber) ~= "number" then
-        db.lineNumber = 1
-        db.LineStrings = {}
-    elseif db.lineNumber > 5000 then
+    -- Initialize chat cache for copy and restore
+    rChat.initCache()   
+    if db.lineNumber > 5000 then
         StripLinesFromLineStrings(0)
     end
 
     if not db.chatTabChannel then
         db.chatTabChannel = {}
-    end
-
-    if not db.LineStrings then
-        db.LineStrings = {}
     end
 
     if not rChat.tabNames then
