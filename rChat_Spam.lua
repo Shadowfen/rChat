@@ -8,10 +8,6 @@ function rChat.setSpamConfig(cfgtable)
     config = cfgtable or {}
 end
 
--- These require access to rChat.save and rChat.data (local vars in rChat.lua that have
--- been stuffed in rChat table so that we can get to them from here.
--- Readdress this properly.
-
 local spammableChannels = {}
 spammableChannels[CHAT_CHANNEL_ZONE_LANGUAGE_1 + 1] = true
 spammableChannels[CHAT_CHANNEL_ZONE_LANGUAGE_2 + 1] = true
@@ -32,51 +28,30 @@ local function SpamFlood(from, text, chanCode)
     local db = rChat.save
 
     -- 2+ messages identical in less than 30 seconds on Character channels = spam
-        
-    -- local versions of LineStrings functions
-    local function getChatCacheSize()
-        if db.LineStrings == nil then return 0 end
-        if db.lineNumber == nil or db.lineNumber == 1 then return 0 end
-        return db.lineNumber - 1
-    end
-    
-    -- local versions of LineStrings functions
-    -- only returns an entry for previously written entries, nil otherwise
-    local function getEntry(line)
-        if db.LineStrings == nil then return nil end
-        if not line or line <= 1 then return nil end
-        return db.LineStrings[line]
-    end
-    
-    --if db.LineStrings == nil then return false end
-    --if db.lineNumber == nil or db.lineNumber == 1 then return false end   -- 1st message cannot be a spam
-    --local previousLine = db.lineNumber - 1
-    local previousLine = getChatCacheSize()
+    local previousLine = rChat.getChatCacheSize()
     if previousLine == 0 then return false end
     local ourMessageTimestamp = GetTimeStamp()
     
     local checkSpam = true
     while checkSpam do
-        local entry = getEntry(previousLine)
+        local entry = rChat.getCacheEntry(previousLine)
         -- Previous line can be a ChanSystem one
-        if entry then
-            if entry.channel ~= CHAT_CHANNEL_SYSTEM then
-                if (type(entry.rawTimestamp) == "number") and ((ourMessageTimestamp - entry.rawTimestamp) < config.floodGracePeriod) then
-                    -- if our message is sent by our chatter / will be break by "Character" channels and "UserID" Channels
-                    if from == entry.rawFrom then
-                        -- if our message is eq of last message
-                        if text == entry.rawText then
-                            -- Previous and current must be in zone(s), yell, say, emote (Character Channels except party)
-                            if IsSpammableChannel(spamChanCode) and IsSpammableChannel(entry.channel) then
-                                -- Spam
-                                return true
-                            end
+        if entry and entry.channel ~= CHAT_CHANNEL_SYSTEM then
+            if (type(entry.rawTimestamp) == "number") and ((ourMessageTimestamp - entry.rawTimestamp) < config.floodGracePeriod) then
+                -- if our message is sent by our chatter / will be break by "Character" channels and "UserID" Channels
+                if from == entry.rawFrom then
+                    -- if our message is eq of last message
+                    if text == entry.rawText then
+                        -- Previous and current must be in zone(s), yell, say, emote (Character Channels except party)
+                        if IsSpammableChannel(spamChanCode) and IsSpammableChannel(entry.channel) then
+                            -- Spam
+                            return true
                         end
                     end
-                else
-                    -- > 30s, stop analysis
-                    checkSpam = false
                 end
+            else
+                -- > 30s, stop analysis
+                checkSpam = false
             end
         end
         

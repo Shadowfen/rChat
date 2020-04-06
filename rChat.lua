@@ -1236,7 +1236,7 @@ local function CopyDiscussion(chanNumber, numLine)
     end
 
     local stringToCopy = ""
-    for k, data in ipairs(db.LineStrings) do
+    for k, data in rChat.iterCache() do
         if numChanCode == CHAT_CHANNEL_WHISPER or numChanCode == CHAT_CHANNEL_WHISPER_SENT then
             if data.channel == CHAT_CHANNEL_WHISPER or data.channel == CHAT_CHANNEL_WHISPER_SENT then
                 if stringToCopy == "" then
@@ -1262,7 +1262,7 @@ end
 local function CopyWholeChat()
 
     local stringToCopy = ""
-    for k, data in ipairs(db.LineStrings) do
+    for k, data in rChat.iterCache() do
         if stringToCopy == "" then
             stringToCopy = data.rawLine
         else
@@ -2620,13 +2620,10 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
         -- Add RCHAT_HANDLER for display 
         local timestamp = ZO_LinkHandler_CreateLink( rChat.CreateTimestamp(db.timestampFormat), 
                                 nil, RCHAT_LINK, ndx .. ":" .. chanCode ) .. " "
-        --local timestamp = ZO_LinkHandler_CreateLink(CreateTimestamp(GetTimeString()), nil, RCHAT_LINK, db.lineNumber .. ":" .. chanCode) .. " "
 
         -- Timestamp color
         message = message .. string.format("%s%s|r", timecol, timestamp)
         entry.rawValue = string.format("%s[%s] |r", timecol, rChat.CreateTimestamp(db.timestampFormat))
-        --db.LineStrings[db.lineNumber].rawValue = string.format("%s[%s] |r", timecol, CreateTimestamp(GetTimeString()))
-
     end
 
     local linkedText = newtext
@@ -5092,10 +5089,6 @@ local function OnAddonLoaded(_, addonName)
     rChat_ZOS.FindAutomatedMsg = RAM.FindAutomatedMsg
     rChat_ZOS.cachedMessages = rChatData.cachedMessages
     rChat_ZOS.saveMsg = function(text) 
-        --local dbh=rChat.history
-        --dbh.LineStrings = dbh.LineStrings or {}
-        --table.insert(dbh.LineStrings,text)
-        --dbh.lineNumber = dbh.lineNumber + 1
     end
 
     -- Saved variables
