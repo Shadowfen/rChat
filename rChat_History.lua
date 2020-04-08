@@ -22,15 +22,15 @@ function rChat.getCacheEntry(line)
     return db.LineStrings[line]
 end
 
--- Returns reference to a new entry for populating 
+-- Returns reference to a new entry for populating
 -- (and increments line count in cache)
 function rChat.getNewCacheEntry(channel)
     local db = rChat.save
-    if db.LineStrings == nil then 
-        db.LineStrings = {} 
+    if db.LineStrings == nil then
+        db.LineStrings = {}
     end
-    if not db.lineNumber or db.lineNumber <= 1 then 
-        db.lineNumber = #db.LineStrings + 1 
+    if not db.lineNumber or db.lineNumber <= 1 then
+        db.lineNumber = #db.LineStrings + 1
     end
     local lineno = db.lineNumber
     db.lineNumber = db.lineNumber + 1
@@ -59,15 +59,15 @@ function rChat.clearCache()
     rChat.save.lineNumber = 1
 end
 
--- set the specified index with a new entry table 
+-- set the specified index with a new entry table
 -- (populated correctly). Returns the index that
 -- the entry was added into (since index is an
 -- optional parameter that defaults to the end of
 -- the cache if not specified).
 function rChat.SetLine(entry, index)
     local db = rChat.save
-    if not index then 
-        index = db.lineNumber 
+    if not index then
+        index = db.lineNumber
         db.lineNumber = db.lineNumber + 1
     end
     db.LineStrings[index] = entry
@@ -112,11 +112,8 @@ function RH.ChatLine()
     return {}
 end
 
-function RH.SetChatLine(chatLine, timestamp, from, text, channel, originalFrom)
-end
-
 function RH:GetLine(lineNumber)
-    return self.LineStrings[lineNumber] 
+    return self.LineStrings[lineNumber]
 end
 
 function RH:SaveLine(line)
@@ -128,13 +125,13 @@ function RH:GetSize()
 end
 
 function RH:GarbageCollect(typeOfExit, timeBeforeRestore, restoreSystem, restoreSystemOnly, restoreWhispers)
-    
+
     local function removeLine(index)
         table.remove(self.LineStrings, index)
         index = index-1
         return index
     end
-    
+
     -- First loop is time based. If message is older than our limit, it will be stripped.
     local curtime= GetTimeStamp()
     local k = 1
@@ -146,12 +143,14 @@ function RH:GarbageCollect(typeOfExit, timeBeforeRestore, restoreSystem, restore
                 k = removeLine(k)
             elseif channel ~= CHAT_CHANNEL_SYSTEM and restoreSystemOnly then
                 k = removeLine(k)
-            elseif (channel == CHAT_CHANNEL_WHISPER or channel == CHAT_CHANNEL_WHISPER_SENT) and (not restoreWhispers) then
+            elseif (channel == CHAT_CHANNEL_WHISPER or channel == CHAT_CHANNEL_WHISPER_SENT)
+                    and (not restoreWhispers) then
                 k = removeLine(k)
             elseif typeOfExit ~= 1 and self.LineStrings[k].rawTimestamp then
                 if (curtime - self.LineStrings[k].rawTimestamp) > (timeBeforeRestore * 60 * 60) then
                     k = removeLine(k)
-                elseif self.LineStrings[k].rawTimestamp > curtime then -- System clock of users computer badly set and msg received meanwhile.
+                elseif self.LineStrings[k].rawTimestamp > curtime then
+                    -- System clock of users computer badly set and msg received meanwhile.
                     k = removeLine(k)
                 end
             end

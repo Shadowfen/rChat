@@ -8,15 +8,16 @@ function rChat.setSpamConfig(cfgtable)
     config = cfgtable or {}
 end
 
-local spammableChannels = {}
-spammableChannels[CHAT_CHANNEL_ZONE_LANGUAGE_1 + 1] = true
-spammableChannels[CHAT_CHANNEL_ZONE_LANGUAGE_2 + 1] = true
-spammableChannels[CHAT_CHANNEL_ZONE_LANGUAGE_3 + 1] = true
-spammableChannels[CHAT_CHANNEL_ZONE_LANGUAGE_4 + 1] = true
-spammableChannels[CHAT_CHANNEL_SAY + 1] = true
-spammableChannels[CHAT_CHANNEL_YELL + 1] = true
-spammableChannels[CHAT_CHANNEL_ZONE + 1] = true
-spammableChannels[CHAT_CHANNEL_EMOTE + 1] = true
+local spammableChannels = {
+    [CHAT_CHANNEL_ZONE_LANGUAGE_1 + 1] = true,
+    [CHAT_CHANNEL_ZONE_LANGUAGE_2 + 1] = true,
+    [CHAT_CHANNEL_ZONE_LANGUAGE_3 + 1] = true,
+    [CHAT_CHANNEL_ZONE_LANGUAGE_4 + 1] = true,
+    [CHAT_CHANNEL_SAY + 1] = true,
+    [CHAT_CHANNEL_YELL + 1] = true,
+    [CHAT_CHANNEL_ZONE + 1] = true,
+    [CHAT_CHANNEL_EMOTE + 1] = true,
+}
 
 local function IsSpammableChannel(chanCode)
     if chanCode == nil or chanCode == 0 then return nil end
@@ -24,20 +25,21 @@ local function IsSpammableChannel(chanCode)
 end
 
 -- Return true/false if text is a flood
-local function SpamFlood(from, text, chanCode)
+local function SpamFlood(from, text, spamChanCode)
     local db = rChat.save
 
     -- 2+ messages identical in less than 30 seconds on Character channels = spam
     local previousLine = rChat.getChatCacheSize()
     if previousLine == 0 then return false end
     local ourMessageTimestamp = GetTimeStamp()
-    
+
     local checkSpam = true
     while checkSpam do
         local entry = rChat.getCacheEntry(previousLine)
         -- Previous line can be a ChanSystem one
         if entry and entry.channel ~= CHAT_CHANNEL_SYSTEM then
-            if (type(entry.rawTimestamp) == "number") and ((ourMessageTimestamp - entry.rawTimestamp) < config.floodGracePeriod) then
+            if (type(entry.rawTimestamp) == "number") and
+                    ((ourMessageTimestamp - entry.rawTimestamp) < config.floodGracePeriod) then
                 -- if our message is sent by our chatter / will be break by "Character" channels and "UserID" Channels
                 if from == entry.rawFrom then
                     -- if our message is eq of last message
@@ -54,17 +56,17 @@ local function SpamFlood(from, text, chanCode)
                 checkSpam = false
             end
         end
-        
+
         if previousLine > 1 then
             previousLine = previousLine - 1
         else
             checkSpam = false
         end
-    
+
     end
-    
+
     return false
-        
+
 end
 
 -- Return true/false if text is a LFG message
@@ -95,63 +97,62 @@ local function SpamWantTo(text)
 
     -- "W.T S"
     if string.find(text, "[wW][%s.]?[tT][%s.]?[bBsStT]") then -- buy, sell, trade
-        
+
         -- Item Handler
         if string.find(text, "|H(.-):item:(.-)|h(.-)|h") then
             -- Match
             return true
-            
+
         -- Werewolf Bite
         elseif string.find(text, "[Ww][Ww][%s]+[Bb][Ii][Tt][Ee]") then
             -- Match
             return true
-            
+
         -- Crowns
         elseif string.find(text, "[Cc][Rr][Oo][Ww][Nn][Ss]") then
             -- Match
             return true
-            
+
         end
-    
+
     end
-    
+
     return false
-    
+
 end
 
 -- Return true/false if text is a Guild recruitment one
 local function SpamGuildRecruit(text)
 
-
     -- look for guild link in message
-    validLinkTypes = {
+    local validLinkTypes = {
         [GUILD_LINK_TYPE] = true,
     }
-    linksTable = {}     -- returned
+    local linksTable = {}     -- returned
     ZO_ExtractLinksFromText(text, validLinkTypes, linksTable)
     if next(linksTable) ~= nil then
         return true
     end
     return false
-    
+
 end
 
 -- Return true/false if anti spam is enabled for a certain category
 -- Categories must be : Flood, LookingFor, WantTo, GuildRecruit
 local function IsSpamEnabledForCategory(category)
     local rChatData = rChat.data
-    
+
     if category == "Flood" then
-    
+
         -- Enabled in Options?
         if config.floodProtect then
             -- AntiSpam is enabled
             return true
         end
-        
+
         -- AntiSpam is disabled
         return false
-    
+
     -- LFG
     elseif category == "LookingFor" then
         -- Enabled in Options?
@@ -169,10 +170,10 @@ local function IsSpamEnabledForCategory(category)
                 end
             end
         end
-        
+
         -- AntiSpam is disabled
         return false
-    
+
     -- WTT
     elseif category == "WantTo" then
         -- Enabled in Options?
@@ -190,10 +191,10 @@ local function IsSpamEnabledForCategory(category)
                 end
             end
         end
-        
+
         -- AntiSpam is disabled
         return false
-    
+
     -- Join my Awesome guild
     elseif category == "GuildRecruit" then
         -- Enabled in Options?
@@ -211,12 +212,12 @@ local function IsSpamEnabledForCategory(category)
                 end
             end
         end
-        
+
         -- AntiSpam is disabled
         return false
-    
+
     end
-    
+
 end
 
 -- Return true is message is a spam depending on MANY parameters
@@ -224,20 +225,20 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
 
     -- ZOS GM are NEVER blocked
     if isCS then return false end
-    
+
     if not IsSpammableChannel(chanCode) then return false end
-    
+
     local rChatData = rChat.data
 
     -- 4 options for spam : Spam flood (multiple messages) ; LFM/LFG ; WT(T/S/B) ; Guild Recruitment
-    
+
     -- Spam (I'm not allowed to flood even for testing)
     if IsSpamEnabledForCategory("Flood") then
-        if SpamFlood(from, text, chanCode) then 
-            return true 
+        if SpamFlood(from, text, chanCode) then
+            return true
         end
     end
-    
+
     -- But "I" can have other exceptions (useful for testing)
     local isMe = false
     if zo_strformat(SI_UNIT_NAME, from) == GetUnitName("player") or from == GetDisplayName() then
@@ -247,44 +248,44 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
 
     -- Looking For
     if IsSpamEnabledForCategory("LookingFor") then
-        if SpamLookingFor(text) then 
+        if SpamLookingFor(text) then
             if isMe == false then
-                return true 
+                return true
             else
                 rChatData.spamTempLookingForStopTimestamp = GetTimeStamp()
                 rChatData.spamLookingForEnabled = false
-                return false 
+                return false
             end
         end
 
     end
-    
+
     -- Want To
     if IsSpamEnabledForCategory("WantTo") then
-        if SpamWantTo(text) then 
+        if SpamWantTo(text) then
             if isMe == false then
-                return true 
+                return true
             else
                 rChatData.spamTempWantToStopTimestamp = GetTimeStamp()
                 rChatData.spamWantToStop = true
-                return false 
+                return false
             end
         end
     end
-    
+
     -- Guild Recruit
     if IsSpamEnabledForCategory("GuildRecruit") then
-        if SpamGuildRecruit(text, chanCode) then  
+        if SpamGuildRecruit(text, chanCode) then
             if isMe == false then
-                return true 
+                return true
             else
                 rChatData.spamTempGuildRecruitStopTimestamp = GetTimeStamp()
                 rChatData.spamGuildRecruitStop = true
-                return false 
+                return false
             end
         end
     end
-    
+
     return false
 
 end
