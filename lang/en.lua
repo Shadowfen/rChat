@@ -22,14 +22,14 @@ rChat_localization_strings["en"] = {
 	RCHAT_Tab10 = "Select Chat Tab 10",
 	RCHAT_Tab11 = "Select Chat Tab 11",
 	RCHAT_Tab12 = "Select Chat Tab 12",
-    
+
 	-- 9.3.6.24 Additions
 	RCHAT_CHATTABH = "Chat Tab Settings",
 	RCHAT_enableChatTabChannel = "Enable Last Used Channel Per Tab",
 	RCHAT_enableChatTabChannelT = "Enable chat tabs to remember the last used channel, it will become the default until you opt to use a different one in that tab.",
 	RCHAT_enableWhisperTab = "Enable Whisper Redirect",
 	RCHAT_enableWhisperTabT = "Enable redirect your whispers to a specific tab.",
-	
+
 	RCHAT_OPTIONSH = "Messages Settings",
 
 	RCHAT_GUILDNUMBERS = "Guild numbers",
@@ -422,8 +422,8 @@ rChat_localization_strings["en"] = {
 	RCHAT_RCHAT_AUTOMSG_REMOVE_AUTO_MSG = "Remove",
 
 	RCHAT_CLEARBUFFER = "Clear chat",
-    
-    
+
+
     RCHAT_MENTION_NM = "Mention Notification",
     RCHAT_MENTION_ENABLED = "Enable mention detection in chat",
     RCHAT_MENTIONSTR = "String to look for in chat",
@@ -432,5 +432,5 @@ rChat_localization_strings["en"] = {
     RCHAT_COLOR_ENABLED = "Enable color highlighting",
     RCHAT_MENTIONCOLOR = "Highlight color to use",
     RCHAT_SOUND_NAME = "Name of current Sound",
-    
+
 }

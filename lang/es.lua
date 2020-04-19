@@ -32,14 +32,14 @@ rChat_localization_strings["es"] = {
 	RCHAT_Tab10 = "Select Chat Tab 10",
 	RCHAT_Tab11 = "Select Chat Tab 11",
 	RCHAT_Tab12 = "Select Chat Tab 12",
-    
+
 	-- 9.3.6.24 Additions
 	RCHAT_CHATTABH = "Chat Tab Settings",
 	RCHAT_enableChatTabChannel = "Enable Last Used Channel Per Tab",
 	RCHAT_enableChatTabChannelT = "Enable chat tabs to remember the last used channel, it will become the default until you opt to use a different one in that tab.",
 	RCHAT_enableWhisperTab = "Enable Whisper Redirect",
 	RCHAT_enableWhisperTabT = "Enable redirect your whispers to a specific tab.",
-	
+
 -- New Need Translations
 	RCHAT_OPTIONSH = "Opciones",
 
@@ -151,7 +151,7 @@ rChat_localization_strings["es"] = {
 	RCHAT_SYNCH = "Configuraciones de sincronización",
 
 	RCHAT_CHATSYNCCONFIG = "Sincronizar la configuración del chat",
-	RCHAT_CHATSYNCCONFIGTT = "Si la sincronización está habilitada, todos tus personajes tendrán la misma configuración del chat (color, orientación, tamaño de la ventana, pestañas) \ nPS: Seleccione esta opción cuando su chat configurado correctamente!",
+	RCHAT_CHATSYNCCONFIGTT = "Si la sincronización está habilitada, todos tus personajes tendrán la misma configuración del chat (color, orientación, tamaño de la ventana, pestañas) \nPS: Seleccione esta opción cuando su chat configurado correctamente!",
 
 	RCHAT_CHATSYNCCONFIGIMPORTFROM = "Importar configuración del chat",
 	RCHAT_CHATSYNCCONFIGIMPORTFROMTT = "Siempre se puede importar la configuración del chat instantánea de otro personaje (color, orientación, tamaño de la ventana, pestañas)",
