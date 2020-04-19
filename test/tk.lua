@@ -24,9 +24,38 @@ local function GetString(id)
   return id
 end
 
-local function d(...)
-    print(...)
+local function dbgt(tbl,...)
+    local nargs = select('#',...)
+    if not nargs or nargs < 1 then return end
+    
+    local i = 1
+    for i=1, nargs do    -- for each parameter
+        local argv= select(i,...)
+        tbl[#tbl+1] = tostring(argv).." p"..i
+        -- add string representation of argv to tbl
+        if(argv == nil) then
+            tbl[#tbl+1] = "(nil)"
+        elseif type(argv) == "string" then
+            tbl[#tbl+1] = argv
+        elseif type(argv) == "table" then
+            for k,v in pairs(argv) do
+                tbl[#tbl+1] = dbg(k,"=",v)
+            end
+        else
+            tbl[#tbl+1] = tostring(argv)
+        end
+    end
 end
+
+function dbg(...)
+    local nargs = select('#',...)
+    if not nargs or nargs < 1 then return end
+    
+    local tbl = {}
+    dbgt(tbl,...)
+    print(table.concat(tbl," "))
+end
+
 
 function TK.printSuite(moduleName, fn)
     print("\n"..moduleName.."_"..fn..":\n")

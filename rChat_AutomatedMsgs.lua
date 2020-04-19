@@ -25,7 +25,7 @@ ZO_CreateStringId("RCHAT_AUTOMSG_REMOVE_AUTO_MSG", L(RCHAT_RCHAT_AUTOMSG_REMOVE_
 -- been stuffed in rChat table so that we can get to them from here.
 -- Readdress this properly.
 -- When this file is loaded, most of the rChat stuff has not been initialized yet.
--- So when we want access to .save or .data, we must do it when the function is 
+-- So when we want access to .save or .data, we must do it when the function is
 -- called, not when the file is loaded.
 
 -- Called by XML
@@ -57,7 +57,7 @@ function RAM.FindAutomatedMsg(name)
     for i = 1, #dataList do
         local data = dataList[i].data
         if(data.name == name) then
-            return data, index
+            return data, i
         end
     end
 end
@@ -65,7 +65,7 @@ end
 
 function RAM.CleanAutomatedMessageList(dbs)
     -- :RefreshData() adds dataEntry recursively, delete it to avoid overflow in SavedVars
-    for k, v in pairs(dbs.automatedMessages) do
+    for _, v in pairs(dbs.automatedMessages) do
         if v.dataEntry then
             v.dataEntry = nil
         end
@@ -76,7 +76,7 @@ function RAM.RemoveAutomatedMessage(dbs)
     local data = ZO_ScrollList_GetData(WINDOW_MANAGER:GetMouseOverControl())
     local _, index = RAM.FindSavedAutomatedMsg(data.name)
     table.remove(dbs.automatedMessages, index)
-    
+
     local rChatData = rChat.data
     rChatData.automatedMessagesList:RefreshData()
     RAM.CleanAutomatedMessageList(dbs)

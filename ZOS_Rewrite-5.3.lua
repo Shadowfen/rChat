@@ -223,8 +223,7 @@ function CHAT_OPTIONS:InitializeFilterButtons(dialogControl)
         if(SKIP_CHANNELS[i] == nil and GetString("SI_CHATCHANNELCATEGORIES", i) ~= "") then
 
             if(COMBINED_CHANNELS[i] == nil) then
-                entryData[i] =
-                {
+                entryData[i] = {
                     channels = { i },
                     name = GetString("SI_CHATCHANNELCATEGORIES", i),
                 }
@@ -233,8 +232,7 @@ function CHAT_OPTIONS:InitializeFilterButtons(dialogControl)
                 local parentChannel = COMBINED_CHANNELS[i].parentChannel
 
                 if(not entryData[parentChannel]) then
-                    entryData[parentChannel] =
-                    {
+                    entryData[parentChannel] = {
                         channels = { },
                         name = GetString(COMBINED_CHANNELS[i].name),
                     }
@@ -336,7 +334,6 @@ function ZOS_CreateChannelData()
         data.id = channelId
 
         if data.switches then
-            logger:Debug("CCD: data switches: "..data.switches)
             for switchArg in data.switches:gmatch("%S+") do
                 switchArg = switchArg:lower()
                 g_switchLookup[switchArg] = data
@@ -353,7 +350,7 @@ function ZOS_CreateChannelData()
                 switchArg = switchArg:lower()
                 g_switchLookup[switchArg] = targetData
                 if not g_switchLookup[channelId] then
-                    g_switchLookup[channelId] = g_switchLookup[channelId] .. " " ..switchArg
+                    g_switchLookup[channelId] = switchArg
                 end
             end
         end
@@ -361,4 +358,3 @@ function ZOS_CreateChannelData()
     CHAT_SYSTEM.switchLookup = g_switchLookup
     --
 end
-

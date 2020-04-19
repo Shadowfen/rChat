@@ -2,6 +2,11 @@ rChat = rChat or {}
 
 local SF = LibSFUtils
 
+-- Used for rChat LinkHandling
+local RCHAT_LINK = "p"
+local RCHAT_URL_CHAN = 97
+local RCHAT_CHANNEL_NONE = 99
+
 -- ------------------------------------------------------
 -- Guild functions
 
@@ -70,6 +75,9 @@ end
 -- Timestamp functions
 --
 
+-- Create a timestamp string in the specified format
+-- with the time string (HH:mm:ss) provided. If no time
+-- is provided then get the current time.
 function rChat.CreateTimestamp(formatStr, timeStr)
 
     if not timeStr then timeStr = GetTimeString() end
@@ -78,11 +86,9 @@ function rChat.CreateTimestamp(formatStr, timeStr)
     local hours, minutes, seconds = timeStr:match("([^%:]+):([^%:]+):([^%:]+)")
     local hoursNoLead = tonumber(hours) -- hours without leading zero
     local hours12NoLead = (hoursNoLead - 1)%12 + 1
-    local hours12
+    local hours12 = hours12NoLead
     if (hours12NoLead < 10) then
         hours12 = "0" .. hours12NoLead
-    else
-        hours12 = hours12NoLead
     end
     local pUp = "AM"
     local pLow = "am"
@@ -191,107 +197,99 @@ function ZO_LinkHandler_CreateLinkWithoutBrackets(text, color, linkType, ...) --
 end
 --]]
 
-function rChat.LinkHandler_CreateLink(numLine, chanCode, text)
-    return ZO_LinkHandler_CreateLinkWithoutBrackets(text, nil, RCHAT_LINK, numLine, chanCode)
+--[[
+RCHAT_LINK format : ZO_LinkHandler_CreateLink(message, nil, RCHAT_LINK, data)
+message = message to display, nil (ignored by ZO_LinkHandler_CreateLink), RCHAT_LINK : declaration
+data : strings separated by ":"
+1st arg is chancode like CHAT_CHANNEL_GUILD_1
+]]--
+
+-- Create an RCHAT link of the passed in text with chanCode, numline data.
+-- withoutbrackets (boolean) is optional - defaults to false.
+function rChat.LinkHandler_CreateLink(numLine, chanCode, text, withoutbrackets)
+    if not withoutbrackets then
+        return ZO_LinkHandler_CreateLink(text, nil, RCHAT_LINK, numLine, chanCode)
+    else
+        return ZO_LinkHandler_CreateLinkWithoutBrackets(text, nil, RCHAT_LINK, numLine, chanCode)
+    end
 end
 
 -- Split text with blocs of 100 chars (106 is max for LinkHandle) and add LinkHandle to them
 function rChat.SplitTextForLinkHandler(text, numLine, chanCode)
 
+    if not text then return nil end
+
     local newText = ""
     local textLen = string.len(text)
     local MAX_LEN = 100
-    local logger = LibDebugLogger("rChat")
-    logger:SetEnabled(true)
-    logger:Info("SplitTextForLinkHandler: channel "..chanCode.." numLine "..numLine.."  text "..(text or "nil"))
-
-    if textLen <= MAX_LEN then
-        -- When dumping back, the "from" section is sent here. It will
-        -- add handler to spaces. prevent it to avoid an unneeded increase of the message.
-        if not (text == "" or text == " " or text == ": ") then
-            logger:Info("Creating link")
-            newText = rChat.LinkHandler_CreateLink(numLine, chanCode, text)
-            logger:Info("newText = "..(newText or "nil"))
-        else
-            newText = text
-        end
-        return newText
-    end
 
     -- LinkHandle does not handle text > 106 chars, so we need to split
-    local splitStart = 1
-    local splits = 1
+    if textLen > MAX_LEN then
 
-    local needToSplit = true
-    while needToSplit do
+        local splitStart = 1
+        local splits = 1
+        local needToSplit = true
 
-        local splitString
-        local UTFAditionalBytes = 0
+        while needToSplit do
 
-        if textLen > (splits * MAX_LEN) then
+            local splittedString = ""
+            local UTFAditionalBytes = 0
 
-            local splitEnd = splitStart + MAX_LEN
-            -- We can "cut" characters by doing this
-            splitString = text:sub(splitStart, splitEnd)
+            if textLen > (splits * MAX_LEN) then
 
-            local lastByte = string.byte(splitString, -1)
-            local beforeLastByte = string.byte(splitString, -2, -2)
+                local splitEnd = splitStart + MAX_LEN
+                splittedString = text:sub(splitStart, splitEnd) -- We can "cut" characters by doing this
 
-            -- Characters can be into 1, 2 or 3 bytes. Lua don't support UTF natively. We only handle 3 bytes chars.
-            -- http://www.utf8-chartable.de/unicode-utf8-table.pl
+                local lastByte = string.byte(splittedString, -1)
+                local beforeLastByte = string.byte(splittedString, -2, -2)
 
-            if (lastByte < 128) then
-                -- <= 7F
-                -- any ansi character (ex : a  97  LATIN SMALL LETTER A) (cut was well made)
-                --
-            elseif lastByte >= 128 and lastByte < 192 then
-                -- >7F && <C0
-                -- any non ansi character ends with last byte = 128-191  (cut was well made)
-                --     or 2nd byte of a 3 Byte character. We take 1 byte more.  (cut was incorrect)
+                -- Characters can be into 1, 2 or 3 bytes. Lua don't support UTF natively. We only handle 3 bytes chars.
+                -- http://www.utf8-chartable.de/unicode-utf8-table.pl
 
-                if beforeLastByte >= 192 and beforeLastByte < 224 then
-                    -- >=C0 && <E0
-                    -- "2 latin characters" ex: 195 169  LATIN SMALL LETTER E WITH ACUTE ;
-                    --  e 208 181 CYRILLIC SMALL LETTER IE
+                if (lastByte < 128) then -- any ansi character (ex : a  97  LATIN SMALL LETTER A) (cut was well made)
                     --
-                elseif beforeLastByte >= 128 and beforeLastByte < 192 then
-                    -- >7F && <C0
-                    -- "3 Bytes Cyrillic & Japaneese" ex U+3057  し   227 129 151 HIRAGANA LETTER SI
-                    --
-                elseif beforeLastByte >= 224 and beforeLastByte < 240 then
-                    -- >=E0 && <F0
-                    -- 2nd byte of a 3 Byte character. We take 1 byte more.  (cut was incorrect)
+                elseif lastByte >= 128 and lastByte < 192 then -- any non ansi character ends with last byte = 128-191  (cut was well made) or 2nd byte of a 3 Byte character. We take 1 byte more.  (cut was incorrect)
+
+                    if beforeLastByte >= 192 and beforeLastByte < 224 then -- "2 latin characters" ex: 195 169  LATIN SMALL LETTER E WITH ACUTE ; е 208 181 CYRILLIC SMALL LETTER IE
+                        --
+                    elseif beforeLastByte >= 128 and beforeLastByte < 192 then -- "3 Bytes Cyrillic & Japaneese" ex U+3057  し   227 129 151 HIRAGANA LETTER SI
+                        --
+                    elseif beforeLastByte >= 224 and beforeLastByte < 240 then -- 2nd byte of a 3 Byte character. We take 1 byte more.  (cut was incorrect)
+                        UTFAditionalBytes = 1
+                    end
+
+                    splitEnd = splitEnd + UTFAditionalBytes
+                    splittedString = text:sub(splitStart, splitEnd)
+
+                elseif lastByte >= 192 and lastByte < 224 then -- last byte = 1st byte of a 2 Byte character. We take 1 byte more.  (cut was incorrect)
                     UTFAditionalBytes = 1
+                    splitEnd = splitEnd + UTFAditionalBytes
+                    splittedString = text:sub(splitStart, splitEnd)
+                elseif lastByte >= 224 and lastByte < 240 then -- last byte = 1st byte of a 3 Byte character. We take 2 byte more.  (cut was incorrect)
+                    UTFAditionalBytes = 2
+                    splitEnd = splitEnd + UTFAditionalBytes
+                    splittedString = text:sub(splitStart, splitEnd)
                 end
 
-                splitEnd = splitEnd + UTFAditionalBytes
-                splitString = text:sub(splitStart, splitEnd)
+                splitStart = splitEnd + 1
+                newText = newText .. rChat.LinkHandler_CreateLink(numLine, chanCode, splittedString, true)
+                splits = splits + 1
 
-            elseif lastByte >= 192 and lastByte < 224 then
-                -- last byte = 1st byte of a 2 Byte character.
-                -- We take 1 byte more.  (cut was incorrect)
-                UTFAditionalBytes = 1
-                splitEnd = splitEnd + UTFAditionalBytes
-                splitString = text:sub(splitStart, splitEnd)
-
-            elseif lastByte >= 224 and lastByte < 240 then
-                -- last byte = 1st byte of a 3 Byte character.
-                -- We take 2 byte more.  (cut was incorrect)
-                UTFAditionalBytes = 2
-                splitEnd = splitEnd + UTFAditionalBytes
-                splitString = text:sub(splitStart, splitEnd)
+            else
+                splittedString = text:sub(splitStart)
+                local textSplittedlen = splittedString:len()
+                if textSplittedlen > 0 then
+                    newText = newText .. rChat.LinkHandler_CreateLink(numLine, chanCode, splittedString, true)
+                end
+                needToSplit = false
             end
 
-            splitStart = splitEnd + 1
-            newText = newText .. makeLink(splitString)
-            splits = splits + 1
-
-        else
-            splitString = text:sub(splitStart)
-            if splitString:len() > 0 then
-                newText = newText .. makeLink(splitString)
-            end
-            needToSplit = false    -- exit loop
+        end
+    else
+        -- When dumping back, the "from" section is sent here. It will add handler to spaces. prevent it to avoid an unneeded increase of the message.
+        newText = text
+        if not (text == " " or text == ": ") then
+            newText = rChat.LinkHandler_CreateLink(numLine, chanCode, text, true)
         end
     end
 

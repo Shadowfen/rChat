@@ -13,9 +13,10 @@ local internal = {
 }
 
 --------------------------------------------------
-_G["d"] = print
 
 ZOS ={}
+
+_G["d"] = print
 
 -- localization functions
 EsoStrings = {}
@@ -47,6 +48,10 @@ function GetString(id)
     return EsoStrings[id]
 end
 -- end localization functions
+
+function GetTimeStamp()
+    return os.time()
+end
 
 function GetDisplayName()
   return internal.atname
