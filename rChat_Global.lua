@@ -62,3 +62,7 @@ function rChat.checkLibraryVersions()
     vc:CheckVersion("LibChatMessage", 100)
     vc:CheckVersion("LibSFUtils", 23)
 end
+
+if LibDebugLogger then
+    LibDebugLogger:SetBlockChatOutputEnabled(false)
+end
