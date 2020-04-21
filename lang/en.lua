@@ -134,6 +134,7 @@ rChat_localization_strings["en"] = {
 	RCHAT_GROUPNAMESCHOICE1 = "@UserID",
 	RCHAT_GROUPNAMESCHOICE2 = "Character Name",
 	RCHAT_GROUPNAMESCHOICE3 = "Character Name@UserID",
+	RCHAT_GROUPNAMESCHOICE4 = "Character Name(@UserID)",
 
 	-- Sync settings
 
@@ -275,6 +276,7 @@ rChat_localization_strings["en"] = {
 	RCHAT_FORMATCHOICE1 = "@UserID",
 	RCHAT_FORMATCHOICE2 = "Character Name",
 	RCHAT_FORMATCHOICE3 = "Character Name@UserID",
+	RCHAT_FORMATCHOICE4 = "Character Name(@UserID)",
 
 	RCHAT_SETCOLORSFORTT = "Set colors for members of <<1>>",
 	RCHAT_SETCOLORSFORCHATTT = "Set colors for messages of <<1>>",

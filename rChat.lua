@@ -395,6 +395,14 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
     end
 
     -- "From" can be UserID or Character name depending on which channel we are
+    local atname, toonname
+    if IsDecoratedDisplayName(from) then
+        atname = from
+        toonname = fromDisplayName
+    else
+        toonname = from
+    end
+       
     local new_from = from
     local displayed = from
 
@@ -481,6 +489,9 @@ local function ConvertName(chanCode, from, isCS, fromDisplayName)
                     new_from, displayed = GetNameLink(fromDisplayName, nicknamedFrom or fromDisplayName, DISPLAY_NAME_LINK_TYPE)
                 elseif db.geoChannelsFormat == 3 then
                     new_from = new_from .. fromDisplayName
+                    new_from, displayed = GetNameLink(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
+                elseif db.geoChannelsFormat == 4 then
+                    new_from = new_from .. "("..fromDisplayName .. ")"
                     new_from, displayed = GetNameLink(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
                 else
                     new_from, displayed = GetNameLink(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
@@ -3078,7 +3089,7 @@ local function BuildLAMPanel()
                 type = "dropdown",
                 name = L(RCHAT_GEOCHANNELSFORMAT),
                 tooltip = L(RCHAT_GEOCHANNELSFORMATTT),
-                choices = {L("RCHAT_GROUPNAMESCHOICE", 1), L("RCHAT_GROUPNAMESCHOICE", 2), L("RCHAT_GROUPNAMESCHOICE", 3)}, -- Same as group.
+                choices = {L("RCHAT_GROUPNAMESCHOICE", 1), L("RCHAT_GROUPNAMESCHOICE", 2), L("RCHAT_GROUPNAMESCHOICE", 3),L("RCHAT_GROUPNAMESCHOICE", 4)}, -- Same as group.
                 width = "half",
                 default = defaults.geoChannelsFormat,
                 getFunc = function() return L("RCHAT_GROUPNAMESCHOICE", db.geoChannelsFormat) end,
@@ -3089,6 +3100,8 @@ local function BuildLAMPanel()
                         db.geoChannelsFormat = 2
                     elseif choice == L("RCHAT_GROUPNAMESCHOICE", 3) then
                         db.geoChannelsFormat = 3
+                    elseif choice == L("RCHAT_GROUPNAMESCHOICE", 4) then
+                        db.geoChannelsFormat = 4
                     else
                         -- When clicking on LAM default button
                         db.geoChannelsFormat = defaults.geoChannelsFormat
@@ -4339,7 +4352,7 @@ local function BuildLAMPanel()
                 type = "dropdown",
                 name = L(RCHAT_NAMEFORMAT),
                 tooltip = L(RCHAT_NAMEFORMATTT),
-                choices = {L(RCHAT_FORMATCHOICE1), L(RCHAT_FORMATCHOICE2), L(RCHAT_FORMATCHOICE3)},
+                choices = {L(RCHAT_FORMATCHOICE1), L(RCHAT_FORMATCHOICE2), L(RCHAT_FORMATCHOICE3), L(RCHAT_FORMATCHOICE4)},
                 getFunc = function()
                     -- Config per guild
                     if db.formatguild[guildName] == 1 then
@@ -4348,6 +4361,8 @@ local function BuildLAMPanel()
                         return L(RCHAT_FORMATCHOICE2)
                     elseif db.formatguild[guildName] == 3 then
                         return L(RCHAT_FORMATCHOICE3)
+                    elseif db.formatguild[guildName] == 4 then
+                        return L(RCHAT_FORMATCHOICE4)
                     else
                         -- When user click on LAM reinit button
                         return L(RCHAT_FORMATCHOICE2)
@@ -4360,6 +4375,8 @@ local function BuildLAMPanel()
                         db.formatguild[guildName] = 2
                     elseif choice == L(RCHAT_FORMATCHOICE3) then
                         db.formatguild[guildName] = 3
+                    elseif choice == L(RCHAT_FORMATCHOICE4) then
+                        db.formatguild[guildName] = 4
                     else
                         -- When user click on LAM reinit button
                         db.formatguild[guildName] = 2

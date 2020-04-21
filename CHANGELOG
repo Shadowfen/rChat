@@ -1,5 +1,6 @@
 ﻿[COLOR="DeepSkyBlue"]1.6 (20) Unreleased[/COLOR]
 [LIST]
+[*] Added new name format option of "character(@account)" as requested by Kenza.
 [*] Fixed nil errors that were being thrown by CopyMessage menu option.
 [*] Part 1 of revising how chat history is collected, accessed, and saved. The goal is to separate out the chat history data from the configuration data and to make the chat history management more resilient. This part was aiming at resiliency.
 [*] Standardized on a SafeGetGuildName() which can handle the rare occasions where GetGuildName() returns an empty value.
