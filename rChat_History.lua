@@ -2,6 +2,8 @@ local MAX_HISTORY_LENGTH = 5000
 local TRIMMED_HISTORY_LENGTH = 4000
 local HRS_TO_SEC = 3600
 
+---------------------------------------------------------
+-- NO LONGER IN USE
 -- ------------------------------------------------------
 -- LineStrings functions
 --

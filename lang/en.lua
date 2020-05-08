@@ -424,7 +424,8 @@ rChat_localization_strings["en"] = {
 	RCHAT_RCHAT_AUTOMSG_REMOVE_AUTO_MSG = "Remove",
 
 	RCHAT_CLEARBUFFER = "Clear chat",
-
+	RCHAT_CLEARCACHE = "Clear history",
+	RCHAT_CLEARCACHE_TT = "Empty out the chat history so that it cannot be restored to before this point.",
 
     RCHAT_MENTION_NM = "Mention Notification",
     RCHAT_MENTION_ENABLED = "Enable mention detection in chat",
@@ -435,4 +436,6 @@ rChat_localization_strings["en"] = {
     RCHAT_MENTIONCOLOR = "Highlight color to use",
     RCHAT_SOUND_NAME = "Name of current Sound",
 
+	RCHAT_DISABLELOGGER = "Disable LibDebugLogger chat blocking",
+	RCHAT_DISABLELOGGERTT = "Disable LibDebugLogger's blocking of SYSTEM messages in chat",
 }

@@ -1,7 +1,6 @@
 local L = GetString
 
 
---local logger = rChat_Logger:Create("rChat")
 local logger = LibDebugLogger("rChat")
 logger:SetEnabled(true)
 -- contains insertion functions and data references to allow rChat to
@@ -16,6 +15,7 @@ rChat_ZOS = {
     saveMsg = function(...)
         logger:Debug(...)
     end,
+    disableDebugLoggerBlocking = true,
 }
 
 --
@@ -36,6 +36,18 @@ end
 -- (from addoncompatibility.lua)
 function KEYBOARD_CHAT_SYSTEM:AddMessage(text)
 
+    if LibDebugLogger then
+        if rChat_ZOS.disableDebugLoggerBlocking then
+            if LibDebugLogger:IsBlockChatOutputEnabled() then
+                LibDebugLogger:SetBlockChatOutputEnabled(false)
+            end
+        else
+            if not LibDebugLogger:IsBlockChatOutputEnabled() then
+                LibDebugLogger:SetBlockChatOutputEnabled(true)
+            end
+        end
+    end
+    
 	if CHAT_SYSTEM.primaryContainer and rChat_ZOS.messagesWereRestored then
         for k in ipairs(CHAT_SYSTEM.containers) do
 			local chatContainer = CHAT_SYSTEM.containers[k]

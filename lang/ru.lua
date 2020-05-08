@@ -9,10 +9,6 @@ Many Thanks to KiriX for his original work
 
 -- Vars with -H are headers, -TT are tooltips
 
--- All the texts that need a translation. As this is being used as the
--- default (fallback) language, all strings that the addon uses MUST
--- be defined here.
-
 --base language is english, so the file en.lua provides fallback strings.
 rChat_localization_strings = rChat_localization_strings  or {}
 
@@ -20,18 +16,18 @@ rChat_localization_strings["ru"] = {
     -- ************************************************
     -- Chat tab selector Bindings
     -- ************************************************
-    RCHAT_Tab1 = "Select Chat Tab 1",
-    RCHAT_Tab2 = "Select Chat Tab 2",
-    RCHAT_Tab3 = "Select Chat Tab 3",
-    RCHAT_Tab4 = "Select Chat Tab 4",
-    RCHAT_Tab5 = "Select Chat Tab 5",
-    RCHAT_Tab6 = "Select Chat Tab 6",
-    RCHAT_Tab7 = "Select Chat Tab 7",
-    RCHAT_Tab8 = "Select Chat Tab 8",
-    RCHAT_Tab9 = "Select Chat Tab 9",
-    RCHAT_Tab10 = "Select Chat Tab 10",
-    RCHAT_Tab11 = "Select Chat Tab 11",
-    RCHAT_Tab12 = "Select Chat Tab 12",
+    RCHAT_Tab1 = "Выберите вкладку чата 1",
+    RCHAT_Tab2 = "Выберите вкладку чата 2",
+    RCHAT_Tab3 = "Выберите вкладку чата 3",
+    RCHAT_Tab4 = "Выберите вкладку чата 4",
+    RCHAT_Tab5 = "Выберите вкладку чата 5",
+    RCHAT_Tab6 = "Выберите вкладку чата 6",
+    RCHAT_Tab7 = "Выберите вкладку чата 7",
+    RCHAT_Tab8 = "Выберите вкладку чата 8",
+    RCHAT_Tab9 = "Выберите вкладку чата 9",
+    RCHAT_Tab10 = "Выберите вкладку чата 10",
+    RCHAT_Tab11 = "Выберите вкладку чата 11",
+    RCHAT_Tab12 = "Выберите вкладку чата 12",
 
     -- 9.3.6.24 Additions
     RCHAT_RCHAT_CHATTABH = "Настройки чата",
@@ -132,6 +128,7 @@ rChat_localization_strings["ru"] = {
     RCHAT_GROUPNAMESCHOICE1 = "@UserID",
     RCHAT_GROUPNAMESCHOICE2 = "Имя персонажа",
     RCHAT_GROUPNAMESCHOICE3 = "Имя персонажа@UserID",
+    RCHAT_GROUPNAMESCHOICE4 = "Имя персонажа(@UserID)",
 
 -- Sync settings
 
@@ -270,6 +267,7 @@ rChat_localization_strings["ru"] = {
     RCHAT_FORMATCHOICE1 = "@UserID",
     RCHAT_FORMATCHOICE2 = "Имя пepcoнaжa",
     RCHAT_FORMATCHOICE3 = "Имя пepcoнaжa@UserID",
+    RCHAT_FORMATCHOICE4 = "Имя пepcoнaжa(@UserID)",
 
     RCHAT_SETCOLORSFORTT = "Цвeт имeни члeнoв гильдии ",
     RCHAT_SETCOLORSFORCHATTT = "Цвeт cooбщeний чaтa для гильдии ",
@@ -412,6 +410,8 @@ rChat_localization_strings["ru"] = {
     RCHAT_RCHAT_AUTOMSG_REMOVE_AUTO_MSG = "Удaлить",
 
     RCHAT_CLEARBUFFER = "Oчиcтить чaт",
+	RCHAT_CLEARCACHE = "Очистить историю чата",
+	RCHAT_CLEARCACHE_TT = "Очистите историю чата, чтобы ее нельзя было восстановить до этого момента.",
 
     RCHAT_MENTION_NM = "Настройки для упоминаний",
     RCHAT_MENTION_ENABLED = "Включить обнаружение упоминаний в чате",
@@ -421,4 +421,7 @@ rChat_localization_strings["ru"] = {
     RCHAT_COLOR_ENABLED = "Включить цветную подсветку",
     RCHAT_MENTIONCOLOR = "Выберите цвет для текста",
     RCHAT_SOUND_NAME = "Название текущего звука",
+
+	RCHAT_DISABLELOGGER = "Отключить блокировку сообщений чата по LibDebugLogger",
+	RCHAT_DISABLELOGGERTT = "Отключить блокировку системных сообщений LibDebugLogger в чате",
 }

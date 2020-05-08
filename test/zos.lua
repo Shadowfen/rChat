@@ -106,6 +106,10 @@ function GetGuildInfo(guildId)
     return internal.guilds[guildId][2], guildId, internal.guilds[guildId][3]
 end
 
+function GetGuildId(ndx)
+    return ndx
+end
+
 -- utilities
 function ZO_ClearTable(t)
     for k in pairs(t) do
@@ -172,4 +176,98 @@ end
 
 function ZO_Object:Subclass()
     return setmetatable({}, {__index = self})
+end
+
+function zo_strjoin(separator, ...)
+    return table.concat({...}, separator)
+end
+
+function ZO_LinkHandler_CreateLinkWithFormat(text, color, linkType, linkStyle, stringFormat, ...)
+    --where ... is the data to encode
+    if linkType then
+        return (stringFormat):format(linkStyle, zo_strjoin(':', linkType, ...), text)
+    end
+end
+
+LINK_STYLE_BRACKETS = 1
+LINK_STYLE_DEFAULT = 0
+function ZO_LinkHandler_CreateLink(text, color, linkType, ...) --where ... is the data to encode
+    return ZO_LinkHandler_CreateLinkWithFormat(text, color, linkType, LINK_STYLE_BRACKETS, "|H%d:%s|h[%s]|h", ...)
+end
+
+function ZO_LinkHandler_CreateLinkWithoutBrackets(text, color, linkType, ...) --where ... is the data to encode
+    return ZO_LinkHandler_CreateLinkWithFormat(text, color, linkType, LINK_STYLE_DEFAULT, "|H%d:%s|h%s|h", ...)
+end
+
+function IsDecoratedDisplayName(name)
+    if string.sub(name,1,1) == "@" then return true end
+    return false
+end
+
+function GetTimeString()
+    return "13:12:24"
+end
+
+CHAT_CHANNEL_EMOTE = 6
+CHAT_CHANNEL_GUILD_1 = 12
+CHAT_CHANNEL_GUILD_2 = 13
+CHAT_CHANNEL_GUILD_3 = 14
+CHAT_CHANNEL_GUILD_4 = 15
+CHAT_CHANNEL_GUILD_5 = 16
+CHAT_CHANNEL_MONSTER_EMOTE = 10
+CHAT_CHANNEL_MONSTER_SAY = 7
+CHAT_CHANNEL_MONSTER_WHISPER = 9
+CHAT_CHANNEL_MONSTER_YELL = 8
+CHAT_CHANNEL_OFFICER_1 = 17
+CHAT_CHANNEL_OFFICER_2 = 18
+CHAT_CHANNEL_OFFICER_3 = 19
+CHAT_CHANNEL_OFFICER_4 = 20
+CHAT_CHANNEL_OFFICER_5 = 21
+CHAT_CHANNEL_PARTY = 3
+CHAT_CHANNEL_SAY = 0
+CHAT_CHANNEL_SYSTEM = 11
+CHAT_CHANNEL_UNUSED_1 = 5
+CHAT_CHANNEL_USER_CHANNEL_1 = 22
+CHAT_CHANNEL_USER_CHANNEL_2 = 23
+CHAT_CHANNEL_USER_CHANNEL_3 = 24
+CHAT_CHANNEL_USER_CHANNEL_4 = 25
+CHAT_CHANNEL_USER_CHANNEL_5 = 26
+CHAT_CHANNEL_USER_CHANNEL_6 = 27
+CHAT_CHANNEL_USER_CHANNEL_7 = 28
+CHAT_CHANNEL_USER_CHANNEL_8 = 29
+CHAT_CHANNEL_USER_CHANNEL_9 = 30
+CHAT_CHANNEL_WHISPER = 2
+CHAT_CHANNEL_WHISPER_SENT = 4
+CHAT_CHANNEL_YELL = 1
+CHAT_CHANNEL_ZONE = 31
+CHAT_CHANNEL_ZONE_LANGUAGE_1 = 32
+CHAT_CHANNEL_ZONE_LANGUAGE_2 = 33
+CHAT_CHANNEL_ZONE_LANGUAGE_3 = 34
+CHAT_CHANNEL_ZONE_LANGUAGE_4 = 35
+
+ITEM_LINK_TYPE = "item"
+ACHIEVEMENT_LINK_TYPE = "achievement"
+CHARACTER_LINK_TYPE = "character"
+CHANNEL_LINK_TYPE = "channel"
+BOOK_LINK_TYPE = "book"
+DISPLAY_NAME_LINK_TYPE = "display"
+URL_LINK_TYPE = "url"
+COLLECTIBLE_LINK_TYPE = "collectible"
+GUILD_LINK_TYPE = "guild"
+HELP_LINK_TYPE = "help"
+
+ZO_VALID_LINK_TYPES_CHAT =
+{
+    [GUILD_LINK_TYPE] = true,
+    [ITEM_LINK_TYPE] = true,
+    [ACHIEVEMENT_LINK_TYPE] = true,
+    [COLLECTIBLE_LINK_TYPE] = true,
+    [HELP_LINK_TYPE] = true,
+}
+
+function ZO_LinkHandler_ParseLink(link)
+    if type(link) == "string" then
+        local linkStyle, data, text = link:match("|H(.-):(.-)|h(.-)|h")
+        return text, linkStyle, zo_strsplit(':', data)
+    end
 end

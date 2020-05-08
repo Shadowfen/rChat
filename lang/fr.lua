@@ -4,10 +4,6 @@ Filename: fr.lua
 Version: 5
 ]]--
 
--- All the texts that need a translation. As this is being used as the
--- default (fallback) language, all strings that the addon uses MUST
--- be defined here.
-
 --base language is english, so the file en.lua provides fallback strings.
 rChat_localization_strings = rChat_localization_strings  or {}
 
@@ -142,6 +138,7 @@ rChat_localization_strings["fr"] = {
     RCHAT_GROUPNAMESCHOICE1 = "@UserID",
     RCHAT_GROUPNAMESCHOICE2 = "Nom du personnage",
     RCHAT_GROUPNAMESCHOICE3 = "Nom du personnage@UserID",
+    RCHAT_GROUPNAMESCHOICE4 = "Nom du personnage(@UserID)",
 
 -- Sync settings
 
@@ -285,6 +282,7 @@ rChat_localization_strings["fr"] = {
     RCHAT_FORMATCHOICE1 = "@UserID",
     RCHAT_FORMATCHOICE2 = "Nom du personnage",
     RCHAT_FORMATCHOICE3 = "Nom du personnage@UserID",
+    RCHAT_FORMATCHOICE4 = "Nom du personnage(@UserID)",
 
     RCHAT_SETCOLORSFORTT = "Définir les couleurs pour les membres de ",
     RCHAT_SETCOLORSFORCHATTT = "Définir les couleurs pour les messages de ",
@@ -427,6 +425,8 @@ rChat_localization_strings["fr"] = {
     RCHAT_RCHAT_AUTOMSG_REMOVE_AUTO_MSG = "Supprimer",
 
     RCHAT_CLEARBUFFER = "Effacer le chat",
+	RCHAT_CLEARCACHE = "Effacer l'historique du chat",
+	RCHAT_CLEARCACHE_TT = "Vider l'historique de chat afin qu'il ne peut pas être restauré avant ce point.",
 
     RCHAT_MENTION_NM = "Notification de mention",
     RCHAT_MENTION_ENABLED = "Activer la détection des mentions dans le chat",
@@ -436,4 +436,7 @@ rChat_localization_strings["fr"] = {
     RCHAT_COLOR_ENABLED = "Activer la surbrillance avec la couleur",
     RCHAT_MENTIONCOLOR = "Couleur à utiliser pour la mise en évidence",
     RCHAT_SOUND_NAME = "Nom du son actuel",
+
+	RCHAT_DISABLELOGGER = "Désactiver LibDebugLogger blocage de chat",
+	RCHAT_DISABLELOGGERTT = "Désactivez le blocage par LibDebugLogger des messages SYSTEM dans le chat.",
 }

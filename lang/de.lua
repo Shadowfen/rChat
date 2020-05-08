@@ -154,6 +154,7 @@ rChat_localization_strings["de"] = {
     RCHAT_GROUPNAMESCHOICE1 = "@Accountname",
     RCHAT_GROUPNAMESCHOICE2 = "Charaktername",
     RCHAT_GROUPNAMESCHOICE3 = "Charaktername@Accountname",
+    RCHAT_GROUPNAMESCHOICE4 = "Charaktername(@Accountname)",
 
 -- Sync settings
 
@@ -294,6 +295,7 @@ rChat_localization_strings["de"] = {
     RCHAT_FORMATCHOICE1 = "@Accountname",
     RCHAT_FORMATCHOICE2 = "Charaktername",
     RCHAT_FORMATCHOICE3 = "Charaktername@Accountname",
+    RCHAT_FORMATCHOICE4 = "Charaktername(@Accountname)",
 
     RCHAT_SETCOLORSFORTT = "Farbe für Mitglieder von ",
     RCHAT_SETCOLORSFORCHATTT = "Farbe für Nachrichten von ",
@@ -435,7 +437,9 @@ rChat_localization_strings["de"] = {
     RCHAT_SI_BINDING_NAME_RCHAT_SHOW_AUTO_MSG = "Automatische Nachricht",
     RCHAT_RCHAT_AUTOMSG_REMOVE_AUTO_MSG = "Löschen",
 
-    RCHAT_CLEARBUFFER = "Chatverlauf löschen",
+    RCHAT_CLEARBUFFER = "Klar Chatfenster",
+	RCHAT_CLEARCACHE = "Chatverlauf löschen",
+	RCHAT_CLEARCACHE_TT = "Leeren Sie den Chatverlauf, damit er nicht vor diesem Zeitpunkt wiederhergestellt werden kann.",
 
 
     RCHAT_MENTION_NM = "Erwähnungen Benachrichtigung",
@@ -446,4 +450,7 @@ rChat_localization_strings["de"] = {
     RCHAT_COLOR_ENABLED = "Aktivieren Sie Hervorhebung mit Farbe",
     RCHAT_MENTIONCOLOR = "Hervorheben mit welcher Farbe",
     RCHAT_SOUND_NAME = "Name des aktuellen Sounds",
+
+	RCHAT_DISABLELOGGER = "Deaktivieren Sie die LibDebugLogger-Chat-Blockierung",
+	RCHAT_DISABLELOGGERTT = "Deaktivieren Sie die LibDebugLogger-Blockierung von SYSTEM-Nachrichten im Chat.",
 }

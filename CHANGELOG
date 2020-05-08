@@ -1,8 +1,33 @@
-﻿[COLOR="DeepSkyBlue"]1.6 (20) Unreleased[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.6.2 (22)[/COLOR]
+[LIST]
+[*] Fix nil value error in AddURLHandling reported by Tiara Ra.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.6.1 (21)[/COLOR]
+[LIST]
+[*] Fix nil value error in ZO_PreHook reported by jewhatl.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.6 (20)[/COLOR]
+[COLOR="MediumSlateBlue"]Enhancements[/COLOR]
 [LIST]
 [*] Added new name format option of "character(@account)" as requested by Kenza.
+[*] Added the ability to specify multiple mention strings to watch for (one per line) in settings. Only one of the mentions will be highlighted/colored if there are multiples in a message. rChat does not look for mentions in NPC chatter, system messages, emotes, or whispers.
+[*] Added a setting to the Windows section that allows you to enable or disable the LibDebugLogger "BlockChatOutput" which is responsible for hiding messages from addons which used to go in chat into the DebugLogger instead so that you could only see them if you installed the DebugLogViewer addon as well and look there. The setting is enabled by default in LibDebugLogger. rChat now changes this setting to disabled when it loads and gives you the option of choosing which you prefer by changing the setting in rChat settings->Windows. With this change, you can now have LibDebugLogger and still see your SYSTEM messages if you want! (Note: that you can use rChat to direct all of your SYSTEM messages to a specific tab and keep them out of the other chat tabs if you want to be able to look at them but don't want them otherwise cluttering up your chat.)
+[*] Added the ability to clear out the saved chat history with a button in the settings.
+[*] Saved chat history is now saved account-wide so that you can log out from one character and log in with another and see the previous chat history restored to the chat window (with the appropriate restore settings of course). This seems more useful to me, and consumes less disk space since I'm not saving extended-size chat logs for each and every character.
+[*] [COLOR="MediumSeaGreen"]Breaking Change[/COLOR]The chat history is now being saved in a separate saved variables file (rChatData.lua) and you must enable the rChatData "addon" for rChat to work now. The rChatData "addon" is not actually a separate addon to download - it is included as a part of rChat and exists to separate the configuration variables from the chat saved history. You do have to enable it as a part of the addons that you run because rChat depends on it.
+[*] Part 1 of revising how chat history is collected, accessed, and saved. The goal is to separate out the chat history data from the configuration data and to make the chat history management more resilient.
+[/LIST]
+
+[COLOR="MediumSlateBlue"]Fixes & Misc Changes[/COLOR]
+[LIST]
+[*] Fixed the /r, /reply, /respond commands to respond to the last whisperer to come in.
 [*] Fixed nil errors that were being thrown by CopyMessage menu option.
-[*] Part 1 of revising how chat history is collected, accessed, and saved. The goal is to separate out the chat history data from the configuration data and to make the chat history management more resilient. This part was aiming at resiliency.
+[*] Changed the message parsing and formatting to eliminate the "triggered Link Handling infinite loop" message that you would sometimes see.
+[*] Revised how the settings for whisper message options are saved in the SaveVariables. This should change over without problems, but you can always change the whisper options through settings.
+[*] [COLOR="MediumSeaGreen"]Removed Conversion[/COLOR] Conversion code that changed the saved colors in version 1.4.3 of saved variables to the new format in version 1.4.4 has been removed. If you are wanting to upgrade from a pre-1.4.4 version of rChat, you can either upgrade to version 1.5.4 first to get your settings converted; or you can upgrade to this version and redo your settings from the defaults.
+[*] [COLOR="MediumSeaGreen"]Removed Conversion[/COLOR] Conversion code that changed the saved anti-spam settings in version 1.4.1 of saved variables to the new format in version 1.4.2 has been removed. If you are wanting to upgrade from a pre-1.4.2 version of rChat, you can either upgrade to version 1.5.4 first to get your settings converted; or you can upgrade to this version and redo your settings from the defaults.
 [*] Standardized on a SafeGetGuildName() which can handle the rare occasions where GetGuildName() returns an empty value.
 [/LIST]
 

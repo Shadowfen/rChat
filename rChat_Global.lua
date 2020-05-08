@@ -8,7 +8,7 @@ local SF = LibSFUtils
 
 rChat = {
     name = "rChat",
-    version = "1.5.4",
+    version = "1.6.2",
     settingName = "rChat",
     settingDisplayName = "rChat",
     author = "Shadowfen",
@@ -63,6 +63,6 @@ function rChat.checkLibraryVersions()
     vc:CheckVersion("LibSFUtils", 23)
 end
 
-if LibDebugLogger then
-    LibDebugLogger:SetBlockChatOutputEnabled(false)
-end
+--if LibDebugLogger then
+--    LibDebugLogger:SetBlockChatOutputEnabled(false)
+--end

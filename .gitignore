@@ -1,3 +1,5 @@
 screens/
+.vscode/
 *.sav
 *.bak
+*copy

@@ -12,10 +12,12 @@ local RCHAT_CHANNEL_NONE = 99
 
 -- does not return nil for name! - if bad then return nil guildId
 function rChat.SafeGetGuildName(index)
-    if index < 1 or index > 5 then return ("Invalid guild " .. index),nil end
 
     -- Guildname
     local guildId = GetGuildId(index)
+    if not guildId then 
+        return ("Invalid guild " .. index),nil
+    end
     local guildName = GetGuildName(guildId)
 
     -- Occurs sometimes
@@ -79,7 +81,6 @@ end
 -- with the time string (HH:mm:ss) provided. If no time
 -- is provided then get the current time.
 function rChat.CreateTimestamp(formatStr, timeStr)
-
     if not timeStr then timeStr = GetTimeString() end
 
     -- split up default timestamp
@@ -175,35 +176,6 @@ function rChat.strSplitMB(text, maxChars)
 
 end
 
---[[
-    -- linkStyle = style (0 = no brackets or 1 = brackets)
-    -- data = data separated by ":"
-    -- text = text displayed, used for Channels, DisplayName, Character, and some fake itemlinks (used by addons)
-
-    -- linktype is : item, achievement, character, channel, book, display, rchatlink
-
-function ZO_LinkHandler_CreateLinkWithFormat(text, color, linkType, linkStyle, stringFormat, ...) --where ... is the data to encode
-    if linkType then
-        return (stringFormat):format(linkStyle, zo_strjoin(':', linkType, ...), text)
-    end
-end
-
-function ZO_LinkHandler_CreateLink(text, color, linkType, ...) --where ... is the data to encode
-    return ZO_LinkHandler_CreateLinkWithFormat(text, color, linkType, LINK_STYLE_BRACKETS, "|H%d:%s|h[%s]|h", ...)
-end
-
-function ZO_LinkHandler_CreateLinkWithoutBrackets(text, color, linkType, ...) --where ... is the data to encode
-    return ZO_LinkHandler_CreateLinkWithFormat(text, color, linkType, LINK_STYLE_DEFAULT, "|H%d:%s|h%s|h", ...)
-end
---]]
-
---[[
-RCHAT_LINK format : ZO_LinkHandler_CreateLink(message, nil, RCHAT_LINK, data)
-message = message to display, nil (ignored by ZO_LinkHandler_CreateLink), RCHAT_LINK : declaration
-data : strings separated by ":"
-1st arg is chancode like CHAT_CHANNEL_GUILD_1
-]]--
-
 -- Create an RCHAT link of the passed in text with chanCode, numline data.
 -- withoutbrackets (boolean) is optional - defaults to false.
 function rChat.LinkHandler_CreateLink(numLine, chanCode, text, withoutbrackets)
@@ -232,7 +204,7 @@ function rChat.SplitTextForLinkHandler(text, numLine, chanCode)
 
         while needToSplit do
 
-            local splittedString = ""
+            local splittedString
             local UTFAditionalBytes = 0
 
             if textLen > (splits * MAX_LEN) then
@@ -248,24 +220,32 @@ function rChat.SplitTextForLinkHandler(text, numLine, chanCode)
 
                 if (lastByte < 128) then -- any ansi character (ex : a  97  LATIN SMALL LETTER A) (cut was well made)
                     --
-                elseif lastByte >= 128 and lastByte < 192 then -- any non ansi character ends with last byte = 128-191  (cut was well made) or 2nd byte of a 3 Byte character. We take 1 byte more.  (cut was incorrect)
+                elseif lastByte >= 128 and lastByte < 192 then
+                    -- any non ansi character ends with last byte = 128-191  (cut was well made)
+                    -- or 2nd byte of a 3 Byte character. We take 1 byte more.  (cut was incorrect)
 
-                    if beforeLastByte >= 192 and beforeLastByte < 224 then -- "2 latin characters" ex: 195 169  LATIN SMALL LETTER E WITH ACUTE ; е 208 181 CYRILLIC SMALL LETTER IE
+                    if beforeLastByte >= 192 and beforeLastByte < 224 then
+                        -- "2 latin characters" ex: 195 169  LATIN SMALL LETTER E WITH ACUTE ;
+                        -- е 208 181 CYRILLIC SMALL LETTER IE
                         --
-                    elseif beforeLastByte >= 128 and beforeLastByte < 192 then -- "3 Bytes Cyrillic & Japaneese" ex U+3057  し   227 129 151 HIRAGANA LETTER SI
+                    elseif beforeLastByte >= 128 and beforeLastByte < 192 then
+                        -- "3 Bytes Cyrillic & Japaneese" ex U+3057  し   227 129 151 HIRAGANA LETTER SI
                         --
-                    elseif beforeLastByte >= 224 and beforeLastByte < 240 then -- 2nd byte of a 3 Byte character. We take 1 byte more.  (cut was incorrect)
+                    elseif beforeLastByte >= 224 and beforeLastByte < 240 then
+                        -- 2nd byte of a 3 Byte character. We take 1 byte more.  (cut was incorrect)
                         UTFAditionalBytes = 1
                     end
 
                     splitEnd = splitEnd + UTFAditionalBytes
                     splittedString = text:sub(splitStart, splitEnd)
 
-                elseif lastByte >= 192 and lastByte < 224 then -- last byte = 1st byte of a 2 Byte character. We take 1 byte more.  (cut was incorrect)
+                elseif lastByte >= 192 and lastByte < 224 then 
+                    -- last byte = 1st byte of a 2 Byte character. We take 1 byte more.  (cut was incorrect)
                     UTFAditionalBytes = 1
                     splitEnd = splitEnd + UTFAditionalBytes
                     splittedString = text:sub(splitStart, splitEnd)
-                elseif lastByte >= 224 and lastByte < 240 then -- last byte = 1st byte of a 3 Byte character. We take 2 byte more.  (cut was incorrect)
+                elseif lastByte >= 224 and lastByte < 240 then 
+                    -- last byte = 1st byte of a 3 Byte character. We take 2 byte more.  (cut was incorrect)
                     UTFAditionalBytes = 2
                     splitEnd = splitEnd + UTFAditionalBytes
                     splittedString = text:sub(splitStart, splitEnd)
@@ -286,7 +266,8 @@ function rChat.SplitTextForLinkHandler(text, numLine, chanCode)
 
         end
     else
-        -- When dumping back, the "from" section is sent here. It will add handler to spaces. prevent it to avoid an unneeded increase of the message.
+        -- When dumping back, the "from" section is sent here. It will add handler to spaces.
+        -- prevent it to avoid an unneeded increase of the message.
         newText = text
         if not (text == " " or text == ": ") then
             newText = rChat.LinkHandler_CreateLink(numLine, chanCode, text, true)
@@ -296,3 +277,4 @@ function rChat.SplitTextForLinkHandler(text, numLine, chanCode)
     return newText
 
 end
+

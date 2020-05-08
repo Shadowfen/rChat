@@ -29,13 +29,13 @@ local function SpamFlood(from, text, spamChanCode)
     local db = rChat.save
 
     -- 2+ messages identical in less than 30 seconds on Character channels = spam
-    local previousLine = rChat.getChatCacheSize()
+    local previousLine = rChatData.getChatCacheSize()
     if previousLine == 0 then return false end
     local ourMessageTimestamp = GetTimeStamp()
 
     local checkSpam = true
     while checkSpam do
-        local entry = rChat.getCacheEntry(previousLine)
+        local entry = rChatData.getCacheEntry(previousLine)
         -- Previous line can be a ChanSystem one
         if entry and entry.channel ~= CHAT_CHANNEL_SYSTEM then
             if (type(entry.rawTimestamp) == "number") and

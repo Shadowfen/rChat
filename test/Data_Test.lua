@@ -12,9 +12,8 @@ local SF = LibSFUtils
 local TR = test_run
 local d = print
 
-local moduleName = "rChatData"
-local mn = "rChatData"
-
+local moduleName = "Data"
+local mn = "Data"
 
 ---------------------------------
 -- utility functions
@@ -63,32 +62,71 @@ local function Cache_testInitCache()
     TK.assertTrue(rChatData.cache.lineNumber == 1,"next entry is 1")
 end    
 
-local function Cache_testTruncate()
-    local fn = "testTruncate"
+local function Cache_testFilterSize()
+    local fn = "testFilterSize"
     TK.printSuite(mn,fn)
     
-    local testtable = { "one", "two", "three", "four", "five" }
-    local rslt = rChatData.truncate(testtable, 4, 3)
+    rChatData.cache.Entries = { 
+        { channel=6, timestamp = 100, message = "one",}, 
+        { channel=6, timestamp = 200, message = "two",}, 
+        { channel=6, timestamp = 300, message = "three",}, 
+        { channel=6, timestamp = 400, message = "four",}, 
+        { channel=6, timestamp = 500, message = "five",}, 
+    }
+    rChatData.cache.lineNumber = 6
+    local rslt = rChatData.filterSize(4, 3)
     TK.assertNotNil(rslt,"got truncated table")
     TK.assertTrue(#rslt == 3,#rslt)
-    TK.assertTrue(rslt[1] == "three","[1] = three")
-    TK.assertTrue(rslt[2] == "four","[2] = four")
-    TK.assertTrue(rslt[3] == "five","[3] = five")
+    TK.assertTrue(rslt[1].message == "three","[1] = three")
+    TK.assertTrue(rslt[2].message == "four","[2] = four")
+    TK.assertTrue(rslt[3].message == "five","[3] = five")
+    TK.assertTrue(rChatData.cache.lineNumber == 4, "lineNumber set to 4 ("..rChatData.cache.lineNumber..")")
 end
 
-local function Cache_testTruncateAged()
-    local fn = "testTruncateAged"
+local function Cache_testFilterAged()
+    local fn = "testFilterAged"
     TK.printSuite(mn,fn)
     
-    local testtable = { {"one", timestamp = 100}, 
-        {"two", timestamp = 200}, {"three", timestamp = 300}, 
-        {"four", timestamp = 400}, {"five", timestamp = 500} }
-    local rslt = rChatData.truncate(testtable, 6, 5, 200)
-    TK.assertNotNil(rslt,"got truncated aged table")
+    local currentTime= GetTimeStamp()
+    rChatData.cache.Entries = { 
+        { channel=6, timestamp = currentTime - 500, message = "one",}, 
+        { channel=6, timestamp = currentTime - 400, message = "two",}, 
+        { channel=6, timestamp = currentTime - 300, message = "three",}, 
+        { channel=6, timestamp = currentTime - 200, message = "four",}, 
+        { channel=6, timestamp = currentTime - 100, message = "five",}, 
+    }
+    rChatData.cache.lineNumber = 6
+    local rslt = rChatData.filterAged(300)
+    TK.assertNotNil(rslt,"got filter aged table")
     TK.assertTrue(#rslt == 3,#rslt)
-    TK.assertTrue(rslt[1][1] == "three","[1] = three")
-    TK.assertTrue(rslt[2][1] == "four","[2] = four")
-    TK.assertTrue(rslt[3][1] == "five","[3] = five")
+    TK.assertTrue(rslt[1].message == "three","[1] = three")
+    TK.assertTrue(rslt[2].message == "four","[2] = four")
+    TK.assertTrue(rslt[3].message == "five","[3] = five")
+    TK.assertTrue(rChatData.cache.lineNumber == 4, "lineNumber set to 4 ("..rChatData.cache.lineNumber..")")
+end
+
+local function Cache_testFilterChannels()
+    local fn = "testFilterAged"
+    TK.printSuite(mn,fn)
+    
+    rChatData.cache.Entries = { 
+        { channel=6, timestamp = 100, message = "one",}, 
+        { channel=11, timestamp = 200, message = "two",}, 
+        { channel=6, timestamp = 300, message = "three",}, 
+        { channel=11, timestamp = 400, message = "four",}, 
+        { channel=6, timestamp = 500, message = "five",}, 
+    }
+    rChatData.cache.lineNumber = 6
+    local exclude = {
+        [11] = true,
+    }
+    local rslt = rChatData.filterChannels(exclude)
+    TK.assertNotNil(rslt,"got filter channels table")
+    TK.assertTrue(#rslt == 3,#rslt)
+    TK.assertTrue(rslt[1].message == "one","[1] = one")
+    TK.assertTrue(rslt[2].message == "three","[2] = three")
+    TK.assertTrue(rslt[3].message == "five","[3] = five")
+    TK.assertTrue(rChatData.cache.lineNumber == 4, "lineNumber set to 4 ("..rChatData.cache.lineNumber..")")
 end
 
 local function Cache_testNewEntry()
@@ -112,7 +150,7 @@ local function Cache_testGetLine()
     local fn = "testGetLine"
     TK.printSuite(mn,fn)
     populateNewCache()
-    dbg(rChatData.cache.Entries)
+    --dbg(rChatData.cache.Entries)
     
      fn = "  testGetLine_last"
     TK.printSuite(mn,fn)
@@ -123,7 +161,7 @@ local function Cache_testGetLine()
     fn = "  testGetLine_first"
     TK.printSuite(mn,fn)
     entry, ndx = rChatData.getCacheEntry(1)
-    dbg("entry = ",entry," ",ndx)
+    --dbg("entry = ",entry," ",ndx)
     TK.assertNotNil(entry, "entry is not nil")
     TK.assertTrue(ndx == 1, "Entry index is 1")
     TK.assertTrue(entry.from == "@Bob", "Entry from is @Bob")
@@ -138,18 +176,24 @@ end
 local function Cache_testSetEntry()
     local fn = "testSetEntry"
     TK.printSuite(mn,fn)
-    rChatData.clearCache()   
+    
+    rChatData.clearCache()   -- start with empty cache
     
     local froms = {
         [1] = {channel = 6, timestamp = 1234,from="@Bob"},
         [2] = {channel = 6, timestamp = 1235,from="@Bobbie"},
         [3] = {channel = 6, timestamp = 1236,from="@Adam"},
     }
-    dbg(froms)
+    --dbg(froms)
+    
+    -- this actually adds the entry with channel and ts
     local entry,index = rChatData.getNewCacheEntry(6)
+    -- add more info to the entry
     entry.from = froms[2].from
     entry.timestamp = froms[2].timestamp
     
+    -- now, check the entry in the table
+    TK.assertTrue(index == 1,"created first entry in table")
     entry = rChatData.cache.Entries[index]
     TK.assertNotNil(entry, "retrieved entry "..index)
     TK.assertTrue(entry.channel == froms[2].channel, "channel is correct")
@@ -189,11 +233,14 @@ local function Cache_testClearCache()
     TK.assertTrue(rChatData.cache.lineNumber == 1, "lineNumber == 1")
 end
 
+
+
 function Data_runTests()
     Cache_testInitCache()
-    Cache_testTruncate()
-    Cache_testTruncateAged()
     Cache_testNewEntry()
+    Cache_testFilterSize()
+    Cache_testFilterAged()
+    Cache_testFilterChannels()
     Cache_testGetLine()
     Cache_testSetEntry()
     Cache_testIterCache()
@@ -201,8 +248,8 @@ function Data_runTests()
 end
 
 -- main
-Data_runTests()
-
-
-d("\n")
-TK.showResult()
+if not Suite then
+    Data_runTests()
+    d("\n")
+    TK.showResult("Data_Test")
+end

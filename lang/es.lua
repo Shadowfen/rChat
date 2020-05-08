@@ -145,6 +145,7 @@ rChat_localization_strings["es"] = {
 	RCHAT_GROUPNAMESCHOICE1 = "@UserID",
 	RCHAT_GROUPNAMESCHOICE2 = "Character Name",
 	RCHAT_GROUPNAMESCHOICE3 = "Character Name@UserID",
+	RCHAT_GROUPNAMESCHOICE4 = "Character Name(@UserID)",
 
 	-- Sync settings
 
@@ -284,6 +285,7 @@ rChat_localization_strings["es"] = {
 	RCHAT_FORMATCHOICE1 = "@IDUsuario",
 	RCHAT_FORMATCHOICE2 = "Nombre del personaje",
 	RCHAT_FORMATCHOICE3 = "Nombre del personaje@IDUsuario",
+	RCHAT_FORMATCHOICE4 = "Nombre del personaje(@IDUsuario)",
 
 	RCHAT_SETCOLORSFORTT = "Establecer colores para miembros de <<1>>",
 	RCHAT_SETCOLORSFORCHATTT = "Establecer colores para mensajes de <<1>>",
@@ -426,6 +428,8 @@ rChat_localization_strings["es"] = {
 	RCHAT_RCHAT_AUTOMSG_REMOVE_AUTO_MSG = "Eliminar",
 
 	RCHAT_CLEARBUFFER = "Vacie Chat",
+	RCHAT_CLEARCACHE = "Borrar el registro de chat",
+	RCHAT_CLEARCACHE_TT = "Vacíe el historial de chat para que no se pueda restaurar antes de este punto.",
 
     RCHAT_MENTION_NM = "Notificación de menciones",
     RCHAT_MENTION_ENABLED = "Habilitar la detección de menciones en el chat",
@@ -435,5 +439,8 @@ rChat_localization_strings["es"] = {
     RCHAT_COLOR_ENABLED = "Activar resaltado con color",
     RCHAT_MENTIONCOLOR = "Color de resaltado para usar",
     RCHAT_SOUND_NAME = "Nombre del sonido actual",
+
+	RCHAT_DISABLELOGGER = "Deshabilitar el bloqueo de chat por LibDebugLogger",
+	RCHAT_DISABLELOGGERTT = "Deshabilite el bloqueo de LibDebugLogger de los mensajes del SISTEMA en el chat.",
 }
 

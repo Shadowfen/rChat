@@ -12,12 +12,14 @@ local HRS_TO_SEC = 3600
 
 -- Init
 local isAddonLoaded         = false -- OnAddonLoaded() done
+local lastwhisp
 
 -- ---- Mention specific options
 local defmention = {
 	mentionEnabled = false,
-	mentionStr = "",
-    colorizedMention = "",
+    mentiontbl = {},
+	mentionStr = "",        -- deprecated v 1.6
+    colorizedMention = "",  -- deprecated v 1.6
 	soundEnabled = false,
 	sound = SOUNDS.NEW_NOTIFICATION,
 	colorEnabled = false,
@@ -34,10 +36,17 @@ local defspam = {
     guildProtect = false,
 }
 
+local defwhisper = {
+    soundEnabled = false,
+    incomingsound = SOUNDS.NEW_NOTIFICATION,
+    notifyIM = false,
+}
+
 -- Default variables to push in SavedVars
 local defaults = {
 	mention = defmention,
     spam = defspam,
+    whisper = defwhisper,
 
     -- ---- Message Settings
     allZonesSameColour = true,
@@ -79,10 +88,12 @@ local defaults = {
     defaultTabName = "",
     -- ---- Chat Tab Settings - End
 
-    -- ---- Whisper Settings
+    -- ---- Whisper Settings -- moved 1.6
+    --[[  see whisper defined above
     whispsoundEnabled = false,
     soundforincwhisps = SOUNDS.NEW_NOTIFICATION,
     notifyIM = false,
+    --]]
     -- ---- Whisper Settings
 
     -- ---- Group Settings
@@ -104,6 +115,7 @@ local defaults = {
     fonts = "ESO Standard Font",
     enablecopy = true,
     -- colours["tabwarning"],
+    disableDebugLoggerBlocking = true,
     -- ---- Chat Window Settings specific options - End
 
     -- ---- Restore Options
@@ -258,6 +270,7 @@ rData.guildCategories = {
     CHAT_CATEGORY_OFFICER_5,
 }
 
+--[[
 local chatStrings_brackets = {
     standard = "%s%s: |r%s%s%s|r", -- standard format: say, yell, group, npc, npc yell, npc whisper, zone
     esostandard = "%s%s %s: |r%s%s%s|r", -- standard format: say, yell, group, npc, npc yell, npc whisper, zone with tag (except for monsters)
@@ -304,6 +317,25 @@ local chatStrings_nobrackets = {
 }
 
 local chatStrings = chatStrings_brackets
+--]]
+------------------------------------------------------
+-- bring in rChat_Internals functions
+local formatLanguageTag = rChat_Internals.formatLanguageTag
+local formatName = rChat_Internals.formatName
+local formatSeparator = rChat_Internals.formatSeparator
+local formatTag = rChat_Internals.formatTag
+local formatText = rChat_Internals.formatText
+local formatTimestamp = rChat_Internals.formatTimestamp
+local formatWhisperTag = rChat_Internals.formatWhisperTag
+local formatZoneTag = rChat_Internals.formatZoneTag
+local produceDisplayString = rChat_Internals.produceDisplayString
+local GetChannelColors = rChat_Internals.GetChannelColors
+local GetGuildIndex = rChat_Internals.GetGuildIndex
+local initColorTable = rChat_Internals.initColorTable
+local produceCopyFrom = rChat_Internals.produceCopyFrom
+local produceRawString = rChat_Internals.produceRawString
+local UseNameFormat = rChat_Internals.UseNameFormat
+------------------------------------------------------
 
 local MENU_CATEGORY_RCHAT = nil
 
@@ -337,22 +369,6 @@ local function getRightColorRGB(channelId)
 end
 
 
--------------------------------------------------------
--- return the index of the guild associated with the channel
--- that was passed in. If the channel is not associated with a
--- guild, then return 0.
-local function GetGuildIndex(channel)
-    local index = 0
-    local isOfc = false
-    if channel >= CHAT_CHANNEL_GUILD_1 and channel <= CHAT_CHANNEL_OFFICER_5 then
-        index = channel - CHAT_CHANNEL_GUILD_1 + 1
-    elseif channel >= CHAT_CHANNEL_OFFICER_1 and channel <= CHAT_CHANNEL_OFFICER_5 then
-        index = channel - CHAT_CHANNEL_OFFICER_1 + 1
-        isOfc = true
-    end
-    return index
-end
-
 -- return the guild channel and guild officer channel for
 -- a particular guild index
 local function GetGuildChannel(index)
@@ -376,138 +392,6 @@ local function stripColours(text)
 
     -- remove color markers
     return SF.stripColors(t1, text)
-end
-
--- Format "From" name
-local function ConvertName(chanCode, from, isCS, fromDisplayName)
-
-    local function GetNameLink(realFrom, displayed, linkType)
-        if not displayed then -- Should not happen, maybe parser error with nicknames.
-            displayed = realFrom
-        end
-        local linkedFrom
-        if db.disableBrackets then
-            linkedFrom = ZO_LinkHandler_CreateLinkWithoutBrackets(displayed, nil, linkType, realFrom)
-        else
-            linkedFrom = ZO_LinkHandler_CreateLink(displayed, nil, linkType, realFrom)
-        end
-        return linkedFrom, displayed
-    end
-
-    -- "From" can be UserID or Character name depending on which channel we are
-    local atname, toonname
-    if IsDecoratedDisplayName(from) then
-        atname = from
-        toonname = fromDisplayName
-    else
-        toonname = from
-    end
-       
-    local new_from = from
-    local displayed = from
-
-    -- Messages from @Someone (guild / whisps)
-    if IsDecoratedDisplayName(from) then
-
-        local guildIndex = GetGuildIndex(chanCode)
-        if guildIndex > 0 then  -- Guild / Officer chat only
-
-            -- Get guild ID based on channel id
-            local guildName,guildId = rChat.SafeGetGuildName(guildIndex)
-            if guildId then
-                if rData.nicknames[new_from] then -- @UserID Nicknamed
-                    new_from, displayed = GetNameLink(new_from, rData.nicknames[new_from], DISPLAY_NAME_LINK_TYPE)
-
-                elseif db.formatguild[guildName] == 2 then -- Char
-                    local _, characterName = GetGuildMemberCharacterInfo(guildId, GetGuildMemberIndexFromDisplayName(guildId, new_from))
-                    characterName = zo_strformat(SI_UNIT_NAME, characterName)
-                    local nickNamedName
-                    if rData.nicknames[characterName] then -- Char Nicknammed
-                        nickNamedName = rData.nicknames[characterName]
-                    end
-                    new_from, displayed = GetNameLink(characterName, nickNamedName or characterName, CHARACTER_LINK_TYPE)
-
-                elseif db.formatguild[guildName] == 3 then -- Char@UserID
-                    local _, characterName = GetGuildMemberCharacterInfo(guildId, GetGuildMemberIndexFromDisplayName(guildId, new_from))
-                    characterName = zo_strformat(SI_UNIT_NAME, characterName)
-                    if characterName == "" then characterName = new_from end -- Some buggy rosters
-
-                    if rData.nicknames[characterName] then -- Char Nicknamed
-                        characterName = rData.nicknames[characterName]
-                    else
-                        characterName = characterName .. new_from
-                    end
-
-                    new_from, displayed = GetNameLink(new_from, characterName, DISPLAY_NAME_LINK_TYPE)
-
-                else
-                    new_from, displayed = GetNameLink(new_from, new_from, DISPLAY_NAME_LINK_TYPE)
-                end
-            end
-        else
-            -- Wisps with @ We can't guess characterName for those ones
-            if rData.nicknames[new_from] then -- @UserID Nicknamed
-                new_from, displayed = GetNameLink(new_from, rData.nicknames[new_from], DISPLAY_NAME_LINK_TYPE)
-
-            else
-                new_from, displayed = GetNameLink(new_from, new_from, DISPLAY_NAME_LINK_TYPE)
-            end
-
-        end
-
-    -- Geo chat, Group, Whisps with characterName
-    else
-        -- strip gender postfix from toon name
-        new_from = zo_strformat(SI_UNIT_NAME, new_from)
-
-        local nicknamedFrom
-        if rData.nicknames[new_from] then -- Character Nicknamed
-            nicknamedFrom = rData.nicknames[new_from]
-        elseif rData.nicknames[fromDisplayName] then
-            nicknamedFrom = rData.nicknames[fromDisplayName]
-        end
-
-        displayed = nicknamedFrom or new_from
-
-        -- No brackets / UserID for emotes
-        if chanCode == CHAT_CHANNEL_EMOTE then
-            new_from = ZO_LinkHandler_CreateLinkWithoutBrackets(nicknamedFrom or new_from, nil, CHARACTER_LINK_TYPE, from)
-        -- zones / whisps / say / tell. No Handler for NPC
-        elseif not (chanCode == CHAT_CHANNEL_MONSTER_SAY or chanCode == CHAT_CHANNEL_MONSTER_YELL or chanCode == CHAT_CHANNEL_MONSTER_WHISPER or chanCode == CHAT_CHANNEL_MONSTER_EMOTE) then
-
-            if chanCode == CHAT_CHANNEL_PARTY then
-                if db.groupNames == 1 then
-                    new_from, displayed = GetNameLink(fromDisplayName, nicknamedFrom or fromDisplayName, DISPLAY_NAME_LINK_TYPE)
-                elseif db.groupNames == 3 then
-                    new_from = new_from .. fromDisplayName
-                    new_from, displayed = GetNameLink(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
-                else
-                    new_from, displayed = GetNameLink(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
-                end
-            else
-                if db.geoChannelsFormat == 1 then
-                    new_from, displayed = GetNameLink(fromDisplayName, nicknamedFrom or fromDisplayName, DISPLAY_NAME_LINK_TYPE)
-                elseif db.geoChannelsFormat == 3 then
-                    new_from = new_from .. fromDisplayName
-                    new_from, displayed = GetNameLink(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
-                elseif db.geoChannelsFormat == 4 then
-                    new_from = new_from .. "("..fromDisplayName .. ")"
-                    new_from, displayed = GetNameLink(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
-                else
-                    new_from, displayed = GetNameLink(from, nicknamedFrom or new_from, CHARACTER_LINK_TYPE)
-                end
-            end
-
-        end
-
-    end
-
-    if isCS then -- ZOS icon
-        new_from = "|t16:16:EsoUI/Art/ChatWindow/csIcon.dds|t" .. new_from
-    end
-
-    return new_from, displayed
-
 end
 
 -- format ESO text to raw text
@@ -946,7 +830,7 @@ end
 -- When an incoming Whisper is received
 local function OnIMReceived(from, lineNumber)
 
-    if not db.notifyIM then return end
+    if not db.whisper.notifyIM then return end
 
     -- Display visual notification
     -- If chat minimized, show the minified button
@@ -1016,6 +900,7 @@ function rChat_TryToJumpToIm(isMinimized)
         local hasSwitched = false
         local maxt = 1
 
+		if not CHAT_SYSTEM.primaryContainer.HandleTabClick then return end
         while actualTab <= numTabs and (not hasSwitched) do
             if IsChatContainerTabCategoryEnabled(1, actualTab, CHAT_CATEGORY_WHISPER_INCOMING) then
 
@@ -1030,10 +915,12 @@ function rChat_TryToJumpToIm(isMinimized)
                 ZO_ChatSystem_ScrollToBottom(CHAT_SYSTEM.control)
 
                 hasSwitched = true
+
             else
                 actualTab = actualTab + 1
             end
         end
+		
 
         actualTab = 1
 
@@ -1413,51 +1300,32 @@ end
 --
 -- Still need the channel filtering part of this
 local function StripLinesFromLineStrings(typeOfExit)
---[[
-    local function removeLine(index)
-        table.remove(db.LineStrings, index)
-        db.lineNumber = db.lineNumber - 1
-        index = index-1
-        return index
-    end
-
-    -- 1st loop is size based. If dump is too big, just delete old ones
-    if #db.LineStrings > 5000 then
-        local linesToDelete = #db.LineStrings - 5000
-        for l=1, linesToDelete do
-            if db.LineStrings[1] then
-                removeLine(1)
+    
+    rChatData.filterSize(5000,4000)
+    rChatData.filterAged(db.timeBeforeRestore * HRS_TO_SEC)
+    local excludeChannels = {
+        -- always exclude
+        [CHAT_CHANNEL_MONSTER_SAY] = true,
+        [CHAT_CHANNEL_MONSTER_YELL] = true,
+        [CHAT_CHANNEL_MONSTER_EMOTE] = true,
+        [CHAT_CHANNEL_MONSTER_WHISPER] = true,
+    }
+    if db.restoreSystemOnly then
+        for k,_ in ZO_ChatSystem_GetChannelInfo() do
+            if k ~= CHAT_CHANNEL_SYSTEM then
+                excludeChannels[k] = true
             end
         end
-    end
-
-    local k = 1
-    -- 2nd loop is time based. If message is older than our limit, it will be stripped.
-    local curtime= GetTimeStamp()
-    while k <= #db.LineStrings do
-
-        if db.LineStrings[k] then
-            local channel = db.LineStrings[k].channel
-            if channel == CHAT_CHANNEL_SYSTEM and (not db.restoreSystem) then
-                k = removeLine(k)
-            elseif channel ~= CHAT_CHANNEL_SYSTEM and db.restoreSystemOnly then
-                k = removeLine(k)
-            elseif (channel == CHAT_CHANNEL_WHISPER or channel == CHAT_CHANNEL_WHISPER_SENT) and (not db.restoreWhisps) then
-                k = removeLine(k)
-            -- bad bad bad
-            elseif typeOfExit ~= 1 and type(db.LineStrings[k].timestamp) == "number" then
-                if (curtime - db.LineStrings[k].timestamp) > (db.timeBeforeRestore * HRS_TO_SEC) then
-                    k = removeLine(k)
-                elseif db.LineStrings[k].timestamp > curtime then -- System clock of users computer badly set and msg received meanwhile.
-                    k = removeLine(k)
-                end
-            end
+    else
+        if not db.restoreWhisps then
+            excludeChannels[CHAT_CHANNEL_WHISPER] = true
+            excludeChannels[CHAT_CHANNEL_WHISPER] = true
         end
-
-        k = k + 1
-
     end
---]]
+    if not db.restoreSystem then
+        excludeChannels[CHAT_CHANNEL_SYSTEM] = true
+    end
+    rChatData.filterChannels(excludeChannels)
 
 end
 
@@ -1658,7 +1526,6 @@ local function AddLinkHandlerToStringWithoutDDS(textToCheck, numLine, chanCode)
 
         noColorlen = textToCheck:len()
 
-        --local startpos, endpos = string.find(textToCheck, "|H(.-):(.-)|h(.-)|h", 1)
         local startpos, endpos = string.find(textToCheck, "|[hH](.-)|[hH](.-)|[hH]", 1)
         -- LinkHandler not found
         if not startpos then
@@ -1914,7 +1781,7 @@ end
 
 local function RestoreChatMessagesFromHistory(wasReloadUI)
     local function shouldRestore(channel)
-        if channel~= CHAT_CHANNEL_SYSTEM and channel ~= CHAT_CHANNEL_WHISPER and channel ~=         CHAT_CHANNEL_WHISPER_SENT then
+        if channel~= CHAT_CHANNEL_SYSTEM and channel ~= CHAT_CHANNEL_WHISPER and channel ~= CHAT_CHANNEL_WHISPER_SENT then
             return true
         end
         if channel == CHAT_CHANNEL_SYSTEM and (db.restoreSystem or db.restoreSystemOnly)then
@@ -1935,14 +1802,16 @@ local function RestoreChatMessagesFromHistory(wasReloadUI)
             -- the only branch where we restore a line
             local category = cattab[v.channel]
 
-            lastInsertionWas = math.max(lastInsertionWas, v.timestamp)
-            local localPlayer = GetUnitName("player")
-            for containerIndex, container in ipairs(CHAT_SYSTEM.containers) do
-                for tabIndex, window in ipairs(container.windows) do
-                    if IsChatContainerTabCategoryEnabled(container.id, tabIndex, category) then
-                        if not db.chatConfSync[localPlayer].tabs[tabIndex].notBefore 
-                                or v.timestamp > db.chatConfSync[localPlayer].tabs[tabIndex].notBefore then
-                            container:AddEventMessageToWindow(window, v.displayed, category)
+            if type(v.timestamp) == "number" then
+                lastInsertionWas = math.max(lastInsertionWas, v.timestamp)
+                local localPlayer = GetUnitName("player")
+                for containerIndex, container in ipairs(CHAT_SYSTEM.containers) do
+                    for tabIndex, window in ipairs(container.windows) do
+                        if IsChatContainerTabCategoryEnabled(container.id, tabIndex, category) then
+                            if not db.chatConfSync[localPlayer].tabs[tabIndex].notBefore 
+                                    or v.timestamp > db.chatConfSync[localPlayer].tabs[tabIndex].notBefore then
+                                container:AddEventMessageToWindow(window, v.displayed, category)
+                            end
                         end
                     end
                 end
@@ -2159,26 +2028,6 @@ local function FormatSysMessage(statusMessage)
     return sysMessage
 end
 
--- Add a rChat handler for URL's
-local function AddURLHandling(text, lineNum)
-
-    -- handle complex URLs and do
-    for pos, url, prot, subd, tld, colon, port, slash, path in text:gmatch("()(([%w_.~!*:@&+$/?%%#-]-)(%w[-.%w]*%.)(%w+)(:?)(%d*)(/?)([%w_.~!*:@&+$/?%#=-]*))") do
-        if rData.protocols[prot:lower()] == (1 - #slash) * #path
-        and (colon == "" or port ~= "" and port + 0 < 65536)
-        and (rData.tlds[tld:lower()] or tld:find("^%d+$") and subd:find("^%d+%.%d+%.%d+%.$") and math.max(tld, subd:match("^(%d+)%.(%d+)%.(%d+)%.$")) < 256)
-        and not subd:find("%W%W")
-        then
-            local urlHandled = string.format("|H1:%s:%s:%s|h%s|h", RCHAT_LINK, lineNum, RCHAT_URL_CHAN, url)
-            url = url:gsub("([?+-])", "%%%1") -- don't understand why, 1st arg of gsub must be escaped and 2nd not.
-            text, count = text:gsub(url, urlHandled)
-        end
-    end
-
-    return text
-
-end
-
 local function InitializeURLHandling()
 
     -- cTLD + most used (> 0.1%)
@@ -2214,407 +2063,102 @@ local function InitializeURLHandling()
 
 end
 
--- decision tables for GetChannelColors()
-local npc_channels = {
-    [CHAT_CHANNEL_MONSTER_SAY] = true,
-    [CHAT_CHANNEL_MONSTER_YELL] = true,
-    [CHAT_CHANNEL_MONSTER_WHISPER] = true,
-}
-local guild_mem_channels = {
-    [CHAT_CHANNEL_GUILD_1] = true,
-    [CHAT_CHANNEL_GUILD_2] = true,
-    [CHAT_CHANNEL_GUILD_3] = true,
-    [CHAT_CHANNEL_GUILD_4] = true,
-    [CHAT_CHANNEL_GUILD_5] = true,
-}
-local guild_ofc_channels = {
-    [CHAT_CHANNEL_OFFICER_1] = true,
-    [CHAT_CHANNEL_OFFICER_2] = true,
-    [CHAT_CHANNEL_OFFICER_3] = true,
-    [CHAT_CHANNEL_OFFICER_4] = true,
-    [CHAT_CHANNEL_OFFICER_5] = true,
-}
-local lang_zone_channels = {
-    [CHAT_CHANNEL_ZONE_LANGUAGE_1] = true,
-    [CHAT_CHANNEL_ZONE_LANGUAGE_2] = true,
-    [CHAT_CHANNEL_ZONE_LANGUAGE_3] = true,
-    [CHAT_CHANNEL_ZONE_LANGUAGE_4] = true,
-}
-
-local function GetChannelColors(channel, from)
-
-     -- Substract XX to a color (darker)
-    local function FirstEsoColor(r, g, b)
-        -- Scale is from 0-100 so divide per 300 will maximise difference at 0.33 (*2)
-        r = math.max(r - (db.diffforESOcolors / 300 ),0)
-        g = math.max(g - (db.diffforESOcolors / 300 ),0)
-        b = math.max(b - (db.diffforESOcolors / 300 ),0)
-        return r,g,b
-    end
-
-     -- Add XX to a color (brighter)
-    local function SecondEsoColor(r, g, b)
-        r = math.min(r + (db.diffforESOcolors / 300 ),1)
-        g = math.min(g + (db.diffforESOcolors / 300 ),1)
-        b = math.min(b + (db.diffforESOcolors / 300 ),1)
-        return r,g,b
-    end
-
-    if db.useESOcolors then
-
-        -- ESO actual color, return r,g,b
-        local rESO, gESO, bESO
-        -- Handle the same-colour options.
-        if db.allNPCSameColour and npc_channels[channel] then
-            rESO, gESO, bESO = ZO_ChatSystem_GetCategoryColorFromChannel(CHAT_CHANNEL_MONSTER_SAY)
-        elseif db.allGuildsSameColour and guild_mem_channels[channel] then
-            rESO, gESO, bESO = ZO_ChatSystem_GetCategoryColorFromChannel(CHAT_CHANNEL_GUILD_1)
-        elseif db.allGuildsSameColour and guild_ofc_channels[channel] then
-            rESO, gESO, bESO = ZO_ChatSystem_GetCategoryColorFromChannel(CHAT_CHANNEL_OFFICER_1)
-        elseif db.allZonesSameColour and lang_zone_channels[channel] then
-            rESO, gESO, bESO = ZO_ChatSystem_GetCategoryColorFromChannel(CHAT_CHANNEL_ZONE_LANGUAGE_1)
-        elseif channel == CHAT_CHANNEL_PARTY and from and db.groupLeader
-                and zo_strformat(SI_UNIT_NAME, from) == GetUnitName(GetGroupLeaderUnitTag()) then
-            rESO, gESO, bESO = rChat.ConvertHexToRGBA(db.colours["groupleader"])
-        else
-            rESO, gESO, bESO = ZO_ChatSystem_GetCategoryColorFromChannel(channel)
-        end
-
-        -- Set right colour to left colour - cause ESO colors are rewritten; if onecolor, no rewriting
-        if db.oneColour then
-            lcol = rChat.ConvertRGBToHex(rESO, gESO, bESO)
-            rcol = lcol
-        else
-            lcol = rChat.ConvertRGBToHex(FirstEsoColor(rESO,gESO,bESO))
-            rcol = rChat.ConvertRGBToHex(SecondEsoColor(rESO,gESO,bESO))
-        end
-
-    else
-        -- rChat Colors
-        -- Handle the same-colour options.
-        if db.allNPCSameColour and npc_channels[channel] then
-            lcol, rcol = rChat.getColors(CHAT_CHANNEL_MONSTER_SAY)
-        elseif db.allGuildsSameColour and guild_mem_channels[channel] then
-            lcol, rcol = rChat.getColors(CHAT_CHANNEL_GUILD_1)
-        elseif db.allGuildsSameColour and guild_ofc_channels[channel] then
-            lcol, rcol = rChat.getColors(CHAT_CHANNEL_OFFICER_1)
-        elseif db.allZonesSameColour and lang_zone_channels[channel] then
-            lcol, rcol = rChat.getColors(CHAT_CHANNEL_ZONE)
-        elseif channel == CHAT_CHANNEL_PARTY and from and db.groupLeader and zo_strformat(SI_UNIT_NAME, from) == GetUnitName(GetGroupLeaderUnitTag()) then
-            lcol = db.colours["groupleader"]
-            rcol = db.colours["groupleader1"]
-        else
-            lcol, rcol = rChat.getColors(channel)
-        end
-
-        -- Set right colour to left colour
-        if db.oneColour then
-            rcol = lcol
-        end
-
-    end
-
-    return lcol, rcol
-
-end
-
-local function mentioned(text)
-	if not db.mention.mentionEnabled then return false end
-	if string.find(text,db.mention.mentionStr) then
-		return true
-	end
-	return false
-end
-
 -- Executed when EVENT_CHAT_MESSAGE_CHANNEL triggers
 -- Formats the message
---local function FormatMessage(chanCode, from, text, isCS, fromDisplayName, originalFrom, originalText, DDSBeforeAll, TextBeforeAll, DDSBeforeSender, TextBeforeSender, TextAfterSender, DDSAfterSender, DDSBeforeText, TextBeforeText, TextAfterText, DDSAfterText)
 local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
 
     if not text or text == "nil" then return end
-    if chanCode == nil or chanCode == "nil" then chanCode = 0 end
-    fromDisplayName = fromDisplayName or from
-    isCS = isCS or false
-    local originalFrom = from
-    local originalText = text
     local db = rChat.save
-
+    
+    if chanCode == nil or type(chanCode) ~= "number" then chanCode = CHAT_CHANNEL_SAY end
+    isCS = isCS or false
+	
+	if chanCode == CHAT_CATEGORY_WHISPER then
+		lastwhisp = fromDisplayName
+	end
+    
     -- Will calculate if this message is a spam
     local isSpam = rChat.SpamFilter(chanCode, from, text, isCS)
     if isSpam then return end
 
-    -- Look for mentions
-    local newtext = text
-    if mentioned(text) then
-    	if db.mention.colorEnabled then
-    		newtext = string.gsub(text, db.mention.mentionStr, db.mention.colorizedMention)
-    	end
-    	if db.mention.soundEnabled then
-    		-- play sound
-    		SF.PlaySound(db.mention.sound)
-    	end
-    end
+    
+    local originalFrom = from
+    local originalText = text
 
+    local newtext = text
     -- Init message with other addons stuff
     local message = ""
 
-    local entry, ndx = CACHE.getNewCacheEntry(chanCode)
-    entry.rawFrom = from
+    local entry, ndx = CACHE.getNewCacheEntry(chanCode) -- initializes channel and timestamp
+    entry.rawFrom = from            -- formatted from - no colors or link handlers
     entry.rawValue = text           -- formatted message      
-    entry.rawMessage = text         -- copy message
+    entry.rawMessage = text         -- copy message - this is the only one that remains unmodified
     entry.rawLine = newtext         -- copy line (prefix + message)
     entry.displayed = newtext    -- restored to chat (has link handler markers)
+    entry.text = text
+    
+    entry.formatMessage = {
+        chanCode = chanCode,
+        from = from,
+        text = text,
+        isCS = isCS,
+        fromDisplayName = fromDisplayName,
+    }
 
-    local new_from, displayedFrom = ConvertName(chanCode, from, isCS, fromDisplayName)
-    entry.cvtFrom = new_from
+    local display = {}      -- info to build a display message
+    local raw = {}          -- info to build a raw message
+    entry.rawT = raw
+    entry.displayT = display
+    
+    -- prepare from name
+    display.from, raw.from = formatName(chanCode, from, isCS, fromDisplayName)
+    entry.rawFrom = raw.from
 
     -- Guild tag
-    local guild_number, isOfc = GetGuildIndex(chanCode)
-    local guild_name = rChat.SafeGetGuildName(guild_number)
-    local tag
-    if guild_number ~= 0 and not isOfc then
-        tag = db.guildTags[guild_name]
-        if tag and tag ~= "" then
-            tag = tag
-        else
-            tag = guild_name
-        end
-    elseif guild_number ~= 0 and isOfc then
-        local officertag = db.officertag[guild_name]
-        if officertag and officertag ~= "" then
-            tag = officertag
-        else
-            tag = guild_name
-        end
-    end
+    display.tag, raw.tag = formatTag(entry,ndx)
+    
+    -- Whisper tag
+    display.whisper, raw.whisper = formatWhisperTag(entry,ndx)
 
     -- Initialise colours
-    local lcol, rcol = GetChannelColors(chanCode, from)
+    local colorT = initColorTable(chanCode, from)
 
-    -- Add timestamp
-    if db.showTimestamp then
+    -- format timestamp
+    display.timestamp, raw.timestamp = formatTimestamp(entry, ndx)
+    entry.rawValue = raw.timestamp
+    message = message .. display.timestamp
 
-        -- Initialise timstamp color
-        local timecol = db.colours.timestamp
+    -- format message text
+    display.text, raw.text = formatText(entry, ndx, colorT)
 
-        -- Timestamp color is lcol
-        if db.timestampcolorislcol then
-            timecol = lcol
-        else
-            -- Timestamp color is timestamp color
-            timecol = db.colours.timestamp
-        end
-
-        -- Message is timestamp for now
-        -- Add RCHAT_HANDLER for display
-        local timestamp = rChat.LinkHandler_CreateLink( ndx, chanCode, rChat.CreateTimestamp(db.timestampFormat) ) .. " "
-
-        -- Timestamp color
-        message = message .. string.format("%s%s|r", timecol, timestamp)
-        entry.rawValue = string.format("%s[%s] |r", timecol, rChat.CreateTimestamp(db.timestampFormat))
-    end
-
-    local linkedText = newtext
-
-    -- Add URL Handling
-    if db.urlHandling then
-        text = AddURLHandling(newtext,ndx)
-    end
-
-    if db.enablecopy then
-        linkedText = AddLinkHandler(newtext, chanCode, ndx)
-    end
-
-    local carriageReturn = ""
-    if db.carriageReturn then
-        carriageReturn = "\n"
-    end
-
+    display.separator, raw.separator = formatSeparator(entry,ndx)
+    local carriageReturn = display.separator
+    
     local notHandled = false
-    -- Standard format
-    if chanCode == CHAT_CHANNEL_SAY or chanCode == CHAT_CHANNEL_YELL or chanCode == CHAT_CHANNEL_PARTY or chanCode == CHAT_CHANNEL_ZONE then
-        -- Remove zone tags
-        if db.delzonetags then
-
-            -- Used for Copy
-            entry.rawFrom = string.format(chatStrings.copystandard, entry.rawFrom)
-
-            message = message .. string.format(chatStrings.standard, lcol, new_from, carriageReturn, rcol, linkedText)
-            entry.rawValue = entry.rawValue .. string.format(chatStrings.standard, lcol, new_from, carriageReturn, rcol, text)
-        -- Keep them
-        else
-            -- Init zonetag to keep the channel tag
-            local zonetag
-            -- Pattern for party is [Party]
-            if chanCode == CHAT_CHANNEL_PARTY then
-                zonetag = L(RCHAT_ZONETAGPARTY)
-
-                -- Used for Copy
-                entry.rawFrom = string.format(chatStrings.copyesoparty, zonetag, entry.rawFrom)
-
-                -- PartyHandler
-                zonetag = ZO_LinkHandler_CreateLink(zonetag, nil, CHANNEL_LINK_TYPE, chanCode)
-
-                message = message .. string.format(chatStrings.esoparty, lcol, zonetag, new_from, carriageReturn, rcol, linkedText)
-                entry.rawValue = entry.rawValue .. string.format(chatStrings.esoparty, lcol, zonetag, new_from, carriageReturn, rcol, text)
-            else
-                -- Pattern for say/yell/zone is "player says:" ..
-                if chanCode == CHAT_CHANNEL_SAY then zonetag = L(RCHAT_ZONETAGSAY)
-                elseif chanCode == CHAT_CHANNEL_YELL then zonetag = L(RCHAT_ZONETAGYELL)
-                elseif chanCode == CHAT_CHANNEL_ZONE then zonetag = L(RCHAT_ZONETAGZONE)
-                end
-
-                -- Used for Copy
-                entry.rawFrom = string.format(chatStrings.copyesostandard, entry.rawFrom, zonetag)
-
-                -- rChat Handler
-                --zonetag = rChat.LinkHandler_CreateLink(chanCode, zonetag)
-                zonetag = string.format("|H1:p:%s|h%s|h", chanCode, zonetag)
-
-                message = message .. string.format(chatStrings.esostandard, lcol, new_from, zonetag, carriageReturn, rcol, linkedText)
-                entry.rawValue = entry.rawValue .. string.format(chatStrings.esostandard, lcol, new_from, zonetag, carriageReturn, rcol, newtext)
-            end
-        end
-
-    -- NPC speech
-    elseif chanCode == CHAT_CHANNEL_MONSTER_SAY or chanCode == CHAT_CHANNEL_MONSTER_YELL or chanCode == CHAT_CHANNEL_MONSTER_WHISPER then
-
-        -- Used for Copy
-        entry.rawFrom = string.format(chatStrings.copynpc, entry.rawFrom)
-
-        message = message .. string.format(chatStrings.standard, lcol, new_from, carriageReturn, rcol, linkedText)
-        entry.rawValue = entry.rawValue .. string.format(chatStrings.standard, lcol, new_from, carriageReturn, rcol, newtext)
-
-    -- Incoming whispers
-    elseif chanCode == CHAT_CHANNEL_WHISPER then
-
-        --PlaySound
-        if db.soundforincwhisps then
-            SF.PlaySound(db.soundforincwhisps)
-        end
-
-        -- Used for Copy
-        entry.rawFrom = string.format(chatStrings.copytellIn, entry.rawFrom)
-
-        message = message .. string.format(chatStrings.tellIn, lcol, new_from, carriageReturn, rcol, linkedText)
-        entry.rawValue = entry.rawValue .. string.format(chatStrings.tellIn, lcol, new_from, carriageReturn, rcol, newtext)
-
-    -- Outgoing whispers
-    elseif chanCode == CHAT_CHANNEL_WHISPER_SENT then
-
-        -- Used for Copy
-        entry.rawFrom = string.format(chatStrings.copytellOut, entry.rawFrom)
-
-        message = message .. string.format(chatStrings.tellOut, lcol, new_from, carriageReturn, rcol, linkedText)
-        entry.rawValue = entry.rawValue .. string.format(chatStrings.tellOut, lcol, new_from, carriageReturn, rcol, newtext)
-
-    -- Guild chat
-    elseif chanCode >= CHAT_CHANNEL_GUILD_1 and chanCode <= CHAT_CHANNEL_GUILD_5 then
-
-        local gtag = tag
-        local guild = GetGuildIndex(chanCode)
-        if db.showGuildNumbers then
-            gtag = guild .. "-" .. tag
-
-            -- Used for Copy
-            entry.rawFrom = string.format(chatStrings.copyguild, gtag, entry.rawFrom)
-
-            -- GuildHandler
-            gtag = ZO_LinkHandler_CreateLink(gtag, nil, CHANNEL_LINK_TYPE, chanCode)
-            message = message .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, linkedText)
-            entry.rawValue = entry.rawValue .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, newtext)
-
-        else
-
-            -- Used for Copy
-            entry.rawFrom = string.format(chatStrings.copyguild, gtag, entry.rawFrom)
-
-            -- GuildHandler
-            gtag = ZO_LinkHandler_CreateLink(gtag, nil, CHANNEL_LINK_TYPE, chanCode)
-
-            message = message .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, linkedText)
-            entry.rawValue = entry.rawValue .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, newtext)
-
-        end
-
-    -- Officer chat
-    elseif chanCode >= CHAT_CHANNEL_OFFICER_1 and chanCode <= CHAT_CHANNEL_OFFICER_5 then
-
-        local gtag = tag
-        if db.showGuildNumbers then
-            gtag = (chanCode - CHAT_CHANNEL_OFFICER_1 + 1) .. "-" .. tag
-
-            -- Used for Copy
-            entry.rawFrom = string.format(chatStrings.copyguild, gtag, entry.rawFrom)
-
-            -- GuildHandler
-            gtag = ZO_LinkHandler_CreateLink(gtag, nil, CHANNEL_LINK_TYPE, chanCode)
-
-            message = message .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, linkedText)
-            entry.rawValue = entry.rawValue .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, newtext)
-
-        else
-            -- Used for Copy
-            entry.rawFrom = string.format(chatStrings.copyguild, gtag, entry.rawFrom)
-
-            -- GuildHandler
-            gtag = ZO_LinkHandler_CreateLink(gtag, nil, CHANNEL_LINK_TYPE, chanCode)
-
-            message = message .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, linkedText)
-            entry.rawValue = entry.rawValue .. string.format(chatStrings.guild, lcol, gtag, new_from, carriageReturn, rcol, newtext)
-        end
-
-    -- Player emotes
-    elseif chanCode == CHAT_CHANNEL_EMOTE then
-
-        entry.rawFrom = string.format(chatStrings.copyemote, entry.rawFrom)
-        message = message .. string.format(chatStrings.emote, lcol, new_from, rcol, linkedText)
-        entry.rawValue = entry.rawValue .. string.format(chatStrings.emote, lcol, new_from, rcol, newtext)
-
-    -- NPC emotes
-    elseif chanCode == CHAT_CHANNEL_MONSTER_EMOTE then
-
-        -- Used for Copy
-        entry.rawFrom = string.format(chatStrings.copyemote, entry.rawFrom)
-
-        message = message .. string.format(chatStrings.emote, lcol, new_from, rcol, linkedText)
-        entry.rawValue = entry.rawValue .. string.format(chatStrings.emote, lcol, new_from, rcol, newtext)
-
-    -- Language zones
-    elseif chanCode >= CHAT_CHANNEL_ZONE_LANGUAGE_1 and chanCode <= CHAT_CHANNEL_ZONE_LANGUAGE_4 then
-        local lang
-        if chanCode == CHAT_CHANNEL_ZONE_LANGUAGE_1 then lang = "EN"
-        elseif chanCode == CHAT_CHANNEL_ZONE_LANGUAGE_2 then lang = "FR"
-        elseif chanCode == CHAT_CHANNEL_ZONE_LANGUAGE_3 then lang = "DE"
-        elseif chanCode == CHAT_CHANNEL_ZONE_LANGUAGE_4 then lang = "JP"
-        end
-
-        -- Used for Copy
-        entry.rawFrom = string.format(chatStrings.copylanguage, lang, entry.rawFrom)
-
-        message = message .. string.format(chatStrings.language, lcol, lang, new_from, carriageReturn, rcol, linkedText)
-        entry.rawValue = entry.rawValue .. string.format(chatStrings.language, lcol, lang, new_from, carriageReturn, rcol, newtext)
-
-    -- Unknown messages - just pass it through, no changes.
-    else
-        notHandled = true
-        message = newtext
+    
+    entry.rawLine = produceRawString(entry, ndx, raw)
+    raw.text = entry.rawLine
+    entry.displayed = produceDisplayString(entry, ndx, display, colorT)
+    display.text = entry.displayed
+    
+        --PlaySound for whisper
+    if chanCode == CHAT_CHANNEL_WHISPER and db.whisper.incomingsound then
+        SF.PlaySound(db.whisper.incomingsound)
     end
 
-    entry.displayed = message
-
-    -- Only if handled by rChat
-
+    -- Only if not handled by rChat
     if not notHandled then
         -- Store message and params into an array for copy system and SpamFiltering
-        StorelineNumber(GetTimeStamp(), entry.rawFrom, newtext, chanCode, originalFrom, ndx)
+        StorelineNumber(entry.timestamp, raw.from, raw.text, chanCode, originalFrom, ndx)
     end
 
     if chanCode == CHAT_CHANNEL_WHISPER then
-        OnIMReceived(displayedFrom, ndx)
+        lastwhisp = raw.from
+        OnIMReceived(raw.from, ndx)
     end
-
-    return message
+    entry.rawT = raw
+    entry.displayT = display
+    return entry.displayed --message
 
 end
 
@@ -2996,10 +2540,71 @@ local function UpdateGuildSwitches()
 
 end
 
--- *********************************************************************************
--- * Section: LAM Outside Functions : used in LAM but function resides outside LAM
--- *********************************************************************************
--- Character Sync
+-- ---------------------------------------------------------------
+-- Mention functions
+--   functions manipulating a mention table is a list of tables (one per entry) containing
+--   [1] = the entry to search for, [2] = the colorized version of the entry
+
+
+-- combine entries of a mention table into a string for an editbox
+local function mention_combine(tbl)
+    local str
+    if tbl then
+        for _,v in ipairs(tbl) do
+            if not str then
+                str = v[1]
+            else
+                str = string.format("%s\r\n%s",str, v[1])
+            end
+        end
+    else
+        str = ""
+    end
+    return str
+end
+
+-- split a mention string (one entry per line) into appropriate entries
+-- in the mention table
+-- returns the mention table
+local function mention_split(newValue, col) 
+    lines = {}
+    for s in newValue:gmatch("[\r\n]+") do
+        table.insert(lines, s)
+    end
+    newtbl = {}
+    for _,v in ipairs(lines) do
+        -- require minimum length
+        if string.len(v) >= 4 then
+            if nil == string.find(v, "[%%%*%-%.%+%(%)%[%]%^%$%?]") then
+                -- have no regex pattern characters
+                local c = v -- in case we don't have a color passed in
+                if col then
+                    c = string.format("%s%s|r", col,v)
+                end
+                newtbl[#newtbl+1]={v,c}
+            end
+        end
+    end
+    return newtbl
+end
+
+-- changes the colorized versions of mention to use the
+-- new color
+local function mention_recolor(mentiontbl, newcolor)
+    if mentiontbl then
+        for _,v in ipairs(mentiontbl) do
+            if not newcolor then 
+                v[2] = v[1]     -- should I nil this?
+            else
+                v[2] = string.format("%s%s|r", newcolor,v[1])
+            end
+        end
+    end
+    return mentiontbl
+end
+
+
+-- Character Sync Option
 local function SyncCharacterSelectChoices()
     local localPlayer = GetUnitName("player")
     -- Sync Character Select
@@ -3016,9 +2621,7 @@ local function SyncCharacterSelectChoices()
 end
 
 
--- *********************************************************************************
--- * Section: Settings Start (LAM)
--- *********************************************************************************
+-- Section: Settings Start (LAM)
 -- Build LAM Option Table, used when AddonLoads or when a player join/leave a guild
 local function BuildLAMPanel()
 
@@ -3116,11 +2719,13 @@ local function BuildLAMPanel()
                 getFunc = function() return db.disableBrackets end,
                 setFunc = function(newValue) 
                     db.disableBrackets = newValue 
+                    --[[
                     if db.disableBrackets then
                         chatStrings = chatStrings_nobrackets
                     else
                         chatStrings = chatStrings_brackets
                     end
+                    --]]
                 end,
                 width = "half",
                 default = defaults.disableBrackets,
@@ -3206,25 +2811,19 @@ local function BuildLAMPanel()
                 type = "editbox",
                 name = L(RCHAT_MENTIONSTR),
                 --tooltip = L(RCHAT_MENTIONSTRTT),
-                getFunc = function() return db.mention.mentionStr end,
+                isMultiline = true,
+                getFunc = function() 
+                    -- return db.mention.mentionStr
+                    if not db.mention.mentiontbl then db.mention.mentiontbl = {} end
+                    return mention_combine(db.mention.mentiontbl)
+                end,
                 setFunc = function(newValue)
-                		if string.len(newValue) < 4 then
-                			db.mention.mentionStr = ""
-                            db.mention.colorizedMention = ""
-                			return
-                		end
-                		if nil == string.find(newValue, "[%%%*%-%.%+%(%)%[%]%^%$%?]") then
-							db.mention.mentionStr = newValue
-                            if db.mention.colorEnabled then
-                                db.mention.colorizedMention = string.format("%s%s|r", db.mention.color,newValue)
-                            else
-                                db.mention.colorizedMention = newValue
-                            end
-						else
-							db.mention.mentionStr = newValue
-                            db.mention.colorizedMention = newValue
-						end
-					end,
+                    if db.mention.colorEnabled then
+                        db.mention.mentiontbl = mention_split(newValue,db.mention.color)
+                    else
+                        db.mention.mentiontbl = mention_split(newValue)
+                    end
+                end,
                 width = "full",
                 default = defaults.mention.mentionStr,
                 disabled = function() return not db.mention.mentionEnabled end,
@@ -3270,7 +2869,14 @@ local function BuildLAMPanel()
 				type = "checkbox",
 				name = GetString(RCHAT_COLOR_ENABLED),
 				getFunc = function() return db.mention.colorEnabled end,
-				setFunc = function(value) db.mention.colorEnabled = value end,
+				setFunc = function(value) 
+                    db.mention.colorEnabled = value 
+                    if value then
+                        mention_recolor(db.mention.mentiontbl,db.mention.color)
+                    else
+                        mention_recolor(db.mention.mentiontbl)
+                    end
+                end,
 				disabled = function() return not db.mention.mentionEnabled end,
 				width = "half",
 			},
@@ -3281,14 +2887,8 @@ local function BuildLAMPanel()
                 getFunc = function() return rChat.ConvertHexToRGBA(db.mention.color) end,
                 setFunc = function(r, g, b)
                     db.mention.color = rChat.ConvertRGBToHex(r, g, b)
-                    if not db.mention.mentionStr then
-                        db.mention.mentionStr = ""
-                        db.mention.colorizedMention = ""
-                    elseif db.mention.colorEnabled then
-                        db.mention.colorizedMention = string.format("%s%s|r", db.mention.color,
-                            db.mention.mentionStr)
-                    else
-                        db.mention.colorizedMention = db.mention.mentionStr
+                    if db.mention.colorEnabled then
+                        mention_recolor(db.mention.mentiontbl,db.mention.color)
                     end
                 end,
                 width = "half",
@@ -3558,7 +3158,7 @@ local function BuildLAMPanel()
                 width = "full",
                 default = defaults.windowDarkness,
             },
-            {-- LAM Option Prevent Chat Fading
+            {-- Prevent Chat Fading
                 type = "checkbox",
                 name = L(RCHAT_PREVENTCHATTEXTFADING),
                 tooltip = L(RCHAT_PREVENTCHATTEXTFADINGTT),
@@ -3576,7 +3176,7 @@ local function BuildLAMPanel()
                 width = "full",
                 default = defaults.augmentHistoryBuffer,
             },
-            {-- LAM Option Use one color for lines
+            {-- Use one color for lines
                 type = "checkbox",
                 name = L(RCHAT_USEONECOLORFORLINES),
                 tooltip = L(RCHAT_USEONECOLORFORLINESTT),
@@ -3625,7 +3225,7 @@ local function BuildLAMPanel()
                     ReloadUI()
                 end,
                 default = defaults.fontChange,
-                warning = "ReloadUI"
+                warning = "ReloadUI",
             },
             {-- Copy Chat
                 type = "checkbox",
@@ -3636,8 +3236,26 @@ local function BuildLAMPanel()
                 width = "full",
                 default = defaults.enablecopy,
             },--
+            {-- LibDebugLogger
+                type = "checkbox",
+                name = L(RCHAT_DISABLELOGGER),
+                tooltip = L(RCHAT_DISABLELOGGERTT),
+                requiresReload = true,
+                warning = "ReloadUI",
+                getFunc = function() return db.disableDebugLoggerBlocking end,
+                setFunc = function(newValue) 
+                    db.disableDebugLoggerBlocking = newValue 
+                    if LibDebugLogger then
+                        LibDebugLogger:SetBlockChatOutputEnabled(newValue)
+                    end
+                    ReloadUI()
+                end,
+                width = "full",
+                default = defaults.disableDebugLoggerBlocking,
+                disable = (not LibDebugLogger),
+            },--
         },
-    } -- LAM Menu Whispers
+    }
     -- Whispers
     optionsData[#optionsData + 1] = {
         type = "submenu",
@@ -3646,9 +3264,9 @@ local function BuildLAMPanel()
 			{
 				type = "checkbox",
 				name = GetString(RCHAT_WHISPSOUND_ENABLED),
-				getFunc = function() return db.whispsoundEnabled end,
-				setFunc = function(value) db.whispsoundEnabled = value end,
-				--disabled = function() return not db.whispsoundEnabled end,
+				getFunc = function() return db.whisper.soundEnabled end,
+				setFunc = function(value) db.whisper.soundEnabled = value end,
+				--disabled = function() return not db.whisper.soundEnabled end,
 				width = "half",
 			},
             {-- Whispers: Sound
@@ -3657,36 +3275,36 @@ local function BuildLAMPanel()
                 tooltip = L(RCHAT_SOUNDFORINCWHISPSTT),
                 min = 1, max = SF.numSounds(), step = 1,
                 getFunc = function()
-                    if type(db.soundforincwhisps) == "string" then
-                        return SF.getSoundIndex(db.soundforincwhisps)
+                    if type(db.whisper.incomingsound) == "string" then
+                        return SF.getSoundIndex(db.whisper.incomingsound)
                     end
-                    return SF.getSoundIndex(db.soundforincwhisps)
+                    return SF.getSoundIndex(db.whisper.incomingsound)
                 end,
                 setFunc = function(value)
-                    db.soundforincwhisps = SF.getSound(value)
+                    db.whisper.incomingsound = SF.getSound(value)
                     local descCtrl = WINDOW_MANAGER:GetControlByName("RCHAT_WHISP_SOUND")
                     if descCtrl ~= nil then
-                        descCtrl.data.text = SF.ColorText(db.soundforincwhisps, SF.hex.normal)
+                        descCtrl.data.text = SF.ColorText(db.whisper.incomingsound, SF.hex.normal)
                     end
-                    SF.PlaySound(db.soundforincwhisps)
+                    SF.PlaySound(db.whisper.incomingsound)
                 end,
                 width = "half",
-                default = defaults.soundforincwhisps,
+                default = defaults.whisper.incomingsound,
             },
             {
                 type = "description",
                 title = L(RCHAT_SOUND_NAME),
                 reference = "RCHAT_WHISP_SOUND",
-                text = SF.ColorText(db.soundforincwhisps, SF.hex.normal),
+                text = SF.ColorText(db.whisper.incomingsound, SF.hex.normal),
             },
-            {-- -- LAM Option Whisper: Visual Notification
+            {-- Whisper: Visual Notification
                 type = "checkbox",
                 name = L(RCHAT_NOTIFYIM),
                 tooltip = L(RCHAT_NOTIFYIMTT),
-                getFunc = function() return db.notifyIM end,
-                setFunc = function(newValue) db.notifyIM = newValue end,
+                getFunc = function() return db.whisper.notifyIM end,
+                setFunc = function(newValue) db.whisper.notifyIM = newValue end,
                 width = "full",
-                default = defaults.notifyIM,
+                default = defaults.whisper.notifyIM,
             },
         },
     }
@@ -3695,7 +3313,7 @@ local function BuildLAMPanel()
         type = "submenu",
         name = SF.GetIconized(RCHAT_RESTORECHATH, SF.hex.bronze),
         controls = {
-            {-- LAM Option Restore: After ReloadUI
+            {-- Restore: After ReloadUI
                 type = "checkbox",
                 name = L(RCHAT_RESTOREONRELOADUI),
                 tooltip = L(RCHAT_RESTOREONRELOADUITT),
@@ -3704,7 +3322,7 @@ local function BuildLAMPanel()
                 width = "half",
                 default = defaults.restoreOnReloadUI,
             },
-            {-- LAM Option Restore: Kicked
+            {-- Restore: Kicked
                 type = "checkbox",
                 name = L(RCHAT_RESTOREONAFK),
                 tooltip = L(RCHAT_RESTOREONAFKTT),
@@ -3713,7 +3331,7 @@ local function BuildLAMPanel()
                 width = "half",
                 default = defaults.restoreOnAFK,
             },
-            {-- LAM Option Restore: Logout
+            {-- Restore: Logout
                 type = "checkbox",
                 name = L(RCHAT_RESTOREONLOGOUT),
                 tooltip = L(RCHAT_RESTOREONLOGOUTTT),
@@ -3722,7 +3340,7 @@ local function BuildLAMPanel()
                 width = "half",
                 default = defaults.restoreOnLogOut,
             },
-            {-- LAM Option Restore: Leave
+            {-- Restore: Leave
                 type = "checkbox",
                 name = L(RCHAT_RESTOREONQUIT),
                 tooltip = L(RCHAT_RESTOREONQUITTT),
@@ -3731,7 +3349,7 @@ local function BuildLAMPanel()
                 width = "half",
                 default = defaults.restoreOnQuit,
             },
-            {-- LAM Option Restore: Hours
+            {-- Restore: Hours
                 type = "slider",
                 name = L(RCHAT_TIMEBEFORERESTORE),
                 tooltip = L(RCHAT_TIMEBEFORERESTORETT),
@@ -3743,7 +3361,7 @@ local function BuildLAMPanel()
                 width = "full",
                 default = defaults.timeBeforeRestore,
             },
-            {-- LAM Option Restore: System Messages
+            {-- Restore: System Messages
                 type = "checkbox",
                 name = L(RCHAT_RESTORESYSTEM),
                 tooltip = L(RCHAT_RESTORESYSTEMTT),
@@ -3752,7 +3370,7 @@ local function BuildLAMPanel()
                 width = "full",
                 default = defaults.restoreSystem,
             },
-            {-- LAM Option Restore: System Only Messages
+            {-- Restore: System Only Messages
                 type = "checkbox",
                 name = L(RCHAT_RESTORESYSTEMONLY),
                 tooltip = L(RCHAT_RESTORESYSTEMONLYTT),
@@ -3761,7 +3379,7 @@ local function BuildLAMPanel()
                 width = "full",
                 default = defaults.restoreSystemOnly,
             },
-            {-- LAM Option Restore: Whispers
+            {-- Restore: Whispers
                 type = "checkbox",
                 name = L(RCHAT_RESTOREWHISPS),
                 tooltip = L(RCHAT_RESTOREWHISPSTT),
@@ -3770,7 +3388,7 @@ local function BuildLAMPanel()
                 width = "full",
                 default = defaults.restoreWhisps,
             },
-            {-- LAM Option Restore: Text entry history
+            {-- Restore: Text entry history
                 type = "checkbox",
                 name = L(RCHAT_RESTORETEXTENTRYHISTORYATLOGOUTQUIT),
                 tooltip = L(RCHAT_RESTORETEXTENTRYHISTORYATLOGOUTQUITTT),
@@ -3779,6 +3397,17 @@ local function BuildLAMPanel()
                 width = "full",
                 default = defaults.restoreTextEntryHistoryAtLogOutQuit,
             },
+			{-- Restore: Clear chat history Button
+				type = "button",
+				name = L(RCHAT_CLEARCACHE),
+				tooltip = L(RCHAT_CLEARCACHE_TT),
+				func = function()
+					rChatData.clearCache()
+					rChat.ClearChat()
+				end,
+				width = "half",
+				isDangerous = true,
+			}
         },
     } -- Anti-Spam   Timestamp options
     -- Anti Spam
@@ -3871,7 +3500,7 @@ local function BuildLAMPanel()
         type = "submenu",
         name = SF.GetIconized(RCHAT_COLORSH, SF.hex.bronze),
         controls = {
-            {-- LAM Option Use ESO Colors
+            {-- Use ESO Colors
                 type = "checkbox",
                 name = L(RCHAT_USEESOCOLORS),
                 tooltip = L(RCHAT_USEESOCOLORSTT),
@@ -3880,7 +3509,7 @@ local function BuildLAMPanel()
                 width = "half",
                 default = defaults.useESOcolors,
             },
-            {-- LAM Option Difference Between ESO Colors
+            {-- Difference Between ESO Colors
                 type = "slider",
                 name = L(RCHAT_DIFFFORESOCOLORS),
                 tooltip = L(RCHAT_DIFFFORESOCOLORSTT),
@@ -4076,7 +3705,7 @@ local function BuildLAMPanel()
                 default = getRightColorRGB(CHAT_CHANNEL_MONSTER_SAY),
                 disabled = function() return db.useESOcolors end,
             },
-            {-- LAM Option Use same color for all NPC
+            {-- Use same color for all NPC
                 type = "checkbox",
                 name = L(RCHAT_ALLNPCSAMECOLOUR),
                 tooltip = L(RCHAT_ALLNPCSAMECOLOURTT),
@@ -4258,7 +3887,7 @@ local function BuildLAMPanel()
         type = "submenu",
         name = SF.GetIconized(RCHAT_GUILDOPT, SF.hex.bronze),
         controls = {
-            {-- LAM Option Show Guild Numbers
+            {-- Show Guild Numbers
                 type = "checkbox",
                 name = L(RCHAT_GUILDNUMBERS),
                 tooltip = L(RCHAT_GUILDNUMBERSTT),
@@ -4269,7 +3898,7 @@ local function BuildLAMPanel()
                 width = "half",
                 default = defaults.showGuildNumbers,
             },
-            {-- LAM Option Use Same Color for all Guilds
+            {-- Use Same Color for all Guilds
                 type = "checkbox",
                 name = L(RCHAT_ALLGUILDSSAMECOLOUR),
                 tooltip = L(RCHAT_ALLGUILDSSAMECOLOURTT),
@@ -4473,15 +4102,15 @@ local function BuildLAM()
 
 end
 --**Settings End
-
+-- ---------------------------------------------------------------------------
 
 -- Triggered by EVENT_GUILD_SELF_JOINED_GUILD
 local function OnSelfJoinedGuild(_, _, guildName)
 
-    -- It will rebuild optionsTable and recreate tables if user didn't went in this section before
+    -- It will rebuild optionsTable and recreate tables if user didn't look in this section before
     BuildLAMPanel()
 
-    -- If recently added to a new guild and never go in menu db.formatguild[guildName] won't exist, it won't create the value if joining an known guild
+    -- Set db.formatguild[guildName] to default value if missing
     if not db.formatguild[guildName] then
         -- 2 is default value
         db.formatguild[guildName] = 2
@@ -4568,7 +4197,6 @@ local function OnPlayerActivated()
 
     EVENT_MANAGER:UnregisterForEvent(rChat.name, EVENT_PLAYER_ACTIVATED)
 
-    --ModifyChannelInfo()
     rData.sceneFirst = false
     rData.activeTab = 1
 
@@ -4576,12 +4204,14 @@ local function OnPlayerActivated()
             if (db.enableChatTabChannel  == true) and (self.currentChannel ~= CHAT_CHANNEL_WHISPER) then
                 local tabIndex = self.primaryContainer.currentBuffer:GetParent().tab.index
                 db.chatTabChannel[tabIndex] = db.chatTabChannel[tabIndex] or {}
-                db.chatTabChannel[tabIndex].channel = self.currentChannel
-                db.chatTabChannel[tabIndex].target  = self.currentTarget
+                local chattab = db.chatTabChannel[tabIndex]
+                chattab.channel = self.currentChannel
+                chattab.target  = self.currentTarget
             end
         end)
 
-    ZO_PreHook(CHAT_SYSTEM.primaryContainer, "HandleTabClick", function(self, tab)
+	if CHAT_SYSTEM.primaryContainer.HandleTabClick then
+		ZO_PreHook(CHAT_SYSTEM.primaryContainer, "HandleTabClick", function(self, tab)
             rData.activeTab = tab.index
             if (db.enableChatTabChannel == true) then
                 local tabIndex = tab.index
@@ -4590,6 +4220,7 @@ local function OnPlayerActivated()
                 end
             end
         end)
+	end
 
 
     SecurePostHook("ZO_ChatSystem_ScrollToBottom", function(ctrl)
@@ -4627,27 +4258,21 @@ local function OnPlayerActivated()
 
     ZOS_CreateChannelData()
 
-    -- Tags next to entry box
+    -- Guild stuff
     UpdateGuildChannelNames()
-
-    -- Update Switches
     UpdateGuildSwitches()
-
-    -- Set default channel at login
-    SetToDefaultChannel()
-
-    -- Save all category colors
     SaveGuildIndexes()
+
+
+    -- Set up chat window(s)
+    SetToDefaultChannel()
+    SetDefaultTab(db.defaultTab)
+    ChangeChatWindowDarkness()
 
     -- Restore History if needed
     RestoreChatHistory()
-    -- Default Tab
-    SetDefaultTab(db.defaultTab)
-    -- Change Window apparence
-    ChangeChatWindowDarkness()
 
     -- Handle Copy text
-    --CopyToTextEntryText()
     LINK_HANDLER:RegisterCallback(LINK_HANDLER.LINK_CLICKED_EVENT, OnLinkClicked)
     LINK_HANDLER:RegisterCallback(LINK_HANDLER.LINK_MOUSE_UP_EVENT, OnLinkClicked)
 
@@ -4718,6 +4343,16 @@ local function SaveChatCategoryColors(category, r, g, b)
     end
 end
 
+function rChat.ClearChat()
+    local self = CHAT_SYSTEM.primaryContainer
+    local tabIndex = (self.currentBuffer and self.currentBuffer:GetParent()
+                            and self.currentBuffer:GetParent().tab
+                            and self.currentBuffer:GetParent().tab.index)
+	rData.tabNotBefore[tabIndex] = GetTimeStamp()
+	self.windows[tabIndex].buffer:Clear()
+	self:SyncScrollToBuffer()
+end
+
 -- PreHook of ZO_ChatSystem_ShowOptions() and ZO_ChatWindow_OpenContextMenu(control.index)
 -- always returns true
 local function ChatSystemShowOptions(tabIndex)
@@ -4775,6 +4410,7 @@ end
 -- Transfer values from old saved vars configurations to
 -- new saved vars configurations.
 local function SVvers(sv)
+    --[[
     local function convertSpamConfig(sv1)
 
         -- spam.variables already provided by SF.defaultMissing
@@ -4806,6 +4442,47 @@ local function SVvers(sv)
     end
 
     convertSpamConfig(sv)   -- v 1.4.2
+    --]]
+    
+    --[[
+    -- conversion for saved variables from version 1.4.3 to 1.4.4
+    local function convertSavedColors()
+        for k,v  in pairs(coloredChannels) do
+            if db.colours[2*v] then
+                db.newcolors[v] =  { db.colours[2*v], db.colours[2*v+1] }
+            end
+            --
+            local sav = {}
+            sav["groupleader"] = db.colours["groupleader"]
+            sav["timestamp"] = db.colours["timestamp"]
+            sav["groupleader1"] = db.colours["groupleader1"]
+            sav["tabwarning"] = db.colours["tabwarning"]
+            db.colours = sav
+        end
+    end
+
+    convertSavedColors()    -- version 1.4.3 to 1.4.4
+    --]]
+
+    -- conversion for saved variables from version 1.5.4 to 1.6
+    local function convertWhisper(sv1)
+        -- whisper.variables already provided by SF.defaultMissing
+        -- just transfer values
+        if sv1.whispsoundEnabled ~= nil then
+            sv1.whisper.soundEnabled = sv1.whispsoundEnabled
+            sv1.whispsoundEnabled = nil
+        end
+        if sv1.soundforincwhisps ~= nil then
+            sv1.whisper.incomingsound = sv1.soundforincwhisps
+            sv1.soundforincwhisps = nil
+        end
+        if sv1.notifyIM ~= nil then
+            sv1.whisper.notifyIM = sv1.notifyIM
+            sv1.notifyIM = nil
+        end
+    end
+    
+    convertWhisper(sv)  -- v 1.6
 end
 
 local function clearSV(savedVars)
@@ -4823,6 +4500,7 @@ local function loadSavedVars(savedvar, sv_version, defaults)
     local save = ZO_SavedVars:NewAccountWide(savedvar, sv_version, nil, defaults)
 	SF.defaultMissing(save.mention, defmention)
 	SF.defaultMissing(save.spam, defspam)
+	SF.defaultMissing(save.whisper, defwhisper)
 
     -- Transfer old saved vars to new
     SVvers(save)
@@ -4830,23 +4508,6 @@ local function loadSavedVars(savedvar, sv_version, defaults)
     save.AddonEpoch = rChat.epoch
 
     return save
-end
-
--- conversion for saved variables from version 2.4.3 to 2.4.4
-local function convertSavedColors()
-    for k,v  in pairs(coloredChannels) do
-        if db.colours[2*v] then
-            --d("found db.colors for "..v)
-            db.newcolors[v] =  { db.colours[2*v], db.colours[2*v+1] }
-        end
-        --
-        local sav = {}
-        sav["groupleader"] = db.colours["groupleader"]
-        sav["timestamp"] = db.colours["timestamp"]
-        sav["groupleader1"] = db.colours["groupleader1"]
-        sav["tabwarning"] = db.colours["tabwarning"]
-        db.colours = sav
-    end
 end
 
 -- Please note that some things are delayed in OnPlayerActivated() because Chat isn't ready when this function triggers
@@ -4870,22 +4531,26 @@ local function OnAddonLoaded(_, addonName)
     -- Saved variables
     rChat.save = loadSavedVars(rChat.savedvar, rChat.sv_version, defaults)
     db = rChat.save
+    -- new setting
+    if not db.mention.mentiontbl then db.mention.mentiontbl = {} end
     
     -- setup format strings based on saved vars
+    --[[
     if db.disableBrackets then
         chatStrings = chatStrings_nobrackets
     else
         chatStrings = chatStrings_brackets
     end
-
-    convertSavedColors()
+    --]]
 
     -- init vars for antispam
     rChat.setSpamConfig(db.spam)
 
     -- init vars/funcs for ZOS rewritten functions
     rChat_ZOS.tabwarning_color = ZO_ColorDef:New(string.sub(db.colours["tabwarning"],3,8))
-
+    -- add control for LibDebugLogger
+    rChat_ZOS.disableDebugLoggerBlocking = db.disableDebugLoggerBlocking
+    
     --LAM
     BuildLAM()
 
@@ -4950,6 +4615,7 @@ local function OnAddonLoaded(_, addonName)
     -- Right click on a tab name
     ZO_PreHook("ZO_ChatSystem_ShowOptions", function(control) return ChatSystemShowOptions() end)
     ZO_PreHook("ZO_ChatWindow_OpenContextMenu", function(control) return ChatSystemShowOptions(control.index) end)
+    
     -- Bindings
     ZO_CreateStringId("SI_BINDING_NAME_RCHAT_TOGGLE_CHAT_WINDOW", L(RCHAT_TOGGLECHATBINDING))
     ZO_CreateStringId("SI_BINDING_NAME_RCHAT_WHISPER_MY_TARGET", L(RCHAT_WHISPMYTARGETBINDING))
@@ -4965,25 +4631,19 @@ local function OnAddonLoaded(_, addonName)
     ZO_CreateStringId("SI_BINDING_NAME_TAB_10", L(RCHAT_Tab10))
     ZO_CreateStringId("SI_BINDING_NAME_TAB_11", L(RCHAT_Tab11))
     ZO_CreateStringId("SI_BINDING_NAME_TAB_12", L(RCHAT_Tab12))
-    -- Register OnSelfJoinedGuild with EVENT_GUILD_SELF_JOINED_GUILD
+    
+    -- handlers
     EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_GUILD_SELF_JOINED_GUILD, OnSelfJoinedGuild)
-
-    -- Register OnSelfLeftGuild with EVENT_GUILD_SELF_LEFT_GUILD
     EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_GUILD_SELF_LEFT_GUILD, OnSelfLeftGuild)
-
-    -- Because ChatSystem is loaded after EVENT_ADDON_LOADED triggers, we use 1st EVENT_PLAYER_ACTIVATED wich is run bit after
-    EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_PLAYER_ACTIVATED, OnPlayerActivated)
-
-    -- Whisp my target
     EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_RETICLE_TARGET_CHANGED, OnReticleTargetChanged)
-
-    -- Party switches
     EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_GROUP_MEMBER_JOINED, OnGroupMemberJoined)
     EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_GROUP_MEMBER_LEFT, OnGroupMemberLeft)
 
     isAddonLoaded = true
-
+    EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_PLAYER_ACTIVATED, OnPlayerActivated)
 end
+
+
 
 --Handled by keybind
 function rChat.ToggleChat()
@@ -5003,20 +4663,29 @@ function rChat.WhispMyTarget()
     end
 end
 
--- For compatibility. Called by others addons.
+-- reimplement the reply to whisper slash command
+local function WhisperLast()
+    if lastwhisp then
+        CHAT_SYSTEM:StartTextEntry(nil, CHAT_CHANNEL_WHISPER, lastwhisp)
+    end
+end
+SLASH_COMMANDS["/r"] = WhisperLast
+SLASH_COMMANDS["/reply"] = WhisperLast
+SLASH_COMMANDS["/respond"] = WhisperLast
+
+-- --------------------------------------------------
+-- Addon compatibility functions
 function rChat.formatSysMessage(statusMessage)
     return FormatSysMessage(statusMessage)
 end
 
--- For compatibility. Called by others addons.
 function rChat_FormatSysMessage(statusMessage)
     return FormatSysMessage(statusMessage)
 end
 
--- For compatibility. Called by others addons.
 function rChat_GetChannelColors(channel, from)
     return GetChannelColors(channel, from)
 end
+-- --------------------------------------------------
 
---EVENT_MANAGER:RegisterForEvent("rChatData", EVENT_ADD_ON_LOADED, OnDataLoaded)
 EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_ADD_ON_LOADED, OnAddonLoaded)

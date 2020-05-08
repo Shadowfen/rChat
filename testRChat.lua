@@ -39,10 +39,20 @@ d("\n")
 -- main
 TK.init()
 
+-- we are running subtests as part of a suite of tests
+Suite = true
 
+require "rChat.test.Data_Test"
+Data_runTests()
+d("\n--------------\n")
 
-require "rChat.test.History_Test"
-History_runTests()
+require "rChat.test.Mention_Test"
+Mention_runTests()
+d("\n--------------\n")
+
+require "rChat.test.Format_Test"
+Format_runTests()
+d("\n--------------\n")
 
 d("\n")
-TK.showResult()
+TK.showResult("testRChat")
