@@ -1,4 +1,4 @@
-[B][COLOR="DarkOrange"]Depends on the following (separately installed) libraries: LibSFUtils, LibAddonMenu, LibMediaProvider-1.0, LibMainMenu, and libChat2[/COLOR] (note the lower case 'l')[/B]
+[B][COLOR="DarkOrange"]Depends on the following (separately installed) libraries: LibSFUtils, LibAddonMenu, and LibMediaProvider-1.0[/COLOR] (note the lower case 'l')[/B]
 
 rChat allows you to customize the way that messages are displayed in the chat window.
 It also allows you to define and post automated messages in chat, and to copy messages from chat to the clipboard with the right-click menu. (Note: When copying a single message, it will copy the message into the outgoing message text box for chat where you can then Ctrl-X to copy it to clipboard.)
