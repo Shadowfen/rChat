@@ -1,4 +1,10 @@
-﻿[COLOR="DeepSkyBlue"]1.6.2 (22)[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.7 (23)[/COLOR]
+[LIST]
+[*] Fix leftover dependency on LibDebugLogger that was accidentally left in (reported by Mandragorane).
+[*] Fix the overriding of guild specific format for names by the general format for names (reported by Mandragorane).
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.6.2 (22)[/COLOR]
 [LIST]
 [*] Fix nil value error in AddURLHandling reported by Tiara Ra.
 [/LIST]

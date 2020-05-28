@@ -18,8 +18,6 @@ local lastwhisp
 local defmention = {
 	mentionEnabled = false,
     mentiontbl = {},
-	mentionStr = "",        -- deprecated v 1.6
-    colorizedMention = "",  -- deprecated v 1.6
 	soundEnabled = false,
 	sound = SOUNDS.NEW_NOTIFICATION,
 	colorEnabled = false,
@@ -87,14 +85,6 @@ local defaults = {
     defaultTab = 1,
     defaultTabName = "",
     -- ---- Chat Tab Settings - End
-
-    -- ---- Whisper Settings -- moved 1.6
-    --[[  see whisper defined above
-    whispsoundEnabled = false,
-    soundforincwhisps = SOUNDS.NEW_NOTIFICATION,
-    notifyIM = false,
-    --]]
-    -- ---- Whisper Settings
 
     -- ---- Group Settings
     enablepartyswitch = true,
@@ -270,54 +260,6 @@ rData.guildCategories = {
     CHAT_CATEGORY_OFFICER_5,
 }
 
---[[
-local chatStrings_brackets = {
-    standard = "%s%s: |r%s%s%s|r", -- standard format: say, yell, group, npc, npc yell, npc whisper, zone
-    esostandard = "%s%s %s: |r%s%s%s|r", -- standard format: say, yell, group, npc, npc yell, npc whisper, zone with tag (except for monsters)
-    esoparty = "%s%s%s: |r%s%s%s|r", -- standard format: party
-    tellIn = "%s%s: |r%s%s%s|r", -- tell in
-    tellOut = "%s-> %s: |r%s%s%s|r", -- tell out
-    emote = "%s%s |r%s%s|r", -- emote
-    guild = "%s%s %s: |r%s%s%s|r", -- guild
-    language = "%s[%s] %s: |r%s%s%s|r", -- language zones
-
-    -- For copy System, only Handle "From part"
-
-    copystandard = "[%s]: ", -- standard format: say, yell, group, npc, npc yell, npc whisper, zone
-    copyesostandard = "[%s] %s: ", -- standard format: say, yell, group, npc, npc yell, npc whisper, zone with tag (except for monsters)
-    copyesoparty = "[%s]%s: ", -- standard format: party
-    copytellIn = "[%s]: ", -- tell in
-    copytellOut = "-> [%s]: ", -- tell out
-    copyemote = "%s ", -- emote
-    copyguild = "[%s] [%s]: ", -- guild
-    copylanguage = "[%s] %s: ", -- language zones
-    copynpc = "%s: ", -- NPCs
-}
-
-local chatStrings_nobrackets = {
-    standard = chatStrings_brackets.standard,
-    esostandard = chatStrings_brackets.esostandard,
-    esoparty = chatStrings_brackets.esoparty,
-    tellIn = chatStrings_brackets.tellIn,
-    tellOut = chatStrings_brackets.tellOut,
-    emote = chatStrings_brackets.emote,
-    guild = chatStrings_brackets.guild,
-    language = chatStrings_brackets.language,
-
-    -- For copy System, only Handle "From part"
-    copystandard = "%s: ", -- standard format: say, yell, group, npc, npc yell, npc whisper, zone
-    copyesostandard = "%s %s: ", -- standard format: say, yell, group, npc, npc yell, npc whisper, zone with tag (except for monsters)
-    copyesoparty = "[%s]%s: ", -- standard format: party
-    copytellIn = "%s: ", -- tell in
-    copytellOut = "-> %s: ", -- tell out
-    copyemote = chatStrings_brackets.copyemote,
-    copyguild = "[%s] %s: ", -- guild
-    copylanguage = chatStrings_brackets.copylanguage,
-    copynpc = chatStrings_brackets.copynpc,
-}
-
-local chatStrings = chatStrings_brackets
---]]
 ------------------------------------------------------
 -- bring in rChat_Internals functions
 local formatLanguageTag = rChat_Internals.formatLanguageTag
@@ -1682,8 +1624,6 @@ end
 -- Reformat Colored Sysmessages to the correct format
 -- Bad format = |[cC]XXXXXXblablabla[,|[cC]XXXXXXblablabla,(...)] with optional |r
 -- Good format : "|c%x%x%x%x%x%x(.-)|r"
---
--- TODO : Handle LinkHandler + Malformatted strings , such as : "|c87B7CC|c87B7CCUpdated: |H0:achievement:68:5252:0|h|h (Artisanat)."
 local function ReformatSysMessages(text)
      if not text then return "",{} end
 
@@ -4210,7 +4150,7 @@ local function OnPlayerActivated()
             end
         end)
 
-	if CHAT_SYSTEM.primaryContainer.HandleTabClick then
+	if CHAT_SYSTEM.primaryContainer and CHAT_SYSTEM.primaryContainer.HandleTabClick then
 		ZO_PreHook(CHAT_SYSTEM.primaryContainer, "HandleTabClick", function(self, tab)
             rData.activeTab = tab.index
             if (db.enableChatTabChannel == true) then
@@ -4220,6 +4160,10 @@ local function OnPlayerActivated()
                 end
             end
         end)
+	elseif LibDebugLogger then
+		local logger = LibDebugLogger("rChat")
+		logger:SetEnabled(true)
+		logger:Error("The CHAT_SYSTEM.primaryContainer is nil and was likely caused by accidental deletion of the primary chat tab.")
 	end
 
 
@@ -4410,59 +4354,6 @@ end
 -- Transfer values from old saved vars configurations to
 -- new saved vars configurations.
 local function SVvers(sv)
-    --[[
-    local function convertSpamConfig(sv1)
-
-        -- spam.variables already provided by SF.defaultMissing
-        -- just transfer values
-        if sv1.spamGracePeriod then
-            sv1.spam.spamGracePeriod = sv1.spamGracePeriod
-            sv1.spamGracePeriod = nil
-        end
-        if sv1.floodProtect then
-            sv1.spam.floodProtect = sv1.floodProtect
-            sv1.floodProtect = nil
-        end
-        if sv1.floodGracePeriod then
-            sv1.spam.floodGracePeriod = sv1.floodGracePeriod
-            sv1.floodGracePeriod = nil
-        end
-        if sv1.lookingForProtect then
-            sv1.spam.lookingForProtect = sv1.lookingForProtect
-            sv1.lookingForProtect = nil
-        end
-        if sv1.wantToProtect then
-            sv1.spam.wantToProtect = sv1.wantToProtect
-            sv1.wantToProtect = nil
-        end
-        if sv1.guildProtect then
-            sv1.spam.guildProtect = sv1.guildProtect
-            sv1.guildProtect = nil
-        end
-    end
-
-    convertSpamConfig(sv)   -- v 1.4.2
-    --]]
-    
-    --[[
-    -- conversion for saved variables from version 1.4.3 to 1.4.4
-    local function convertSavedColors()
-        for k,v  in pairs(coloredChannels) do
-            if db.colours[2*v] then
-                db.newcolors[v] =  { db.colours[2*v], db.colours[2*v+1] }
-            end
-            --
-            local sav = {}
-            sav["groupleader"] = db.colours["groupleader"]
-            sav["timestamp"] = db.colours["timestamp"]
-            sav["groupleader1"] = db.colours["groupleader1"]
-            sav["tabwarning"] = db.colours["tabwarning"]
-            db.colours = sav
-        end
-    end
-
-    convertSavedColors()    -- version 1.4.3 to 1.4.4
-    --]]
 
     -- conversion for saved variables from version 1.5.4 to 1.6
     local function convertWhisper(sv1)
@@ -4534,15 +4425,6 @@ local function OnAddonLoaded(_, addonName)
     -- new setting
     if not db.mention.mentiontbl then db.mention.mentiontbl = {} end
     
-    -- setup format strings based on saved vars
-    --[[
-    if db.disableBrackets then
-        chatStrings = chatStrings_nobrackets
-    else
-        chatStrings = chatStrings_brackets
-    end
-    --]]
-
     -- init vars for antispam
     rChat.setSpamConfig(db.spam)
 

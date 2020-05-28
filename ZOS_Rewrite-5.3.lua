@@ -1,8 +1,6 @@
 local L = GetString
 
 
-local logger = LibDebugLogger("rChat")
-logger:SetEnabled(true)
 -- contains insertion functions and data references to allow rChat to
 -- affect the operation of the revised core ZOS functions below.
 rChat_ZOS = {
@@ -12,9 +10,6 @@ rChat_ZOS = {
     cachedMessages = {},        -- table of messages for chat restoring
     messagesWereRestored = false, -- bool  (was messagesHaveBeenRestorated)
     tabwarning_color = ZO_ColorDef:New("76BCC3"), -- tab Warning ~ "Azure" (ZOS default),
-    saveMsg = function(...)
-        logger:Debug(...)
-    end,
     disableDebugLoggerBlocking = true,
 }
 

@@ -646,6 +646,18 @@ function rChat_Internals.formatName(channel, from, isCS, fromDisplayName)
         local anchor = atname
         overrideBrackets = true
         new_from, displayed = rChat_Internals.GetNameLink(atname, atname, overrideBrackets)
+		
+	elseif isGuildChannel(channel) then
+        local anchor = atname or toonname
+		local displaynm
+		local guildIndex = rChat_Internals.GetGuildIndex(channel)
+		local guildName, guildId = rChat.SafeGetGuildName(guildIndex)
+		if db.formatguild[guildName] then
+        	displaynm = rChat_Internals.UseNameFormat(atname, toonname, nick, db.formatguild[guildName])
+		else
+        	displaynm = rChat_Internals.UseNameFormat(atname, toonname, nick, db.geoChannelsFormat)
+		end
+        new_from, displayed = rChat_Internals.GetNameLink(anchor, displaynm, overrideBrackets)
     
     else -- zones / say / tell.
         local anchor = atname or toonname
