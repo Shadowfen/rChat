@@ -14,7 +14,6 @@ TK.localization_strings = {
   TESTS_RUN = "Number of tests run: ",
   PASS = "PASSED: ",
   FAIL = "FAILED: ",
-  
 }
 local ls = TK.localization_strings
 

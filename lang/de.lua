@@ -382,6 +382,12 @@ rChat_localization_strings["de"] = {
     RCHAT_JPZONECHAT = "JP Zone - Chat",
     RCHAT_JPZONECHATTT = "Legt die Farbe der Nachrichten im japanisch Chat-Kanal fest.",
 
+    RCHAT_RUZONE =     "RU Zone - Spieler",
+    RCHAT_RUZONETT = "Legt die Farbe für vom Spieler verfasste Nachrichten im russischen Chat-Kanal fest.",
+
+    RCHAT_RUZONECHAT = "RU Zone - Chat",
+    RCHAT_RUZONECHATTT = "Legt die Farbe der Nachrichten im russischen Chat-Kanal fest.",
+
     RCHAT_NPCSAY =     "NSC Sagen - NSC Name",
     RCHAT_NPCSAYTT = "Legt die Farbe des Namens des Nicht-Spieler-Charakters (NSC - NPC) in NSC-Texten fest.",
 

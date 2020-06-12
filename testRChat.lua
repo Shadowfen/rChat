@@ -42,16 +42,16 @@ TK.init()
 -- we are running subtests as part of a suite of tests
 Suite = true
 
+require "rChat.test.Format_Test"
+Format_runTests()
+d("\n--------------\n")
+
 require "rChat.test.Data_Test"
 Data_runTests()
 d("\n--------------\n")
 
 require "rChat.test.Mention_Test"
 Mention_runTests()
-d("\n--------------\n")
-
-require "rChat.test.Format_Test"
-Format_runTests()
 d("\n--------------\n")
 
 d("\n")

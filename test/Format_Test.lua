@@ -457,7 +457,9 @@ local function Format_testProduceDisplayString_say()
     db.delzonetags = false
 
     local str = produceDisplayString(entry, ndx, display, colorT)
-    local expected = string.format("%s%s|r%s%s%s|r: %sWhere is a pack merchant?|r", colorT.timecol,display.timestamp, colorT.lcol,display.from, display.zonetag,colorT.rcol)
+    local expected = string.format("%s%s|r%s%s%s|r: %sWhere is a pack merchant?|r", 
+                                colorT.timecol, display.timestamp, colorT.lcol, display.from, 
+                                display.zonetag, colorT.rcol)
     d("   expected: "..expected)
     d("        got: "..str)
     TK.assertTrue(str == expected, "got the correct message")

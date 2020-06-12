@@ -29,8 +29,8 @@ end
 
 -- Rewrite of core function to save messages if chat system not yet up
 -- (from addoncompatibility.lua)
-function KEYBOARD_CHAT_SYSTEM:AddMessage(text)
-
+--function KEYBOARD_CHAT_SYSTEM:AddMessage(text)
+function CHAT_ROUTER:AddSystemMessage(text)
     if LibDebugLogger then
         if rChat_ZOS.disableDebugLoggerBlocking then
             if LibDebugLogger:IsBlockChatOutputEnabled() then
@@ -42,7 +42,7 @@ function KEYBOARD_CHAT_SYSTEM:AddMessage(text)
             end
         end
     end
-    
+
 	if CHAT_SYSTEM.primaryContainer and rChat_ZOS.messagesWereRestored then
         for k in ipairs(CHAT_SYSTEM.containers) do
 			local chatContainer = CHAT_SYSTEM.containers[k]
@@ -138,7 +138,7 @@ end
 local FILTERS_PER_ROW = 2
 
 -- from ingame\chatsystem\chatoptions.lua
--- Copy of a core data (nothing changed)
+-- Copy of a core data (SYSTEM added)
 -- defines the ordering of the filter categories
 local CHANNEL_ORDERING_WEIGHT = {
     [CHAT_CATEGORY_SAY] = 10,
@@ -151,12 +151,12 @@ local CHANNEL_ORDERING_WEIGHT = {
     [CHAT_CATEGORY_MONSTER_SAY] = 60,
 
     [CHAT_CATEGORY_ZONE] = 80,
-    [CHAT_CATEGORY_ZONE_ENGLISH] = 90,
 
+    [CHAT_CATEGORY_ZONE_ENGLISH] = 90,
     [CHAT_CATEGORY_ZONE_FRENCH] = 100,
     [CHAT_CATEGORY_ZONE_GERMAN] = 110,
-    -- new values
     [CHAT_CATEGORY_ZONE_JAPANESE] = 120,
+    [CHAT_CATEGORY_ZONE_RUSSIAN] = 130,
 
     [CHAT_CATEGORY_SYSTEM] = 200,
 }

@@ -369,6 +369,12 @@ rChat_localization_strings["fr"] = {
     RCHAT_JPZONECHAT = "JP Zone - Message",
     RCHAT_JPZONECHATTT = "Définir la couleur du message pour le canal de zone Japonais",
 
+    RCHAT_RUZONE = "RU Zone - Joueur",
+    RCHAT_RUZONETT = "Définir la couleur du joueur couleurs pour le canal de zone Russe",
+
+    RCHAT_RUZONECHAT = "RU Zone - Message",
+    RCHAT_RUZONECHATTT = "Définir la couleur du message pour le canal de zone Russe",
+
     RCHAT_NPCSAY = "Discussions de PNJ - PNJ",
     RCHAT_NPCSAYTT = "Définir la couleur du PNJ pour les discussions de PNJ",
 

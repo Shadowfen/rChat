@@ -49,7 +49,7 @@ local defaults = {
     -- ---- Message Settings
     allZonesSameColour = true,
     allNPCSameColour = true,
-    delzonetags = true,
+    nozonetags = true,
     carriageReturn = false,
     useESOcolors = true,
     diffforESOcolors = 40,
@@ -160,6 +160,7 @@ local defaults = {
         [CHAT_CHANNEL_ZONE_LANGUAGE_2] = {"|cCEB36F", "|cB0A074",},  -- FR zone
         [CHAT_CHANNEL_ZONE_LANGUAGE_3] = {"|cCEB36F", "|cB0A074",},  -- DE zone
         [CHAT_CHANNEL_ZONE_LANGUAGE_4] = {"|cCEB36F", "|cB0A074",},  -- JP zone
+        [CHAT_CHANNEL_ZONE_LANGUAGE_5] = {"|cCEB36F", "|cB0A074",},  -- RU zone
     },
     colours = {
         -- misc
@@ -195,6 +196,7 @@ local coloredChannels  = {
     CHAT_CATEGORY_ZONE_FRENCH,     -- LANGUAGE_2
     CHAT_CATEGORY_ZONE_GERMAN,     -- LANGUAGE_3
     CHAT_CATEGORY_ZONE_JAPANESE,     -- LANGUAGE_4
+    CHAT_CATEGORY_ZONE_RUSSIAN,     -- LANGUAGE_5
     CHAT_CATEGORY_MONSTER_SAY,
     CHAT_CATEGORY_MONSTER_YELL,
     CHAT_CATEGORY_MONSTER_WHISPER,
@@ -213,7 +215,8 @@ local RCHAT_LINK = "p"
 local RCHAT_URL_CHAN = 97
 local RCHAT_CHANNEL_NONE = 99
 
--- Save AddMessage for internal debug - AVOID DOING A CHAT_SYSTEM:AddMessage() in rChat, it can cause recursive calls
+-- Save AddMessage for internal debug - AVOID DOING A CHAT_SYSTEM:AddMessage()/CHAT_ROUTER:AddSystemMessage() 
+-- in rChat, it can cause recursive calls
 CHAT_SYSTEM.Zo_AddMessage = CHAT_SYSTEM.AddMessage
 
 -- used only by save and sync chat config
@@ -240,6 +243,7 @@ rData.chatCategories = {
     CHAT_CATEGORY_ZONE_FRENCH,
     CHAT_CATEGORY_ZONE_GERMAN,
     CHAT_CATEGORY_ZONE_JAPANESE,
+    CHAT_CATEGORY_ZONE_RUSSIAN,
     CHAT_CATEGORY_MONSTER_SAY,
     CHAT_CATEGORY_MONSTER_YELL,
     CHAT_CATEGORY_MONSTER_WHISPER,
@@ -1943,26 +1947,25 @@ local function FormatSysMessage(statusMessage)
     end -- ShowTimestamp()
 
 
-    local sysMessage
-
     -- Some addons are quicker than rChat
     if not db then return statusMessage end
 
     local entry, ndx = CACHE.getNewCacheEntry(CHAT_CHANNEL_SYSTEM)
     entry.rawValue = statusMessage
     entry.timestamp = GetTimeStamp()
-    entry.rawTimestamp = ShowTimestamp(GetTimeString())
+    entry.rawTimeString = ShowTimestamp(GetTimeString())
 
     -- Make it Linkable
+    local sysMessage
     if db.enablecopy then
-        sysMessage = entry.rawTimestamp..AddLinkHandler(statusMessage, CHAT_CHANNEL_SYSTEM, ndx)
+        sysMessage = entry.rawTimeString..AddLinkHandler(statusMessage, CHAT_CHANNEL_SYSTEM, ndx)
     else
-        sysMessage = entry.rawTimestamp..statusMessage
+        sysMessage = entry.rawTimeString..statusMessage
     end
     entry.displayed = sysMessage
 
 
-    -- No From, rawTimestamp is in statusMessage, sent as arg for SpamFiltering even if SysMessages are not filtered
+    -- No From, rawTimeString is in statusMessage, sent as arg for SpamFiltering even if SysMessages are not filtered
     StorelineNumber(entry.timestamp, nil, statusMessage, CHAT_CHANNEL_SYSTEM, nil, ndx)
 
     return sysMessage
@@ -2016,20 +2019,29 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
 	if chanCode == CHAT_CATEGORY_WHISPER then
 		lastwhisp = fromDisplayName
 	end
-    
+	
     -- Will calculate if this message is a spam
     local isSpam = rChat.SpamFilter(chanCode, from, text, isCS)
     if isSpam then return end
 
-    
-    local originalFrom = from
-    local originalText = text
+    local original = {}
+    original.from = from
+    original.text = text
+	original.channel = chanCode
+	original.fromDisplayName = fromDisplayName
+	original.isCS = isCS
 
+	if string.len(text) > 240 then
+		text = string.sub(text,1,240)
+	end
+    
     local newtext = text
     -- Init message with other addons stuff
     local message = ""
 
     local entry, ndx = CACHE.getNewCacheEntry(chanCode) -- initializes channel and timestamp
+	entry.original = original
+	
     entry.rawFrom = from            -- formatted from - no colors or link handlers
     entry.rawValue = text           -- formatted message      
     entry.rawMessage = text         -- copy message - this is the only one that remains unmodified
@@ -2037,14 +2049,6 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
     entry.displayed = newtext    -- restored to chat (has link handler markers)
     entry.text = text
     
-    entry.formatMessage = {
-        chanCode = chanCode,
-        from = from,
-        text = text,
-        isCS = isCS,
-        fromDisplayName = fromDisplayName,
-    }
-
     local display = {}      -- info to build a display message
     local raw = {}          -- info to build a raw message
     entry.rawT = raw
@@ -2059,6 +2063,9 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
     
     -- Whisper tag
     display.whisper, raw.whisper = formatWhisperTag(entry,ndx)
+	
+	-- Zone tags
+	display.zonetag, raw.zonetag, display.partytag, raw.partytag = formatZoneTag(entry,ndx)
 
     -- Initialise colours
     local colorT = initColorTable(chanCode, from)
@@ -2605,10 +2612,10 @@ local function BuildLAMPanel()
                 type = "checkbox",
                 name = L(RCHAT_DELZONETAGS),
                 tooltip = L(RCHAT_DELZONETAGSTT),
-                getFunc = function() return db.delzonetags end,
-                setFunc = function(newValue) db.delzonetags = newValue end,
+                getFunc = function() return db.nozonetags end,
+                setFunc = function(newValue) db.nozonetags = newValue end,
                 width = "full",
-                default = defaults.delzonetags,
+                default = defaults.nozonetags,
             },
             {
                 type = "header",
@@ -3086,7 +3093,7 @@ local function BuildLAMPanel()
                 type = "slider",
                 name = L(RCHAT_WINDOWDARKNESS),
                 tooltip = L(RCHAT_WINDOWDARKNESSTT),
-                min = 0,
+                min = 1,
                 max = 11,
                 step = 1,
                 getFunc = function() return db.windowDarkness end,
@@ -3808,7 +3815,27 @@ local function BuildLAMPanel()
                 default = getRightColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_4),
                 disabled = isDisabled_ZoneColors,
             },
+            {-- Zone Russian left
+            type = "colorpicker",
+            name = L(RCHAT_RUZONE),
+            tooltip = L(RCHAT_RUZONETT),
+            width = "half",
+            getFunc = function() return getLeftColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_5) end,
+            setFunc = function(r, g, b) rChat.setLeftColor(CHAT_CHANNEL_ZONE_LANGUAGE_5, r, g, b) end,
+            default = getLeftColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_5),
+            disabled = isDisabled_ZoneColors,
         },
+        {-- Zone Japanese right
+            type = "colorpicker",
+            name = L(RCHAT_RUZONECHAT),
+            tooltip = L(RCHAT_RUZONECHATTT),
+            width = "half",
+            getFunc = function() return getRightColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_5) end,
+            setFunc = function(r, g, b) rChat.setRightColor(CHAT_CHANNEL_ZONE_LANGUAGE_5, r, g, b) end,
+            default = getRightColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_5),
+            disabled = isDisabled_ZoneColors,
+        },
+    },
     }
 
 -- Guilds
@@ -4200,13 +4227,12 @@ local function OnPlayerActivated()
     SyncChatConfig(db.chatSyncConfig, "lastChar")
     SaveChatConfig()
 
-    ZOS_CreateChannelData()
-
-    -- Guild stuff
+	-- Guild stuff
     UpdateGuildChannelNames()
     UpdateGuildSwitches()
     SaveGuildIndexes()
 
+	ZOS_CreateChannelData()
 
     -- Set up chat window(s)
     SetToDefaultChannel()
@@ -4374,6 +4400,12 @@ local function SVvers(sv)
     end
     
     convertWhisper(sv)  -- v 1.6
+	
+	-- v 1.8
+	if sv.delzonetags then
+		sv.nozonetags = sv.delzonetags
+		sv.delzonetags = nil
+	end
 end
 
 local function clearSV(savedVars)
@@ -4447,6 +4479,9 @@ local function OnAddonLoaded(_, addonName)
     if not rChat.tabNames then
         rChat.tabNames = {}
     end
+	
+	-- Set Window opaqueness
+	ChangeChatWindowDarkness(true)
 
     -- Will set Keybind for "switch to next tab" if needed
     SetSwitchToNextBinding()

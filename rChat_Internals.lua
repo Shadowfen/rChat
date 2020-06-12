@@ -1,6 +1,6 @@
 --[[ ---------------------------------------
 This file separates out functions that are used by rChat but that
-are "testable" because they use few enough of the ZOS functions 
+are "testable" because they use few enough of the ZOS functions
 that I don't have to reproduce the entirety of ESO in my offline
 test environment.
 --]] ---------------------------------------
@@ -51,6 +51,7 @@ local lang_zone_channels = {
     [CHAT_CHANNEL_ZONE_LANGUAGE_2] = true,
     [CHAT_CHANNEL_ZONE_LANGUAGE_3] = true,
     [CHAT_CHANNEL_ZONE_LANGUAGE_4] = true,
+    [CHAT_CHANNEL_ZONE_LANGUAGE_5] = true,
 }
 
 -- return true if chanCode is one of the two whisper channels
@@ -104,10 +105,10 @@ end
 function rChat_Internals.formatTimestamp(entry, ndx)
     local db = rChat.save
     if not db.showTimestamp then return "","" end
-    
+
     -- Message is timestamp for now
     -- Add RCHAT_HANDLER for display
-    local tsString = rChat.CreateTimestamp(db.timestampFormat) 
+    local tsString = rChat.CreateTimestamp(db.timestampFormat)
     local timestamp = rChat.LinkHandler_CreateLink( ndx, entry.channel, tsString ) .. " "
 
     -- Timestamp color
@@ -119,11 +120,11 @@ end
 -- create guild/officer tag
 function rChat_Internals.formatTag(entry, ndx)
      local db = rChat.save
-   
+
    -- Guild tag
     local guild_number, isOfc = rChat_Internals.GetGuildIndex(entry.channel)
     if guild_number == 0 then return nil end
-    
+
     local guild_name = rChat.SafeGetGuildName(guild_number)
     local tag
     if not isOfc then
@@ -134,18 +135,18 @@ function rChat_Internals.formatTag(entry, ndx)
     if not tag or tag == "" then
         tag = guild_name
     end
-    
+
     if db.showGuildNumbers then
         tag = guild_number .. "-" .. tag
     end
-    
+
     local link_tag
-    if tag then 
-        link_tag = ZO_LinkHandler_CreateLink(tag, nil, CHANNEL_LINK_TYPE, entry.channel) 
-        tag = "["..tag.."] " 
+    if tag then
+        link_tag = ZO_LinkHandler_CreateLink(tag, nil, CHANNEL_LINK_TYPE, entry.channel)
+        tag = "["..tag.."] "
         link_tag = link_tag .. " "
     end
-    
+
     return link_tag, tag
 end
 
@@ -154,16 +155,15 @@ end
 --
 function rChat_Internals.produceRawString(entry, ndx, rawT)
     if not rawT then return "" end
-    local db = rChat.save
-    
+
     local rawS = {}     -- A list of strings to turn into a raw message
-    
-    -- timestamp 
+
+    -- timestamp
     if not rawT.timestamp then return "" end  -- timestamps are required!
     rawS[#rawS+1] = rawT.timestamp
-    
+
     -- message header
-    
+
     -- optional party, guild, language, whisper tag
     if rawT.partytag then
         rawS[#rawS+1] = rawT.partytag
@@ -174,18 +174,18 @@ function rChat_Internals.produceRawString(entry, ndx, rawT)
     elseif rawS.whisper then
         rawS[#rawS+1] = rawT.whisper
     end
-    
+
     if rawT.from then
         rawS[#rawS+1] = rawT.from
     end
-    
+
     if rawT.zonetag then
         rawS[#rawS+1] = rawT.zonetag
     end
     -- colon and optional CR
     rawS[#rawS+1] = rawT.separator
-    
-    -- message body 
+
+    -- message body
     -- text might be a string or it might be a table of segments
     --    (whose first value is a string)
     local text = rawT.text
@@ -193,12 +193,12 @@ function rChat_Internals.produceRawString(entry, ndx, rawT)
         if type(text) == "string" then
             rawS[#rawS+1] = text
         elseif type(text) == "table" then
-            for k,v in ipairs(text) do
+            for _,v in ipairs(text) do
                 rawS[#rawS+1] = v[1]
             end
         end
     end
-    
+
     return table.concat(rawS)
 end
 
@@ -211,17 +211,17 @@ end
 function rChat_Internals.produceDisplayString(entry, ndx, displayT, colorT)
     if not displayT then return "" end
     local db = rChat.save
-    
+
     -- get colors for current message -  (see initColorTable() )
     local tcol, lcol, rcol, mcol = colorT.timecol, colorT.lcol, colorT.rcol, colorT.mentioncol
-    
+
     -- message header
-    
+
     local displayS = {}     -- A list of strings to turn into a display message
-    
+
     -- timestamp and lcol
     if db.showTimestamp and db.showTimestamp == true then
-        if displayT.timestamp and tcol  then        
+        if displayT.timestamp and tcol  then
             displayS[#displayS+1] = tcol .. displayT.timestamp .. "|r" .. lcol
         elseif displayT.timestamp then
             displayS[#displayS+1] = lcol .. displayT.timestamp
@@ -229,7 +229,7 @@ function rChat_Internals.produceDisplayString(entry, ndx, displayT, colorT)
     else
         displayS[#displayS+1] = lcol
     end
-    
+
     -- optional party, guild, language, whisper tag
     if displayT.partytag then
         displayS[#displayS+1] = displayT.partyTag
@@ -240,34 +240,37 @@ function rChat_Internals.produceDisplayString(entry, ndx, displayT, colorT)
     elseif displayT.whisper then
         displayS[#displayS+1] = displayT.whisper
     end
-    
+
     if displayT.from then
         displayS[#displayS+1] = displayT.from
     end
-    
+
     if displayT.zonetag then
         displayS[#displayS+1] = displayT.zonetag
     end
     -- colon and optional CR
     displayS[#displayS+1] = "|r"        -- end of lcol
     displayS[#displayS+1] = displayT.separator
-    
+
     -- message body
     local text = displayT.text
     if text then
         if type(text) == "string" then
-            displayS[#displayS+1] = rcol .. text .. "|r"
+            --displayS[#displayS+1] = rcol .. text .. "|r"
+            displayS[#displayS+1] = text
         elseif type(text) == "table" then
-            for k,v in ipairs(text) do
+            for _,v in ipairs(text) do
                 if v[2] == RC_SEGTYPE_MENTION and mcol then
-                    displayS[#displayS+1] = mcol .. v[1] .. "|r"
+                    displayS[#displayS+1] = v[1]
+                    --displayS[#displayS+1] = mcol .. v[1] .. "|r"
                 else
-                    displayS[#displayS+1] = rcol .. v[1] .. "|r"
+                    displayS[#displayS+1] = v[1]
+                    --displayS[#displayS+1] = rcol .. v[1] .. "|r"
                 end
             end
         end
     end
-    
+
     return table.concat(displayS)
 end
 
@@ -278,13 +281,12 @@ end
 -- otherwise [] around player is controllable
 function rChat_Internals.produceCopyFrom(entry, ndx, rawT)
     if not rawT then return "" end
-    local db = rChat.save
-    
+
     local rawS = {}
-    
+
     -- message header (only)
-    
-    -- optional party, guild, language, whisper tag 
+
+    -- optional party, guild, language, whisper tag
     if rawT.partytag then
         rawS[#rawS+1] = rawT.partyTag
     elseif rawT.tag then
@@ -292,27 +294,29 @@ function rChat_Internals.produceCopyFrom(entry, ndx, rawT)
     elseif rawT.languageTag then
         rawS[#rawS+1] = rawT.languageTag
     end
-    
+
     if rawT.from then
         rawS[#rawS+1] = rawT.from
     end
-    
+
     if rawT.zonetag then
         rawS[#rawS+1] = rawT.zonetag
     end
     -- colon and optional CR
     rawS[#rawS+1] = rawT.separator
-    
+
     return table.concat(rawS)
 end
 
 -- creates formatted zonetag/partytag for message prefix
--- returns linked and raw zone and party tags (which will be nil if delzonetags is true)
+-- returns linked and raw zone and party tags (which will be nil if nozonetags is true)
 -- returns nil if not applicable
 function rChat_Internals.formatZoneTag(entry, ndx)
     local db = rChat.save
-    if db.delzonetags then return nil,nil,nil,nil end
-    
+    if db.nozonetags == true then 
+		return nil,nil,nil,nil 
+	end
+
     local channel = entry.channel
     -- Init zonetag to keep the channel tag
     local zonetag
@@ -323,7 +327,7 @@ function rChat_Internals.formatZoneTag(entry, ndx)
     elseif channel == CHAT_CHANNEL_ZONE  then zonetag  = L(RCHAT_ZONETAGZONE)
     end
     local link_zonetag
-    if zonetag then 
+    if zonetag then
         link_zonetag = " " .. rChat.LinkHandler_CreateLink( ndx, entry.channel, zonetag )
         zonetag = " " .. zonetag
     end
@@ -340,12 +344,13 @@ end
 function rChat_Internals.formatLanguageTag(entry, ndx)
     local channel = entry.channel
     if not isLanguageChannel(channel) then return nil, nil end
-    
+
     local lang = nil
     if     channel == CHAT_CHANNEL_ZONE_LANGUAGE_1 then lang = "[EN] "
     elseif channel == CHAT_CHANNEL_ZONE_LANGUAGE_2 then lang = "[FR] "
     elseif channel == CHAT_CHANNEL_ZONE_LANGUAGE_3 then lang = "[DE] "
     elseif channel == CHAT_CHANNEL_ZONE_LANGUAGE_4 then lang = "[JP] "
+    elseif channel == CHAT_CHANNEL_ZONE_LANGUAGE_5 then lang = "[RU] "
     end
     return lang, lang
 end
@@ -366,7 +371,7 @@ end
 function rChat_Internals.formatWhisperTag(entry, ndx)
     local channel = entry.channel
     if not isWhisperChannel(channel) then return nil, nil end
-    
+
     local tag
     if channel == CHAT_CHANNEL_WHISPER then
         tag = ""
@@ -461,7 +466,7 @@ end
 function rChat.getColors(channelId)
     local db = rChat.save
     if not db.newcolors then return nil,nil end
-    
+
     local colorsEntry = db.newcolors[channelId]
     if not colorsEntry then
         colorsEntry = db.newcolors[1]
@@ -476,18 +481,18 @@ end
 -- 		and enabled, otherwise it will be nil
 function rChat_Internals.initColorTable(channel, from)
     local db = rChat.save
-    
-    local colorT = {}    
+
+    local colorT = {}
 	-- base colors for this message
     colorT.lcol, colorT.rcol = rChat_Internals.GetChannelColors(channel, from)
-    
+
     if db.colours and db.colours.timestamp then
         colorT.timecol = db.colours.timestamp
     end
     if db.timestampcolorislcol then
         colorT.timecol = colorT.lcol
     end
-	
+
 	-- mentioncol if mentions are enabled
     if db.mention.mentionEnabled and db.mention.colorEnabled then
         colorT.mentioncol = db.mention.color
@@ -502,7 +507,7 @@ end
 -- (Note that knowing the nickname will override the requested
 -- format to use the nickname instead.)
 --
--- (For instance: If a format requires toon name and we don't know it, 
+-- (For instance: If a format requires toon name and we don't know it,
 --  we have to degrade to a format that we know all of the parts of.)
 --
 -- Will return nil for bad formatId
@@ -523,7 +528,7 @@ function rChat_Internals.UseNameFormat(atname, toonname, nickname, formatId)
         if not toonname then formatId = 1 end
         if not atname then formatId = 2 end
     end
-    
+
     local name
     -- create the display name (nicknames override format when available)
     if formatId == 0     then name = nickname                          -- "Nickname" -- (unoffical format)
@@ -539,15 +544,15 @@ end
 -- Add link handler to character/at name
 -- linkType is either DISPLAY_NAME_LINK_TYPE or CHARACTER_LINK_TYPE or nil
 --   if linkType is nil:
---     if anchor is an @name, use DISPLAY_NAME_LINK_TYPE, 
+--     if anchor is an @name, use DISPLAY_NAME_LINK_TYPE,
 --     else use CHARACTER_LINK_TYPE
 --
--- disablebrackets = true, false, or nil 
+-- disablebrackets = true, false, or nil
 --   if nil then obey db.disablebrackets,
 --   otherwise ignore db.disablebrackets in favor of this param
 function rChat_Internals.GetNameLink(anchor, display, disablebrackets, linkType)
     local  db = rChat.save
-    
+
     if not linkType then
         if IsDecoratedDisplayName(anchor) then
             linkType = DISPLAY_NAME_LINK_TYPE
@@ -558,10 +563,10 @@ function rChat_Internals.GetNameLink(anchor, display, disablebrackets, linkType)
     local link
     if disablebrackets == true then
         link = ZO_LinkHandler_CreateLinkWithoutBrackets(display, nil, linkType, anchor)
-        
+
     elseif db.disableBrackets and disablebrackets == nil then
         link = ZO_LinkHandler_CreateLinkWithoutBrackets(display, nil, linkType, anchor)
-        
+
     else
         link = ZO_LinkHandler_CreateLink(display, nil, linkType, anchor)
         display = "[" .. display .. "]"
@@ -573,27 +578,27 @@ end
 -- if not found then return nil
 function rChat_Internals.GetGuildToon(guildIndex, atname)
     if guildIndex == 0 then return nil end
-    
+
     local guildName, guildId = rChat.SafeGetGuildName(guildIndex)
     if not guildId then return nil end
-    
-    local hastoon, rawtoonname = GetGuildMemberCharacterInfo(guildId, 
+
+    local hastoon, rawtoonname = GetGuildMemberCharacterInfo(guildId,
                 GetGuildMemberIndexFromDisplayName(guildId, atname))
     if hastoon then
         return rawtoonname
     end
     return nil
 end
-    
+
 -- Format "From" name
 function rChat_Internals.formatName(channel, from, isCS, fromDisplayName)
     local db = rChat.save
-    
+
     -- if we don't have a from, there is nothing to do here!
     if not from then return nil, nil end
 
     -- ------------------------
-    -- "From" can be Character or UserID (if char not available) 
+    -- "From" can be Character or UserID (if char not available)
     -- (or NPC name) depending on which channel we are
     local atname = fromDisplayName
     local toonname = from
@@ -604,7 +609,7 @@ function rChat_Internals.formatName(channel, from, isCS, fromDisplayName)
             local guildIndex = rChat_Internals.GetGuildIndex(channel)
             -- guild msg, look up in roster
             toonname = rChat_Internals.GetGuildToon(guildIndex, from)   -- still might be nil
-            
+
         -- else is a whisper, can't get toon name           -- is nil
         end
     end
@@ -613,7 +618,7 @@ function rChat_Internals.formatName(channel, from, isCS, fromDisplayName)
         toonname = zo_strformat(SI_UNIT_NAME, toonname)
     end
     -- after this, at least one of atname or toonname is non-nil
-    
+
     -- look for nickname
     local nick
     if atname and db.nicknames[atname] then -- @UserID Nicknamed
@@ -622,31 +627,31 @@ function rChat_Internals.formatName(channel, from, isCS, fromDisplayName)
         nick = db.nicknames[toonname]
     end
     -- nick might still be nil
-        
+
     local new_from = from
     local displayed = from      -- raw
-    
+
     -- No brackets / UserID for emotes
     local overrideBrackets
     if channel == CHAT_CHANNEL_EMOTE then
         overrideBrackets = true
     end
-    
+
     if isMonsterChannel(channel) then
         -- no changes for NPCs
         new_from, displayed = toonname, toonname
-        
+
     elseif channel == CHAT_CHANNEL_PARTY then
         local anchor = atname or toonname
         overrideBrackets = true
         local displaynm = rChat_Internals.UseNameFormat(atname, toonname, nick, db.groupNames)
         new_from, displayed = rChat_Internals.GetNameLink(atname, displaynm, overrideBrackets)
-    
+
     elseif isWhisperChannel(channel) then
         local anchor = atname
         overrideBrackets = true
         new_from, displayed = rChat_Internals.GetNameLink(atname, atname, overrideBrackets)
-		
+
 	elseif isGuildChannel(channel) then
         local anchor = atname or toonname
 		local displaynm
@@ -658,12 +663,12 @@ function rChat_Internals.formatName(channel, from, isCS, fromDisplayName)
         	displaynm = rChat_Internals.UseNameFormat(atname, toonname, nick, db.geoChannelsFormat)
 		end
         new_from, displayed = rChat_Internals.GetNameLink(anchor, displaynm, overrideBrackets)
-    
+
     else -- zones / say / tell.
         local anchor = atname or toonname
         local displaynm = rChat_Internals.UseNameFormat(atname, toonname, nick, db.geoChannelsFormat)
         new_from, displayed = rChat_Internals.GetNameLink(anchor, displaynm, overrideBrackets)
-        
+
     end
 
     if isCS then -- ZOS icon
@@ -687,7 +692,7 @@ local function AddURLHandling(text, lineNum)
     for pos, url, prot, subd, tld, colon, port, slash, path in text:gmatch("()(([%w_.~!*:@&+$/?%%#-]-)(%w[-.%w]*%.)(%w+)(:?)(%d*)(/?)([%w_.~!*:@&+$/?%#=-]*))") do
         if rData.protocols[prot:lower()] == (1 - #slash) * #path
                 and (colon == "" or port ~= "" and port + 0 < 65536)
-                and (rData.tlds[tld:lower()] or tld:find("^%d+$") and subd:find("^%d+%.%d+%.%d+%.$") 
+                and (rData.tlds[tld:lower()] or tld:find("^%d+$") and subd:find("^%d+%.%d+%.%d+%.$")
                 and math.max(tld, subd:match("^(%d+)%.(%d+)%.(%d+)%.$")) < 256)
                 and not subd:find("%W%W") and url
                 then
@@ -707,7 +712,7 @@ end
   which holds a segInfo table for each entry describing the text segment.
   segInfo = {
     text,
-    segment_type, 
+    segment_type,
         0 = bare,    RC_SEGTYPE_BARE
         1 = mention, RC_SEGTYPE_MENTION
         2 = link,    RC_SEGTYPE_LINK
@@ -716,7 +721,7 @@ end
     mention_col, (will be nil if not a RC_SEGTYPE_MENTION)
     raw, (uncolored, link display text)
   }
-  
+
 --]]
 local function addSegment(tbl, ftype, text)
 	local entry = {text, ftype or RC_SEGTYPE_BARE}
@@ -747,7 +752,7 @@ end
     start = index to the start of the substring
     stop = index to the end of the substring
     text = substring text,
-    type = fragment_type, 
+    type = fragment_type,
         0 = bare,    RC_SEGTYPE_BARE
         1 = mention, RC_SEGTYPE_MENTION
         2 = link,    RC_SEGTYPE_LINK
@@ -755,13 +760,13 @@ end
         4 = texture, RC_SEGTYPE_TEXTURE
     raw = rawText, (if nil then raw is the same as text)
   }
-  
+
 --]]
 -- a fragment table is not the same as a segment table! (yet)
 local function addFragment(tbl, start, stop, ftype, msgtext)
 	local entry = {
-		start=start, 
-		stop=stop, 
+		start=start,
+		stop=stop,
 		type=(ftype or RC_SEGTYPE_BARE),
 		text = string.sub(msgtext,start,stop)
 		}
@@ -772,7 +777,7 @@ end
 -- convert a fragment into a segment
 local function frag2seg(frag)
 	if not frag then return end
-	
+
 	local segentry = {
 		frag.text,
 		frag.type,
@@ -787,7 +792,7 @@ local function convert2Segment(tbl, key)
 	if not tbl or not key then return end
 	local fragentry = tbl[key]
 	if not fragentry then return end
-	
+
 	local segentry = {
 		fragentry.text,
 		fragentry.type,
@@ -811,13 +816,13 @@ end
 function rChat_Internals.getPad(textstr)
     if not textstr or type(textstr) ~= "string" then return {} end
     local db = rChat.save
-    
+
     local linkpattern = "|u.-:.-:.-:(.-)|u"
     local rslts={}
     local last = 1
     local start,fin, rt = string.find(textstr, linkpattern)
-    if not start then 
-		addFragment(rslts,1,#textstr,RC_SEGTYPE_BARE, textstr) 
+    if not start then
+		addFragment(rslts,1,#textstr,RC_SEGTYPE_BARE, textstr)
 		return rslts
 	end
 	local ent
@@ -831,7 +836,7 @@ function rChat_Internals.getPad(textstr)
         last = fin+1
         start,fin = string.find(textstr,linkpattern, last)
     end
-    if last < #text then
+    if last < #textstr then
 		addFragment(rslts, last, #textstr, RC_SEGTYPE_BARE, textstr)
     end
     return rslts
@@ -843,14 +848,14 @@ end
 function rChat_Internals.getTexture(textstr)
     if not textstr or type(textstr) ~= "string" then return {} end
     local db = rChat.save
-    
+
     local linkpattern = "(|t.-|t)"
     local rslts={}
     local last = 1
     local start,fin,t = string.find(textstr, linkpattern)
-    if not start then 
+    if not start then
 		addFragment(rslts, 1, #textstr, RC_SEGTYPE_BARE, textstr)
-		return rslts 
+		return rslts
 	end
 	local ent
     while( start ) do
@@ -874,14 +879,14 @@ end
 local function getLinks(text)
     if not text or type(text) ~= "string" then return {} end
     local db = rChat.save
-    
+
     local linkpattern = "|H(.-):(.-)|h(.-)|h"
     local rslts={}
     local last = 1
     local start,fin, b, d, t = string.find(text, linkpattern, last)
     if not start then
 		addFragment(rslts, 1, #text, RC_SEGTYPE_BARE, text)
-		return rslts 
+		return rslts
 	end
 	local ent
     while( start ) do
@@ -911,11 +916,11 @@ local function parseText(entry, textstr)
     local channel = entry.channel
     local newtext = {}
     -- monster/npc channel messages never have link handlers
-    if isMonsterChannel(channel) then  
+    if isMonsterChannel(channel) then
         addSegment(newtext, RC_SEGTYPE_BARE)
-        return newtext 
+        return newtext
     end
-    
+
     local rslts = rChat_Internals.getLinks(textstr)    -- get the locations of link handlers
     local last = 1
     -- Look for link handlers
@@ -930,32 +935,32 @@ rChat_Internals.parseText = parseText
 -- ------------------------------------------------------------------------
 
 -- find if the text contains any of the mention triggers
--- returns true/false, and if true, a table of the first 
+-- returns true/false, and if true, a table of the first
 -- text matched and the location in the text where it is found.
 local function mentioned(text)
     local db = rChat.save
 	if not db.mention.mentionEnabled then return false end
     if not db.mention.mentiontbl or #db.mention.mentiontbl == 0 then return false end
-    
+
 	local segtext
-	if type(text) == "string" then 
+	if type(text) == "string" then
 		segtext = {}
 		addSegment(segtext, RC_SEGTYPE_BARE, text)
 	else
 		segtext = text
 	end
-	
+
 	local found = false     -- quit looking when becomes true
 	local ntxt = {}
-	for fk,seg in ipairs(segtext) do	
-		if found then 
+	for fk,seg in ipairs(segtext) do
+		if found then
 			ntxt[#ntxt+1] = seg     -- preserve the segments that we don't search
         else
 			if isSegType(seg, RC_SEGTYPE_BARE) then
 				-- only looking for first mention (that is not a link!)
 				for k,mention in ipairs(db.mention.mentiontbl) do
 					if found then break end     -- only need to match one
-                    
+
                     local start,fin = string.find(seg[1], mention[1])
                     if start then
                         found = true
@@ -970,7 +975,7 @@ local function mentioned(text)
                             -- create the bare postfix segment if necessary
                             addSegment(ntxt, seg[2], string.sub(seg[1], fin+1))
                         end
-                        
+
                     end -- if start (find returned) non-nil
 				end -- for any mention entries
             else
@@ -992,7 +997,7 @@ local function processLinks(entry, text)
     local channel = entry.channel
     -- monster/npc channel messages never have link handlers
     if isMonsterChannel(channel) then  return text end
-    
+
     local rslts = getLinks(text)    -- get the locations of link handlers
     local newtext = {}              -- segment table
     -- Look for link handlers
@@ -1010,24 +1015,24 @@ rChat_Internals.processLinks = processLinks
 -- if it is not, it is turned into a segment table
 local function processMentions(entry, text)
     local db = rChat.save
-    
-    if type(text) == "string" then 
+
+    if type(text) == "string" then
         local newtxt = {}
         addSegment(RC_SEGTYPE_BARE, text)
         text = newtxt
     end
 
     local channel = entry.channel
-    if isMonsterChannel(channel) or isWhisperChannel(channel) 
+    if isMonsterChannel(channel) or isWhisperChannel(channel)
         or channel == CHAT_CHANNEL_EMOTE or channel == CHAT_CHANNEL_SYSTEM
-    then 
-		return text 
+    then
+		return text
     end
-    
+
     -- Look for mentions
     local wasMentioned, rslts = mentioned(text)
 	if not wasMentioned then return text end
-	
+
     -- we've found a mention
 	if db.mention.soundEnabled then
 		-- play sound
@@ -1038,13 +1043,13 @@ end
 
 -- examine and format full text of message
 -- colorT is a struct containing the colors to be used
--- for messages (lcol & rcol), mentions (mentioncol) 
+-- for messages (lcol & rcol), mentions (mentioncol)
 -- colorT is produced by initColorTable()
 function rChat_Internals.formatText(entry, ndx, colorT)
     local db = rChat.save
-    local text = entry.text
-    entry.rawT.text = entry.text
-    
+    local text = string.sub(entry.text,1,240)
+    entry.rawT.text = text
+
     if isMonsterChannel(entry.channel) then
         -- we don't do that much with them
         -- monsters don't get mention checked, url checked, or link handled
@@ -1052,7 +1057,7 @@ function rChat_Internals.formatText(entry, ndx, colorT)
 		entry.rawT.text = text
         return entry.displayT.text, entry.rawT.text
 	end
-    
+
     -- strip existing colors because you can't embed them in links
     -- and we're going to override anyway
     local markertable = SF.getAllColorDelim(text)
@@ -1062,7 +1067,7 @@ function rChat_Internals.formatText(entry, ndx, colorT)
     if db.urlHandling and type(text) == "string" then
         text = AddURLHandling(text,ndx)
     end
-    
+
     -- parse text to separate out existing links
     texttbl = processLinks(entry, text)
 
@@ -1070,38 +1075,8 @@ function rChat_Internals.formatText(entry, ndx, colorT)
     local segtext = processMentions(entry, texttbl)
 
     local tmptbl = {}
-    --[[
-    -- condense contiguous BARE segments
-    local lastbare = nil
-    for k,v in ipairs(segtext) do
-        local vtext, vtype, vmcol, vraw = getSegInfo(v)
-        if vtype == RC_SEGTYPE_MENTION and not colorT.mentioncol then
-            -- if we don't have color, then treat them as BARE
-            if not lastbare then 
-                lastbare = vtext
-            else
-                lastbare = lastbare .. vtext
-            end
-        elseif vtype ~= RC_SEGTYPE_BARE then
-            -- not BARE (or is MENTION that has color) so keep separate
-            if lastbare then
-                addSegment(tmptbl, RC_SEGTYPE_BARE, lastbare)
-                lastbare = nil
-            end
-            addSegment(tmptbl, vtype, vtext, vmcol)
-        else
-            -- is BARE so keep collecting it for colorizing once
-            if not lastbare then 
-                lastbare = vtext
-            else
-                lastbare = lastbare .. vtext
-            end
-        end
-    end
-    if lastbare then addSegment(tmptbl, RC_SEGTYPE_BARE, lastbare) end
-    segtext = tmptbl
-    --]]
-    tmptbl = {}
+	local tmplen = 0
+	local needtoquit = false
 
     -- Add rChat link handling and color
     for k,v in ipairs(segtext) do
@@ -1111,18 +1086,30 @@ function rChat_Internals.formatText(entry, ndx, colorT)
             if type(vtext) == "table" then vtext = vtext[1] end
             vtext = rChat.LinkHandler_CreateLink(ndx, entry.channel, vtext, true)
         end
-        
+
         -- apply color
+		local lenleft = 264 - tmplen
+		if lenleft < string.len(vtext) then
+			--vtext = string.sub(vtext,1,lenleft)
+			needtoquit = true
+			break
+		end
         if isSegType(v,RC_SEGTYPE_MENTION) and colorT.mentioncol then  -- color with mention color
             vtext = string.format("%s%s|r", colorT.mentioncol, vtext)
-            
+
         else -- RC_SEGTYPE_LINK or RC_SEGTYPE_BARE
-            vtext = string.format("%s%s|r", colorT.rcol, vtext)         
+            vtext = string.format("%s%s|r", colorT.rcol, vtext)
         end
         tmptbl[#tmptbl+1] = vtext
+		tmplen = tmplen + string.len(vtext)
+		if needtoquit == true then
+			break
+		end
     end
+	entry.tmplen = tmplen
     -- recombine
     entry.displayT.text = table.concat(tmptbl)
-    
+	entry.msglen = string.len(entry.displayT.text)
+
     return entry.displayT.text, entry.rawT.text
 end

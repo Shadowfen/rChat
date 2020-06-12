@@ -367,6 +367,12 @@ rChat_localization_strings["en"] = {
 	RCHAT_JPZONECHAT = "JP Zone - Chat",
 	RCHAT_JPZONECHATTT = "Set chat color for Japanese zone channel",
 
+	RCHAT_RUZONE = "RU Zone - Player",
+	RCHAT_RUZONETT = "Set player color for Russian zone channel",
+
+	RCHAT_RUZONECHAT = "RU Zone - Chat",
+	RCHAT_RUZONECHATTT = "Set chat color for Russian zone channel",
+
 	RCHAT_NPC = "NPC",
 	RCHAT_NPCSAY = "NPC Say - NPC name",
 	RCHAT_NPCSAYTT = "Set NPC name color for NPC say",

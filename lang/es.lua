@@ -367,10 +367,16 @@ rChat_localization_strings["es"] = {
 	RCHAT_DEZONECHATTT = "Establece el color de chat para el canal de zona alemán",
 
 	RCHAT_JPZONE = "JP Zone - Player",
-	RCHAT_JPZONETT = "Set player color for Japanese zone channel",
+	RCHAT_JPZONETT = "Establece el color para el jugador en el canal de zona japonesa",
 
 	RCHAT_JPZONECHAT = "JP Zone - Chat",
-	RCHAT_JPZONECHATTT = "Set chat color for Japanese zone channel",
+	RCHAT_JPZONECHATTT = "Establece el color de chat para el canal de zona japonesa",
+
+	RCHAT_RUZONE = "RU Zone - Player",
+	RCHAT_RUZONETT = "Establece el color para el jugador en el canal de zona rusa",
+
+	RCHAT_RUZONECHAT = "RU Zone - Chat",
+	RCHAT_RUZONECHATTT = "Establece el color de chat para el canal de zona rusa",
 
 	RCHAT_NPCSAY = "PNJ Decir - Nombre PNJ",
 	RCHAT_NPCSAYTT = "Establece el color para el nombre de PNJ",

@@ -8,12 +8,11 @@ local SF = LibSFUtils
 
 rChat = {
     name = "rChat",
-    version = "1.6.2",
+    version = "1.8",
     settingName = "rChat",
     settingDisplayName = "rChat",
     author = "Shadowfen",
     savedvar = "RCHAT_OPTS",
-    histvar = "RCHAT_HIST",
     sv_version = 2,
 }
 rChat.settingDisplayName = SF.GetIconized(rChat.settingDisplayName, SF.colors.gold.hex)
@@ -55,14 +54,9 @@ rChat_Logger = {
 function rChat.checkLibraryVersions()
     local vc = SF.VersionChecker("rChat")
     local logger = rChat_Logger:Create("rChat")
-    --local logger = LibDebugLogger:Create("rChat")
     vc:Enable(logger)
     vc:CheckVersion("LibAddonMenu-2.0", 30)
     vc:CheckVersion("LibMediaProvider-1.0", 13)
     vc:CheckVersion("LibChatMessage", 100)
     vc:CheckVersion("LibSFUtils", 23)
 end
-
---if LibDebugLogger then
---    LibDebugLogger:SetBlockChatOutputEnabled(false)
---end

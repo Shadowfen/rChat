@@ -57,7 +57,6 @@ function rChatData.getNewCacheEntry(channel)
         rawLine = "",
         rawValue = "",
         displayed = "",
-        rawTimestamp = "",
         timestamp = GetTimeStamp(),
         channel = channel,
     }

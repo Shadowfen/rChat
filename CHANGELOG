@@ -1,4 +1,13 @@
-﻿[COLOR="DeepSkyBlue"]1.7 (23)[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.8 (24)[/COLOR]
+[LIST]
+[*] [COLOR="MediumSlateBlue"]New[/COLOR] Added color control support for the new /ruz Russian zone chat channel.
+[*] Fix chat window opacity setting not getting used on login (reported by Blackwolfe).
+[*] Removed invalid value 0 for window opacity setting - allowed values are only 1-11.
+[*] Fixed custom guild switches not getting reloaded after login or /reloadui (reported by Mandragorane).
+[*] Fixed adding [zone]/[says]/[yells] zone tags (as appropriate) to messages if "remove zone tags" is turned off (reported by Mandragorane).
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.7 (23)[/COLOR]
 [LIST]
 [*] Fix leftover dependency on LibDebugLogger that was accidentally left in (reported by Mandragorane).
 [*] Fix the overriding of guild specific format for names by the general format for names (reported by Mandragorane).

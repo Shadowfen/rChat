@@ -13,6 +13,7 @@ local spammableChannels = {
     [CHAT_CHANNEL_ZONE_LANGUAGE_2 + 1] = true,
     [CHAT_CHANNEL_ZONE_LANGUAGE_3 + 1] = true,
     [CHAT_CHANNEL_ZONE_LANGUAGE_4 + 1] = true,
+    [CHAT_CHANNEL_ZONE_LANGUAGE_5 + 1] = true,
     [CHAT_CHANNEL_SAY + 1] = true,
     [CHAT_CHANNEL_YELL + 1] = true,
     [CHAT_CHANNEL_ZONE + 1] = true,
@@ -38,8 +39,8 @@ local function SpamFlood(from, text, spamChanCode)
         local entry = rChatData.getCacheEntry(previousLine)
         -- Previous line can be a ChanSystem one
         if entry and entry.channel ~= CHAT_CHANNEL_SYSTEM then
-            if (type(entry.rawTimestamp) == "number") and
-                    ((ourMessageTimestamp - entry.rawTimestamp) < config.floodGracePeriod) then
+            if (type(entry.timestamp) == "number") and
+                    ((ourMessageTimestamp - entry.timestamp) < config.floodGracePeriod) then
                 -- if our message is sent by our chatter / will be break by "Character" channels and "UserID" Channels
                 if from == entry.rawFrom then
                     -- if our message is eq of last message
