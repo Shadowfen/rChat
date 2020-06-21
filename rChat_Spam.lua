@@ -2,6 +2,16 @@ rChat = rChat or {}
 
 local SF = LibSFUtils
 
+-- disable debug logging
+local logger = {
+	Debug = function(self,...) end,
+	SetEnabled = function(self,boolval) end
+}
+--[[
+local logger = LibDebugLogger("rChat")
+logger:SetEnabled(true)
+--]]
+
 -- the spam table from the saved variables
 local config = {}
 function rChat.setSpamConfig(cfgtable)
@@ -74,20 +84,23 @@ end
 local function SpamLookingFor(text)
 
     local spamStrings = {
-        [1] = "l[%s.]?f[%s.]?[%d]?[%s.]?[mg]",  -- (m)ember, (g)roup
+        [1] = "l[%s.]?f[%s.]?[%d]?[%s.]?[mgtdh]",  -- (m)ember, (g)roup
         [2] = "l[%s.]?f[%s.]?[%d]?[%s.]?heal", -- heal
         [3] = "l[%s.]?f[%s.]?[%d]?[%s.]?dd",    -- dd
         [4] = "l[%s.]?f[%s.]?[%d]?[%s.]?dps",    -- dps
         [5] = "l[%s.]?f[%s.]?[%d]?[%s.]?tank", -- tank
         [6] = "l[%s.]?f[%s.]?[%d]?[%s.]?daily", -- daily
-        [7] = "l[%s.]?f[%s.]?[%d]?[%s.]?dungeon", -- dungeon
+        [7] = "l[%s.]?f[%s.]?[%d]?[%s.]?boss", -- world boss
+        [8] = "l[%s.]?f[%s.]?[%d]?[%s.]?dungeon", -- dungeon
     }
     local lowertext = string.lower(text)
-    for _, spamString in ipairs(spamStrings) do
-        if string.find(lowertext, spamString) then
-            return true
-        end
-    end
+	if string.find(text,"^lf") then
+		for _, spamString in ipairs(spamStrings) do
+			if string.find(lowertext, spamString) then
+				return true
+			end
+		end
+	end
 
     return false
 
@@ -96,26 +109,54 @@ end
 -- Return true/false if text is a WTT message
 local function SpamWantTo(text)
 
+	local hasItemLink = string.find(text, "|H(.-):item:(.-)|h(.-)|h")
+	local hasWantTo = string.find(text, "[wW][%s.]?[tT][%s.]?[bBsStT] ")
+
     -- "W.T S"
-    if string.find(text, "[wW][%s.]?[tT][%s.]?[bBsStT]") then -- buy, sell, trade
+    if hasItemLink and hasWantTo then
+		return true
+	elseif hasWantTo and string.find(text, "[Bb][Ii][Tt][Ee]") then
+
+        -- Werewolf/Vampire Bite
+        return true
+
+	-- Crowns
+	elseif string.find(text, "[Cc][Rr][Oo][Ww][Nn][Ss]") then
+            -- Match
+            return true
+
+	elseif hasItemLink and string.find(text,"[sS]elling") then
+        return true
+	end
+
+    return false
+
+end
+
+-- Return true/false if text is a WTT message
+local function SpamPriceCheck(text)
+
+    -- "PC"
+    if string.find(text, "[pP][cC]") then -- price check 1
 
         -- Item Handler
         if string.find(text, "|H(.-):item:(.-)|h(.-)|h") then
             -- Match
             return true
 
-        -- Werewolf Bite
-        elseif string.find(text, "[Ww][Ww][%s]+[Bb][Ii][Tt][Ee]") then
-            -- Match
-            return true
+        end
+    elseif string.find(text, "[pP]rice [cC]heck") then -- price check 2
 
-        -- Crowns
-        elseif string.find(text, "[Cc][Rr][Oo][Ww][Nn][Ss]") then
+        -- Item Handler
+        if string.find(text, "|H(.-):item:(.-)|h(.-)|h") then
             -- Match
             return true
 
         end
-
+	elseif string.find(text, "^TTC ") then -- response TTC
+		return true
+	elseif string.find(text,"^MM ") then -- response Master Merchant
+		return true
     end
 
     return false
@@ -145,7 +186,7 @@ local function IsSpamEnabledForCategory(category)
 
     if category == "Flood" then
 
-        -- Enabled in Options?
+		-- Enabled in Options?
         if config.floodProtect then
             -- AntiSpam is enabled
             return true
@@ -156,7 +197,7 @@ local function IsSpamEnabledForCategory(category)
 
     -- LFG
     elseif category == "LookingFor" then
-        -- Enabled in Options?
+		-- Enabled in Options?
         if config.lookingForProtect then
             -- Enabled in reality?
             if rChatData.spamLookingForEnabled then
@@ -175,9 +216,30 @@ local function IsSpamEnabledForCategory(category)
         -- AntiSpam is disabled
         return false
 
+    -- PC
+    elseif category == "Price" then
+		-- Enabled in Options?
+		if config.priceCheckProtect then
+            -- Enabled in reality?
+            if rChatData.spamPriceCheckEnabled then
+                -- AntiSpam is enabled
+                return true
+            else
+                -- AntiSpam is disabled .. since -/+ grace time ?
+                if GetTimeStamp() - rChatData.spamTempPriceStopTimestamp > (config.spamGracePeriod * 60) then
+                    -- Grace period outdated -> we need to re-enable it
+                    rChatData.spamPriceCheckEnabled = true
+                    return true
+                end
+            end
+        end
+		
+        -- AntiSpam is disabled
+        return false
+
     -- WTT
     elseif category == "WantTo" then
-        -- Enabled in Options?
+		-- Enabled in Options?
         if config.wantToProtect then
             -- Enabled in reality?
             if rChatData.spamWantToEnabled then
@@ -186,7 +248,7 @@ local function IsSpamEnabledForCategory(category)
             else
                 -- AntiSpam is disabled .. since -/+ grace time ?
                 if GetTimeStamp() - rChatData.spamTempWantToStopTimestamp > (config.spamGracePeriod * 60) then
-                    -- Grace period outdatted -> we need to re-enable it
+                    -- Grace period outdated -> we need to re-enable it
                     rChatData.spamWantToEnabled = true
                     return true
                 end
@@ -198,7 +260,7 @@ local function IsSpamEnabledForCategory(category)
 
     -- Join my Awesome guild
     elseif category == "GuildRecruit" then
-        -- Enabled in Options?
+		-- Enabled in Options?
         if config.guildProtect then
             -- Enabled in reality?
             if rChatData.spamGuildRecruitEnabled then
@@ -232,10 +294,12 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
     local rChatData = rChat.data
 
     -- 4 options for spam : Spam flood (multiple messages) ; LFM/LFG ; WT(T/S/B) ; Guild Recruitment
-
+	logger:Debug("Looking for spam in "..chanCode.."  text = "..text)
     -- Spam (I'm not allowed to flood even for testing)
     if IsSpamEnabledForCategory("Flood") then
+		logger:Debug("Looking for flood")
         if SpamFlood(from, text, chanCode) then
+			logger:Debug("found")
             return true
         end
     end
@@ -249,7 +313,8 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
 
     -- Looking For
     if IsSpamEnabledForCategory("LookingFor") then
-        if SpamLookingFor(text) then
+		if SpamLookingFor(text) then
+			logger:Debug("found Looking for")
             if isMe == false then
                 return true
             else
@@ -263,7 +328,8 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
 
     -- Want To
     if IsSpamEnabledForCategory("WantTo") then
-        if SpamWantTo(text) then
+		if SpamWantTo(text) then
+			logger:Debug("found Want To")
             if isMe == false then
                 return true
             else
@@ -274,9 +340,24 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
         end
     end
 
+    -- Price Check
+    if IsSpamEnabledForCategory("Price") then
+		if SpamPriceCheck(text) then
+			logger:Debug("found Price Check")
+            if isMe == false then
+                return true
+            else
+                rChatData.spamTempPriceStopTimestamp = GetTimeStamp()
+                rChatData.spamPriceCheck = true
+                return false
+            end
+        end
+    end
+
     -- Guild Recruit
     if IsSpamEnabledForCategory("GuildRecruit") then
-        if SpamGuildRecruit(text, chanCode) then
+		if SpamGuildRecruit(text, chanCode) then
+			logger:Debug("found GuildRecruit")
             if isMe == false then
                 return true
             else

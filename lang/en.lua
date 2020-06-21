@@ -225,6 +225,9 @@ rChat_localization_strings["en"] = {
 
 	RCHAT_WANTTOPROTECT = "Ignore Commercial messages",
 	RCHAT_WANTTOPROTECTTT = "Ignore messages from players looking to buy, sell or trade",
+	
+	RCHAT_PRICEPROTECT = "Ignore Price Check messages",
+	RCHAT_PRICEPROTECTTT = "Ignore messages from players looking for or responding to price checks",
 
 	RCHAT_GUILDPROTECT = "Ignore Guild Recruiting messages",
 	RCHAT_GUILDPROTECTTT = "Ignore messages from players promoting Guild memberships",

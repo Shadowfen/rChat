@@ -1,6 +1,10 @@
 ﻿[COLOR="DeepSkyBlue"]1.8 (24)[/COLOR]
+This was actually supposed to be version 1.9, only when I started to package up and update the changelog I discovered that I never actually released 1.8 after getting it ready. So, new fixes and features get rolled in to 1.8 and I am going to release it this time. Promise!
 [LIST]
 [*] [COLOR="MediumSlateBlue"]New[/COLOR] Added color control support for the new /ruz Russian zone chat channel.
+[*] [COLOR="MediumSlateBlue"]New[/COLOR] Added a Price Check spam filter for requests and responses from MM and TTC.
+[*] Fix spam filters not running when enabled (reported by Snippy64).
+[*] Updated the Looking For whatever spam filters to catch more stuff.
 [*] Fix chat window opacity setting not getting used on login (reported by Blackwolfe).
 [*] Removed invalid value 0 for window opacity setting - allowed values are only 1-11.
 [*] Fixed custom guild switches not getting reloaded after login or /reloadui (reported by Mandragorane).

@@ -32,6 +32,7 @@ local defspam = {
     lookingForProtect = false,
     wantToProtect = false,
     guildProtect = false,
+	priceCheckProtect = false,
 }
 
 local defwhisper = {
@@ -1458,8 +1459,6 @@ local function AddLinkHandlerToStringWithoutDDS(textToCheck, numLine, chanCode)
     local textLinked = ""
     local preventLoopsCol = 0
     local handledText = ""
-    local logger = LibDebugLogger("rChat")
-    logger:SetEnabled(true)
 
     while stillToParse do
         -- Prevent infinite loops while its still in beta
@@ -2572,6 +2571,11 @@ end
 -- Build LAM Option Table, used when AddonLoads or when a player join/leave a guild
 local function BuildLAMPanel()
 
+	-- aliases/derefs
+	local db = rChat.save
+	local spam = db.spam
+	local mention = db.mention
+
     -- Used to reset colors to default value, lam need a formatted array
     -- LAM Message Settings
     local localPlayer = GetUnitName("player")
@@ -2602,7 +2606,7 @@ local function BuildLAMPanel()
     getTabNames()
 
     local optionsData = {}
-
+	
     -- Messages Settings
     optionsData[#optionsData + 1] = {
         type = "submenu",
@@ -2750,8 +2754,8 @@ local function BuildLAMPanel()
 			{
 				type = "checkbox",
 				name = GetString(RCHAT_MENTION_ENABLED),
-				getFunc = function() return db.mention.mentionEnabled end,
-				setFunc = function(value) db.mention.mentionEnabled = value end,
+				getFunc = function() return mention.mentionEnabled end,
+				setFunc = function(value) mention.mentionEnabled = value end,
 				width = "full",
 			},
             {
@@ -2760,27 +2764,27 @@ local function BuildLAMPanel()
                 --tooltip = L(RCHAT_MENTIONSTRTT),
                 isMultiline = true,
                 getFunc = function() 
-                    -- return db.mention.mentionStr
-                    if not db.mention.mentiontbl then db.mention.mentiontbl = {} end
-                    return mention_combine(db.mention.mentiontbl)
+                    -- return mention.mentionStr
+                    if not mention.mentiontbl then mention.mentiontbl = {} end
+                    return mention_combine(mention.mentiontbl)
                 end,
                 setFunc = function(newValue)
-                    if db.mention.colorEnabled then
-                        db.mention.mentiontbl = mention_split(newValue,db.mention.color)
+                    if mention.colorEnabled then
+                        mention.mentiontbl = mention_split(newValue,mention.color)
                     else
-                        db.mention.mentiontbl = mention_split(newValue)
+                        mention.mentiontbl = mention_split(newValue)
                     end
                 end,
                 width = "full",
                 default = defaults.mention.mentionStr,
-                disabled = function() return not db.mention.mentionEnabled end,
+                disabled = function() return not mention.mentionEnabled end,
             },
 			{
 				type = "checkbox",
 				name = GetString(RCHAT_SOUND_ENABLED),
-				getFunc = function() return db.mention.soundEnabled end,
-				setFunc = function(value) db.mention.soundEnabled = value end,
-				disabled = function() return not db.mention.mentionEnabled end,
+				getFunc = function() return mention.soundEnabled end,
+				setFunc = function(value) mention.soundEnabled = value end,
+				disabled = function() return not mention.mentionEnabled end,
 				width = "half",
 			},
             {-- Mentions: Sound
@@ -2788,59 +2792,59 @@ local function BuildLAMPanel()
                 name = GetString(RCHAT_SOUND_INDEX),
                 min = 1, max = SF.numSounds(), step = 1,
                 getFunc = function()
-                    if type(db.mention.sound) == "string" then
-                        return SF.getSoundIndex(db.mention.sound)
+                    if type(mention.sound) == "string" then
+                        return SF.getSoundIndex(mention.sound)
                     end
                     return SF.getSoundIndex(defaults.mention.sound)
                 end,
                 setFunc = function(value)
-                    db.mention.sound = SF.getSound(value)
+                    mention.sound = SF.getSound(value)
                     local ctrl = WINDOW_MANAGER:GetControlByName("RCHAT_MENTION_SOUND")
                     if ctrl ~= nil then
-                        ctrl.data.text = SF.ColorText(db.mention.sound, SF.hex.normal)
+                        ctrl.data.text = SF.ColorText(mention.sound, SF.hex.normal)
                     end
-                    SF.PlaySound(db.mention.sound)
+                    SF.PlaySound(mention.sound)
                 end,
                 width = "half",
-                disabled = function() return not db.mention.mentionEnabled end,
+                disabled = function() return not mention.mentionEnabled end,
                 default = defaults.mention.sound,
             },
             {
                 type = "description",
                 title = L(RCHAT_SOUND_NAME),
-                text = SF.ColorText(db.mention.sound, SF.hex.normal),
+                text = SF.ColorText(mention.sound, SF.hex.normal),
                 disable = false,
                 reference = "RCHAT_MENTION_SOUND",
             },
 			{ -- Mention color enabled
 				type = "checkbox",
 				name = GetString(RCHAT_COLOR_ENABLED),
-				getFunc = function() return db.mention.colorEnabled end,
+				getFunc = function() return mention.colorEnabled end,
 				setFunc = function(value) 
-                    db.mention.colorEnabled = value 
+                    mention.colorEnabled = value 
                     if value then
-                        mention_recolor(db.mention.mentiontbl,db.mention.color)
+                        mention_recolor(mention.mentiontbl,mention.color)
                     else
-                        mention_recolor(db.mention.mentiontbl)
+                        mention_recolor(mention.mentiontbl)
                     end
                 end,
-				disabled = function() return not db.mention.mentionEnabled end,
+				disabled = function() return not mention.mentionEnabled end,
 				width = "half",
 			},
             {-- Mention Color
                 type = "colorpicker",
                 name = L(RCHAT_MENTIONCOLOR),
                 --tooltip = L(RCHAT_MENTIONCOLORTT),
-                getFunc = function() return rChat.ConvertHexToRGBA(db.mention.color) end,
+                getFunc = function() return rChat.ConvertHexToRGBA(mention.color) end,
                 setFunc = function(r, g, b)
-                    db.mention.color = rChat.ConvertRGBToHex(r, g, b)
-                    if db.mention.colorEnabled then
-                        mention_recolor(db.mention.mentiontbl,db.mention.color)
+                    mention.color = rChat.ConvertRGBToHex(r, g, b)
+                    if mention.colorEnabled then
+                        mention_recolor(mention.mentiontbl,mention.color)
                     end
                 end,
                 width = "half",
                 default = rChat.ConvertHexToRGBAPacked(defaults.mention.color),
-                disabled = function() return not db.mention.colorEnabled end,
+                disabled = function() return not mention.colorEnabled end,
             },
             {
                 type = "header",
@@ -3366,8 +3370,8 @@ local function BuildLAMPanel()
                 type = "checkbox",
                 name = L(RCHAT_FLOODPROTECT),
                 tooltip = L(RCHAT_FLOODPROTECTTT),
-                getFunc = function() return db.floodProtect end,
-                setFunc = function(newValue) db.floodProtect = newValue end,
+                getFunc = function() return spam.floodProtect end,
+                setFunc = function(newValue) spam.floodProtect = newValue end,
                 width = "full",
                 default = defaults.floodProtect,
             }, --Anti spam  grace period
@@ -3378,36 +3382,45 @@ local function BuildLAMPanel()
                 min = 0,
                 max = 180,
                 step = 1,
-                getFunc = function() return db.floodGracePeriod end,
-                setFunc = function(newValue) db.floodGracePeriod = newValue end,
+                getFunc = function() return spam.floodGracePeriod end,
+                setFunc = function(newValue) spam.floodGracePeriod = newValue end,
                 width = "full",
                 default = defaults.floodGracePeriod,
-                disabled = function() return not db.floodProtect end,
+                disabled = function() return not spam.floodProtect end,
             },
             {
                 type = "checkbox",
                 name = L(RCHAT_LOOKINGFORPROTECT),
                 tooltip = L(RCHAT_LOOKINGFORPROTECTTT),
-                getFunc = function() return db.lookingForProtect end,
-                setFunc = function(newValue) db.lookingForProtect = newValue end,
+                getFunc = function() return spam.lookingForProtect end,
+                setFunc = function(newValue) spam.lookingForProtect = newValue end,
                 width = "full",
                 default = defaults.lookingForProtect,
             },
             {
-            type = "checkbox",
+				type = "checkbox",
                 name = L(RCHAT_WANTTOPROTECT),
                 tooltip = L(RCHAT_WANTTOPROTECTTT),
-                getFunc = function() return db.wantToProtect end,
-                setFunc = function(newValue) db.wantToProtect = newValue end,
+                getFunc = function() return spam.wantToProtect end,
+                setFunc = function(newValue) spam.wantToProtect = newValue end,
                 width = "full",
                 default = defaults.wantToProtect,
             },
+			{
+				type = "checkbox",
+                name = L(RCHAT_PRICEPROTECT),
+                tooltip = L(RCHAT_PRICEPROTECTTT),
+                getFunc = function() return spam.priceCheckProtect end,
+                setFunc = function(newValue) spam.priceCheckProtect = newValue end,
+                width = "full",
+                default = defaults.priceCheckProtect,
+            },
             {
-            type = "checkbox",
+				type = "checkbox",
                 name = L(RCHAT_GUILDPROTECT),
                 tooltip = L(RCHAT_GUILDPROTECTTT),
-                getFunc = function() return db.guildProtect end,
-                setFunc = function(newValue) db.guildProtect = newValue end,
+                getFunc = function() return spam.guildProtect end,
+                setFunc = function(newValue) guildProtect = newValue end,
                 width = "full",
                 default = defaults.guildProtect,
             },
@@ -3418,8 +3431,8 @@ local function BuildLAMPanel()
                 min = 0,
                 max = 10,
                 step = 1,
-                getFunc = function() return db.spam.spamGracePeriod end,
-                setFunc = function(newValue) db.spam.spamGracePeriod = newValue end,
+                getFunc = function() return spam.spamGracePeriod end,
+                setFunc = function(newValue) spam.spamGracePeriod = newValue end,
                 width = "full",
                 default = defaults.spam.spamGracePeriod,
             },
@@ -4206,6 +4219,7 @@ local function OnPlayerActivated()
     -- AntiSpam
     rData.spamLookingForEnabled = true
     rData.spamWantToEnabled = true
+    rData.spamPriceCheckEnabled = true
     rData.spamGuildRecruitEnabled = true
 
     -- Show 1000 lines instead of 200 & Change fade delay
