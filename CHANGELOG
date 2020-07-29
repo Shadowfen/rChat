@@ -1,4 +1,19 @@
-﻿[COLOR="DeepSkyBlue"]1.8 (24)[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.8.3 (27)[/COLOR]
+[LIST]
+[*] Attempt to fix the nil error reported by nulami. "Attempted" because I cannot reproduce the problem in order to test the fix.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.8.2 (26)[/COLOR]
+[LIST]
+[*] Final fix for guild spam config not being remembered (fix provided by Snippy64).
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.8.1 (25)[/COLOR]
+[LIST]
+[*] Fix spam not getting checked in channel /say (reported by Crunatus).
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.8 (24)[/COLOR]
 This was actually supposed to be version 1.9, only when I started to package up and update the changelog I discovered that I never actually released 1.8 after getting it ready. So, new fixes and features get rolled in to 1.8 and I am going to release it this time. Promise!
 [LIST]
 [*] [COLOR="MediumSlateBlue"]New[/COLOR] Added color control support for the new /ruz Russian zone chat channel.

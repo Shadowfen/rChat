@@ -777,6 +777,8 @@ end
 -- When an incoming Whisper is received
 local function OnIMReceived(from, lineNumber)
 
+	if not CHAT_SYSTEM.primaryContainer then return end
+
     if not db.whisper.notifyIM then return end
 
     -- Display visual notification
@@ -825,6 +827,8 @@ end
 
 -- Will try to display the notified IM. Called by XML
 function rChat_TryToJumpToIm(isMinimized)
+
+	if not CHAT_SYSTEM.primaryContainer then return end
 
     -- Show chat first
     if isMinimized then
@@ -1157,6 +1161,7 @@ end
 -- Can be called by Bindings
 function rChat.SwitchToNextTab()
 
+	if not CHAT_SYSTEM.primaryContainer then return end
     local hasSwitched
 
     local PRESSED = 1
@@ -1199,6 +1204,7 @@ end
 local function SetDefaultTab(tabToSet)
 
     if not tabToSet then return end
+	if not CHAT_SYSTEM.primaryContainer then return end
 
     -- Search in all tabs the good name
     for numTab in ipairs(CHAT_SYSTEM.primaryContainer.windows) do
@@ -1228,7 +1234,10 @@ end
 
 local function CreateNewChatTab_PostHook()
 
-    for tabIndex, tabObject in ipairs(CHAT_SYSTEM.primaryContainer.windows) do
+    local container=CHAT_SYSTEM.primaryContainer
+    if not container then return end
+	
+    for tabIndex, tabObject in ipairs(container.windows) do
         if db.augmentHistoryBuffer then
             tabObject.buffer:SetMaxHistoryLines(1000) -- 1000 = max of control
         end
@@ -1723,6 +1732,7 @@ local function AddLinkHandler(text, chanCode, numLine)
 end
 
 local function RestoreChatMessagesFromHistory(wasReloadUI)
+	if not CHAT_SYSTEM.primaryContainer then return end
     local function shouldRestore(channel)
         if channel~= CHAT_CHANNEL_SYSTEM and channel ~= CHAT_CHANNEL_WHISPER and channel ~= CHAT_CHANNEL_WHISPER_SENT then
             return true
@@ -2214,6 +2224,7 @@ end
 
 -- Save Chat Tabs config when user changes it
 local function SaveTabsCategories()
+	if not CHAT_SYSTEM.primaryContainer then return end
 
     local localPlayer = GetUnitName("player")
     for numTab in ipairs (CHAT_SYSTEM.primaryContainer.windows) do
@@ -2267,6 +2278,7 @@ local function SyncChatConfig(shouldSync, whichChar)
     if not shouldSync then return end   -- why call this if you don't want to import stuff?
     if not db.chatConfSync then return end
     if not db.chatConfSync[whichChar] then return end   -- no character config to use
+	if not CHAT_SYSTEM.primaryContainer then return end
 
     local newcfg = db.chatConfSync[whichChar]
 
@@ -3420,7 +3432,7 @@ local function BuildLAMPanel()
                 name = L(RCHAT_GUILDPROTECT),
                 tooltip = L(RCHAT_GUILDPROTECTTT),
                 getFunc = function() return spam.guildProtect end,
-                setFunc = function(newValue) guildProtect = newValue end,
+                setFunc = function(newValue) spam.guildProtect = newValue end,
                 width = "full",
                 default = defaults.guildProtect,
             },
@@ -4139,6 +4151,7 @@ local function RevertCategories(guildName)
 
             -- Restore tab config previously set.
             local tabs = db.chatConfSync[localPlayer].tabs
+			if not CHAT_SYSTEM.primaryContainer then return end
             for numTab in ipairs (CHAT_SYSTEM.primaryContainer.windows) do
                 if tabs[numTab] then
                     SetChatContainerTabCategoryEnabled(1, numTab, (CHAT_CATEGORY_GUILD_1 + iGuilds - 1),
@@ -4328,6 +4341,7 @@ local function SaveChatCategoryColors(category, r, g, b)
 end
 
 function rChat.ClearChat()
+	if not CHAT_SYSTEM.primaryContainer then return end
     local self = CHAT_SYSTEM.primaryContainer
     local tabIndex = (self.currentBuffer and self.currentBuffer:GetParent()
                             and self.currentBuffer:GetParent().tab
@@ -4340,6 +4354,7 @@ end
 -- PreHook of ZO_ChatSystem_ShowOptions() and ZO_ChatWindow_OpenContextMenu(control.index)
 -- always returns true
 local function ChatSystemShowOptions(tabIndex)
+	if not CHAT_SYSTEM.primaryContainer then return end
     local self = CHAT_SYSTEM.primaryContainer
     tabIndex = tabIndex or (self.currentBuffer and self.currentBuffer:GetParent()
                             and self.currentBuffer:GetParent().tab

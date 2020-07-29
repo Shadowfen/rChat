@@ -31,7 +31,7 @@ local spammableChannels = {
 }
 
 local function IsSpammableChannel(chanCode)
-    if chanCode == nil or chanCode == 0 then return nil end
+    if chanCode == nil then return nil end
     return spammableChannels[chanCode + 1]
 end
 
