@@ -1047,7 +1047,7 @@ end
 -- colorT is produced by initColorTable()
 function rChat_Internals.formatText(entry, ndx, colorT)
     local db = rChat.save
-    local text = string.sub(entry.text,1,240)
+    local text = string.sub(entry.original.text,1,240)
     entry.rawT.text = text
 
     if isMonsterChannel(entry.channel) then
@@ -1106,10 +1106,10 @@ function rChat_Internals.formatText(entry, ndx, colorT)
 			break
 		end
     end
-	entry.tmplen = tmplen
+	--entry.tmplen = tmplen
     -- recombine
     entry.displayT.text = table.concat(tmptbl)
-	entry.msglen = string.len(entry.displayT.text)
+	--entry.displayT.msglen = string.len(entry.displayT.text)
 
     return entry.displayT.text, entry.rawT.text
 end

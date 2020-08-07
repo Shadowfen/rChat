@@ -758,8 +758,8 @@ local function ShowIMTooltip(self, lineNumber)
     local chatline = CACHE.getCacheEntry(lineNumber)
     if not chatline then return end
 
-    local sender = chatline.rawFrom
-    local text = chatline.rawMessage
+    local sender = chatline.rawT.from   --chatline.rawFrom
+    local text = chatline.rawT.text   --chatline.rawMessage
 
     if (not IsDecoratedDisplayName(sender)) then
         sender = zo_strformat(SI_UNIT_NAME, sender)
@@ -921,7 +921,7 @@ local function CopyMessage(numLine)
     -- Args are passed as string through LinkHandlerSystem
     local entry = CACHE.getCacheEntry(numLine)
     if entry then
-        CopyToTextEntry(entry.rawMessage)
+        CopyToTextEntry(entry.rawT.text)
     end
 end
 
@@ -1924,7 +1924,7 @@ local function StorelineNumber(epochtime, rawFrom, text, chanCode, originalFrom,
     entry.rawMessage = rawText
 
     -- Store CopyLine
-    entry.rawLine = msgPrefix .. rawText
+    entry.rawLine = msgPrefix .. text
 end
 
 -- WARNING : Since AddMessage is bypassed, this function and all its subfunctions DOES NOT CALL d() / Emitmessage() / AddMessage() or it will result an infinite loop and crash the game
@@ -2056,7 +2056,7 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
     entry.rawMessage = text         -- copy message - this is the only one that remains unmodified
     entry.rawLine = newtext         -- copy line (prefix + message)
     entry.displayed = newtext    -- restored to chat (has link handler markers)
-    entry.text = text
+    --entry.text = text
     
     local display = {}      -- info to build a display message
     local raw = {}          -- info to build a raw message
