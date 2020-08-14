@@ -151,6 +151,69 @@ function rChat_Internals.formatTag(entry, ndx)
 end
 
 -- overall message format
+--  [timestamp] from separator text
+--
+function rChat_Internals.reduceString(entry, ndx, lvl)
+
+    local rawS = {}     -- A list of strings to turn into a reduced message
+	if not lvl then lvl = 0 end
+	
+	rawS[#rawS+1] = "*"	-- I'm a reduced message
+
+    -- timestamp
+	if lvl == 0 then
+		-- try to keep the copy link (without color)
+		rawS[#rawS+1] = entry.displayT.timestamp
+	elseif lvl == 1 then
+		rawS[#rawS+1] = entry.rawT.timestamp
+	elseif lvl == 2 then
+		-- absolute minimum - no timestamp
+	end
+
+    -- message header
+
+    if entry.original.fromDisplayName then
+		local name = zo_strformat(SI_UNIT_NAME, entry.original.fromDisplayName)
+
+		if lvl == 0 then
+			-- minimal from with linking
+			rawS[#rawS+1] = "|H0:display:"..name.."|h"..name.."|h"
+		else
+			-- no linking
+			rawS[#rawS+1] = name
+		end
+    end
+
+    -- colon and optional CR
+	if lvl == 0 then
+		rawS[#rawS+1] = entry.rawT.separator
+	else
+		rawS[#rawS+1] = ": "
+	end
+
+    -- message body
+    -- text might be a string or it might be a table of segments
+    --    (whose first value is a string)
+	-- no links!
+    local text = entry.rawT.text
+    if text then
+        if type(text) == "string" then
+            rawS[#rawS+1] = text
+        elseif type(text) == "table" then
+            for _,v in ipairs(text) do
+                rawS[#rawS+1] = v[1]
+            end
+        end
+    end
+
+	text = table.concat(rawS)
+	if lvl == 2 then
+		text = string.sub(text,1,350)
+	end
+    return text
+end
+
+-- overall message format
 --  [timestamp] [guildtag|partytag|langtag|whisptag] from [zonetag] separator linktext
 --
 function rChat_Internals.produceRawString(entry, ndx, rawT)
@@ -1047,7 +1110,7 @@ end
 -- colorT is produced by initColorTable()
 function rChat_Internals.formatText(entry, ndx, colorT)
     local db = rChat.save
-    local text = string.sub(entry.original.text,1,240)
+    local text = entry.original.text
     entry.rawT.text = text
 
     if isMonsterChannel(entry.channel) then
@@ -1088,12 +1151,6 @@ function rChat_Internals.formatText(entry, ndx, colorT)
         end
 
         -- apply color
-		local lenleft = 264 - tmplen
-		if lenleft < string.len(vtext) then
-			--vtext = string.sub(vtext,1,lenleft)
-			needtoquit = true
-			break
-		end
         if isSegType(v,RC_SEGTYPE_MENTION) and colorT.mentioncol then  -- color with mention color
             vtext = string.format("%s%s|r", colorT.mentioncol, vtext)
 
@@ -1106,10 +1163,8 @@ function rChat_Internals.formatText(entry, ndx, colorT)
 			break
 		end
     end
-	--entry.tmplen = tmplen
     -- recombine
     entry.displayT.text = table.concat(tmptbl)
-	--entry.displayT.msglen = string.len(entry.displayT.text)
 
     return entry.displayT.text, entry.rawT.text
 end

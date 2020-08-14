@@ -52,13 +52,11 @@ function rChatData.getNewCacheEntry(channel)
     local lineno = cache.lineNumber
     cache.lineNumber = cache.lineNumber + 1
     cache.Entries[lineno] = {
-        rawFrom = "",
-        rawLine = "",
-        rawValue = "",
-        displayed = "",
         timestamp = GetTimeStamp(),
         channel = channel,
-    }
+        rawLine = "",
+        displayed = "",
+  }
     cache.Entries[lineno].rawT = {}
     cache.Entries[lineno].displayT = {}
 

@@ -1,4 +1,11 @@
-﻿[COLOR="DeepSkyBlue"]1.8.3 (27)[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.9 (28)[/COLOR]
+[LIST]
+[*] Introduced a fix for messages that are too long to be displayed properly. If a message is too long to be displayed with all of the various rChat display options in effect, then rChat will mark the message with an initial '*' to denote that it is "reduced", and start removing the less essential options, like: color in messages, mentions in messages, guild tags (if enabled), zone tags (if enabled), fancy formatted display of from name, the "click name to whisper" link on the name, and even the right-click context menu normally attached to the timestamp. Finally if the message is still too long, it will be truncated to fit into chat - generally a reduction of characters close to the number of characters in your @name.
+[*] Reduced the amount of data stored for conversations in rChatData.
+[*] API bump.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.8.3 (27)[/COLOR]
 [LIST]
 [*] Attempt to fix the nil error reported by nulami. "Attempted" because I cannot reproduce the problem in order to test the fix.
 [/LIST]

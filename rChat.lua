@@ -281,6 +281,7 @@ local GetGuildIndex = rChat_Internals.GetGuildIndex
 local initColorTable = rChat_Internals.initColorTable
 local produceCopyFrom = rChat_Internals.produceCopyFrom
 local produceRawString = rChat_Internals.produceRawString
+local reduceString = rChat_Internals.reduceString
 local UseNameFormat = rChat_Internals.UseNameFormat
 ------------------------------------------------------
 
@@ -508,8 +509,8 @@ function rChat.SaveAutomatedMessage(name, message, isNew)
                 name = string.sub(name, 1, 12)
             end
 
-            if string.len(message) > 351 then
-                message = string.sub(message, 1, 351)
+            if string.len(message) > 350 then
+                message = string.sub(message, 1, 350)
             end
 
             local entryList = ZO_ScrollList_GetDataList(rData.automatedMessagesList.list)
@@ -758,7 +759,7 @@ local function ShowIMTooltip(self, lineNumber)
     local chatline = CACHE.getCacheEntry(lineNumber)
     if not chatline then return end
 
-    local sender = chatline.rawT.from   --chatline.rawFrom
+    local sender = chatline.rawT.from
     local text = chatline.rawT.text   --chatline.rawMessage
 
     if (not IsDecoratedDisplayName(sender)) then
@@ -1093,7 +1094,7 @@ local function OnLinkClicked(rawLink, mouseButton, linkText, color, linkType, li
         if chanCode and mouseButton == MOUSE_BUTTON_INDEX_LEFT then
 
             if chanNumber == CHAT_CHANNEL_WHISPER then
-                local target = zo_strformat(SI_UNIT_NAME, entry.rawFrom)
+                local target = zo_strformat(SI_UNIT_NAME, entry.rawT.from)
                 IgnoreMouseDownEditFocusLoss()
                 CHAT_SYSTEM:StartTextEntry(nil, chanNumber, target)
 
@@ -1242,7 +1243,7 @@ local function CreateNewChatTab_PostHook()
             tabObject.buffer:SetMaxHistoryLines(1000) -- 1000 = max of control
         end
         if db.alwaysShowChat then
-            tabObject.buffer:SetLineFade(3600, 2)
+            tabObject.buffer:SetLineFade(NEVER_FADE, NEVER_FADE)
         end
     end
 
@@ -1873,7 +1874,7 @@ local function StorelineNumber(epochtime, rawFrom, text, chanCode, originalFrom,
         return text:gsub("|t(.-)|t", "")
     end
 
-    local msgPrefix = ""
+    local msgPrefix = " "
     local rawText = text
 
     local entry,lineno = CACHE.getCacheEntry(lineNum)
@@ -1891,14 +1892,10 @@ local function StorelineNumber(epochtime, rawFrom, text, chanCode, originalFrom,
         rawFrom = StripDDStags(rawFrom)
 
         -- Needed for SpamFilter
-        entry.rawFrom = rawFrom
+        entry.rawT.from = rawFrom
 
-        -- msgPrefix is only rawFrom for now
-        msgPrefix = msgPrefix .. rawFrom
-
-        if db.carriageReturn then
-            msgPrefix = msgPrefix .. "\n"
-        end
+        -- msgPrefix
+        msgPrefix = msgPrefix .. entry.rawT.from .. entry.rawT.separator
 
     end
 
@@ -1908,20 +1905,8 @@ local function StorelineNumber(epochtime, rawFrom, text, chanCode, originalFrom,
     -- Store CopyMessage / Used for SpamFiltering.
     entry.channel = chanCode
 
-    -- Store CopyMessage
-    entry.rawText = rawText
-
-    -- Store CopyMessage
-    entry.rawValue = text
-
     -- Strip DDS tags
     rawText = StripDDStags(rawText)
-
-    -- Used to translate LinkHandlers
-    rawText = rChat.FormatRawText(rawText)
-
-    -- Store CopyMessage
-    entry.rawMessage = rawText
 
     -- Store CopyLine
     entry.rawLine = msgPrefix .. text
@@ -1960,7 +1945,6 @@ local function FormatSysMessage(statusMessage)
     if not db then return statusMessage end
 
     local entry, ndx = CACHE.getNewCacheEntry(CHAT_CHANNEL_SYSTEM)
-    entry.rawValue = statusMessage
     entry.timestamp = GetTimeStamp()
     entry.rawTimeString = ShowTimestamp(GetTimeString())
 
@@ -2015,6 +1999,10 @@ local function InitializeURLHandling()
 
 end
 
+local function presentMessage(entry)
+
+end
+
 -- Executed when EVENT_CHAT_MESSAGE_CHANNEL triggers
 -- Formats the message
 local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
@@ -2036,36 +2024,28 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
     local original = {}
     original.from = from
     original.text = text
-	original.channel = chanCode
 	original.fromDisplayName = fromDisplayName
 	original.isCS = isCS
 
-	if string.len(text) > 240 then
-		text = string.sub(text,1,240)
-	end
+	--if string.len(text) > 240 then
+	--	text = string.sub(text,1,240)
+	--end
     
     local newtext = text
-    -- Init message with other addons stuff
-    local message = ""
 
     local entry, ndx = CACHE.getNewCacheEntry(chanCode) -- initializes channel and timestamp
 	entry.original = original
 	
-    entry.rawFrom = from            -- formatted from - no colors or link handlers
-    entry.rawValue = text           -- formatted message      
-    entry.rawMessage = text         -- copy message - this is the only one that remains unmodified
-    entry.rawLine = newtext         -- copy line (prefix + message)
-    entry.displayed = newtext    -- restored to chat (has link handler markers)
-    --entry.text = text
-    
     local display = {}      -- info to build a display message
     local raw = {}          -- info to build a raw message
     entry.rawT = raw
     entry.displayT = display
     
+    entry.rawLine = newtext         -- copy line (prefix + message)
+    entry.displayed = newtext    -- restored to chat (has link handler markers)
+    
     -- prepare from name
     display.from, raw.from = formatName(chanCode, from, isCS, fromDisplayName)
-    entry.rawFrom = raw.from
 
     -- Guild tag
     display.tag, raw.tag = formatTag(entry,ndx)
@@ -2079,9 +2059,11 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
     -- Initialise colours
     local colorT = initColorTable(chanCode, from)
 
+    -- Init message
+    local message = ""
+
     -- format timestamp
     display.timestamp, raw.timestamp = formatTimestamp(entry, ndx)
-    entry.rawValue = raw.timestamp
     message = message .. display.timestamp
 
     -- format message text
@@ -2093,11 +2075,14 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
     local notHandled = false
     
     entry.rawLine = produceRawString(entry, ndx, raw)
-    raw.text = entry.rawLine
     entry.displayed = produceDisplayString(entry, ndx, display, colorT)
-    display.text = entry.displayed
+	local lvl = 0
+	while ( lvl < 3 and string.len(entry.displayed) > 350) do
+		entry.displayed = reduceString(entry,ndx, lvl)
+		lvl = lvl + 1
+	end
     
-        --PlaySound for whisper
+    --PlaySound for whisper
     if chanCode == CHAT_CHANNEL_WHISPER and db.whisper.incomingsound then
         SF.PlaySound(db.whisper.incomingsound)
     end
@@ -2105,7 +2090,7 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
     -- Only if not handled by rChat
     if not notHandled then
         -- Store message and params into an array for copy system and SpamFiltering
-        StorelineNumber(entry.timestamp, raw.from, raw.text, chanCode, originalFrom, ndx)
+        StorelineNumber(entry.timestamp, raw.from, original.text, chanCode, originalFrom, ndx)
     end
 
     if chanCode == CHAT_CHANNEL_WHISPER then
@@ -2113,7 +2098,8 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
         OnIMReceived(raw.from, ndx)
     end
     entry.rawT = raw
-    entry.displayT = display
+    --entry.displayT = display
+	entry.displayT =  nil
     return entry.displayed --message
 
 end

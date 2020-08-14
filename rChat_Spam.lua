@@ -52,9 +52,9 @@ local function SpamFlood(from, text, spamChanCode)
             if (type(entry.timestamp) == "number") and
                     ((ourMessageTimestamp - entry.timestamp) < config.floodGracePeriod) then
                 -- if our message is sent by our chatter / will be break by "Character" channels and "UserID" Channels
-                if from == entry.rawFrom then
+                if from == entry.rawT.from then
                     -- if our message is eq of last message
-                    if text == entry.rawText then
+                    if text == entry.rawT.text then
                         -- Previous and current must be in zone(s), yell, say, emote (Character Channels except party)
                         if IsSpammableChannel(spamChanCode) and IsSpammableChannel(entry.channel) then
                             -- Spam
