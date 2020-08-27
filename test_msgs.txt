@@ -1,0 +1,39 @@
+[1] = 
+{
+	["timestamp"] = 1596938314,
+	["channel"] = 13,
+	["original"] = 
+	{
+		["text"] = "If you are new to the guild, please be aware that the costs of having a guild trader are not just a one time thing - it is a weekly bid and there is no guarantee of getting a trader.  The guild depends on voluntary contributions to make bids on traders.  Your help when you can do so is very much appreciated and certainly needed.  ",
+		["from"] = "@LuxanQualta",
+		["channel"] = 13,
+		["fromDisplayName"] = "@LuxanQualta",
+		["isCS"] = false,
+	},
+	["rawT"] = 
+	{
+		["text"] = "[20:58] [2-GST] Wulfharth the Wanderer(@LuxanQualta): If you are new to the guild, please be aware that the costs of having a guild trader are not just a one time thing - it is a weekly bid and there is no guarantee of getting a trader.  The guild depends on voluntary contributions to make bid",
+		["tag"] = "[2-GST] ",
+		["from"] = "Wulfharth the Wanderer(@LuxanQualta)",
+		["timestamp"] = "[20:58] ",
+		["separator"] = ": ",
+	},
+	["displayT"] = 
+	{
+		["text"] = "|c7a4e8f|H1:p:387:13|h[20:58]|h |r|c6ba36a|H1:channel:13|h[2-GST]|h |H0:display:@LuxanQualta|hWulfharth the Wanderer(@LuxanQualta)|h|r: |cC3F0C2|H0:p:387:13|hIf you are new to the guild, please be aware that the costs of having a guild trader are not just a one time thing - it is a weekly bid and there is no guarantee of getting a trader.  The guild depends on voluntary contributions to make bid|h|r",
+		["tag"] = "|H1:channel:13|h[2-GST]|h ",
+		["from"] = "|H0:display:@LuxanQualta|hWulfharth the Wanderer(@LuxanQualta)|h",
+		["timestamp"] = "|H1:p:387:13|h[20:58]|h ",
+		["separator"] = ": ",
+	},
+	
+	
+	
+	["rawText"] = "If you are new to the guild, please be aware that the costs of having a guild trader are not just a one time thing - it is a weekly bid and there is no guarantee of getting a trader.  The guild depends on voluntary contributions to make bid",
+	
+	["displayed"] = "|c7a4e8f|H1:p:387:13|h[20:58]|h |r|c6ba36a|H1:channel:13|h[2-GST]|h |H0:display:@LuxanQualta|hWulfharth the Wanderer(@LuxanQualta)|h|r: |cC3F0C2|H0:p:387:13|hIf you are new to the guild, please be aware that the costs of having a guild trader are not just a one time thing - it is a weekly bid and there is no guarantee of getting a trader.  The guild depends on voluntary contributions to make bid|h|r",
+	["rawLine"] = "[20:58] [2-GST] Wulfharth the Wanderer(@LuxanQualta): If you are new to the guild, please be aware that the costs of having a guild trader are not just a one time thing - it is a weekly bid and there is no guarantee of getting a trader.  The guild depends on voluntary contributions to make bid",
+	["rawValue"] = "[20:58] [2-GST] Wulfharth the Wanderer(@LuxanQualta): If you are new to the guild, please be aware that the costs of having a guild trader are not just a one time thing - it is a weekly bid and there is no guarantee of getting a trader.  The guild depends on voluntary contributions to make bid",
+	["rawFrom"] = "Wulfharth the Wanderer(@LuxanQualta)",
+	["rawMessage"] = "[20:58] [2-GST] Wulfharth the Wanderer(@LuxanQualta): If you are new to the guild, please be aware that the costs of having a guild trader are not just a one time thing - it is a weekly bid and there is no guarantee of getting a trader.  The guild depends on voluntary contributions to make bid",
+}

@@ -438,6 +438,8 @@ rChat_localization_strings["en"] = {
 
     RCHAT_MENTION_NM = "Mention Notification",
     RCHAT_MENTION_ENABLED = "Enable mention detection in chat",
+	RCHAT_MENTION_EMOTE_ENABLED = "Add mention detection for emotes",
+	RCHAT_MENTION_EMOTE_ENABLED_TT = "Can be slow!",
     RCHAT_MENTIONSTR = "String to look for in chat",
     RCHAT_SOUND_ENABLED = "Enable sound notification",
     RCHAT_SOUND_INDEX = "Which sound to play",

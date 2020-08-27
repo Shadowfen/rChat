@@ -1087,8 +1087,10 @@ local function processMentions(entry, text)
 
     local channel = entry.channel
     if isMonsterChannel(channel) or isWhisperChannel(channel)
-        or channel == CHAT_CHANNEL_EMOTE or channel == CHAT_CHANNEL_SYSTEM
-    then
+            or channel == CHAT_CHANNEL_SYSTEM then
+		return text
+    end
+    if channel == CHAT_CHANNEL_EMOTE and not db.mention.emoteEnabled then
 		return text
     end
 

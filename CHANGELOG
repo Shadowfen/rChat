@@ -1,4 +1,10 @@
-﻿[COLOR="DeepSkyBlue"]1.9 (28)[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.10 (29)[/COLOR]
+[LIST]
+[*] Added the option to turn on mention detection for emotes. This is turned off by default because it can slow things down (as emote messages are frequently longer). Note that if the mention that is detected causes the message length to become too long, the mention (and probably the message color) will be discarded so that the message text can still be shown. (Feature requested by Keresthus)
+[*] Fixed chat not fade timeout (reported by Saenic and FrostByghte)
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.9 (28)[/COLOR]
 [LIST]
 [*] Introduced a fix for messages that are too long to be displayed properly. If a message is too long to be displayed with all of the various rChat display options in effect, then rChat will mark the message with an initial '*' to denote that it is "reduced", and start removing the less essential options, like: color in messages, mentions in messages, guild tags (if enabled), zone tags (if enabled), fancy formatted display of from name, the "click name to whisper" link on the name, and even the right-click context menu normally attached to the timestamp. Finally if the message is still too long, it will be truncated to fit into chat - generally a reduction of characters close to the number of characters in your @name.
 [*] Reduced the amount of data stored for conversations in rChatData.

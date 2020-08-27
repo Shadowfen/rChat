@@ -17,6 +17,7 @@ local lastwhisp
 -- ---- Mention specific options
 local defmention = {
 	mentionEnabled = false,
+	emoteEnabled = false,
     mentiontbl = {},
 	soundEnabled = false,
 	sound = SOUNDS.NEW_NOTIFICATION,
@@ -2756,6 +2757,15 @@ local function BuildLAMPanel()
 				setFunc = function(value) mention.mentionEnabled = value end,
 				width = "full",
 			},
+			{
+				type = "checkbox",
+				name = RCHAT_MENTION_EMOTE_ENABLED,
+				tooltip = RCHAT_MENTION_EMOTE_ENABLED_TT,
+				getFunc = function() return mention.emoteEnabled end,
+				setFunc = function(value) mention.emoteEnabled = value end,
+				width = "full",
+				default=false,
+			},
             {
                 type = "editbox",
                 name = L(RCHAT_MENTIONSTR),
@@ -4464,13 +4474,15 @@ local function OnAddonLoaded(_, addonName)
     rChat_ZOS.FindAutomatedMsg = RAM.FindAutomatedMsg
     rChat_ZOS.cachedMessages = rData.cachedMessages
     rChat_ZOS.saveMsg = function(text)
-    end
+		end
 
     -- Saved variables
     rChat.save = loadSavedVars(rChat.savedvar, rChat.sv_version, defaults)
     db = rChat.save
     -- new setting
     if not db.mention.mentiontbl then db.mention.mentiontbl = {} end
+    if not db.mention.emoteEnabled then db.mention.emoteEnabled = false end
+	
     
     -- init vars for antispam
     rChat.setSpamConfig(db.spam)
