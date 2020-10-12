@@ -1,4 +1,9 @@
-﻿[COLOR="DeepSkyBlue"]1.10 (29)[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.10.1 (30)[/COLOR]
+[LIST]
+[*] API bump
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.10 (29)[/COLOR]
 [LIST]
 [*] Added the option to turn on mention detection for emotes. This is turned off by default because it can slow things down (as emote messages are frequently longer). Note that if the mention that is detected causes the message length to become too long, the mention (and probably the message color) will be discarded so that the message text can still be shown. (Feature requested by Keresthus)
 [*] Fixed chat not fade timeout (reported by Saenic and FrostByghte)
