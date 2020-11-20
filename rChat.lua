@@ -12,7 +12,8 @@ local HRS_TO_SEC = 3600
 
 -- Init
 local isAddonLoaded         = false -- OnAddonLoaded() done
-local lastwhisp
+rChat.lastwhisp = nil
+local lastwhisp = rChat.lastwhisp
 
 -- ---- Mention specific options
 local defmention = {
@@ -1269,11 +1270,12 @@ local function StripLinesFromLineStrings(typeOfExit)
         [CHAT_CHANNEL_MONSTER_WHISPER] = true,
     }
     if db.restoreSystemOnly then
-        for k,_ in ZO_ChatSystem_GetChannelInfo() do
-            if k ~= CHAT_CHANNEL_SYSTEM then
-                excludeChannels[k] = true
-            end
-        end
+		local ci = ZO_ChatSystem_GetChannelInfo()
+		for k,_ in pairs(ci) do
+			if k ~= CHAT_CHANNEL_SYSTEM then
+				excludeChannels[k] = true
+			end
+		end
     else
         if not db.restoreWhisps then
             excludeChannels[CHAT_CHANNEL_WHISPER] = true
@@ -2014,7 +2016,8 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
     if chanCode == nil or type(chanCode) ~= "number" then chanCode = CHAT_CHANNEL_SAY end
     isCS = isCS or false
 	
-	if chanCode == CHAT_CATEGORY_WHISPER then
+	if chanCode == CHAT_CATEGORY_WHISPER and fromDisplayName ~= nil then
+	    d("Formatting whisper from "..fromDisplayName)
 		lastwhisp = fromDisplayName
 	end
 	
@@ -2053,6 +2056,9 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
     
     -- Whisper tag
     display.whisper, raw.whisper = formatWhisperTag(entry,ndx)
+	if raw.whisper == "->" then
+		rChat.lastwhisp = original.from
+	end
 	
 	-- Zone tags
 	display.zonetag, raw.zonetag, display.partytag, raw.partytag = formatZoneTag(entry,ndx)
@@ -4256,6 +4262,7 @@ local function OnPlayerActivated()
     SaveGuildIndexes()
 
 	ZOS_CreateChannelData()
+	rChat.LoadCommands(GetString(SI_CHANNEL_SWITCH_WHISPER_REPLY))
 
     -- Set up chat window(s)
     SetToDefaultChannel()
@@ -4609,13 +4616,18 @@ end
 
 -- reimplement the reply to whisper slash command
 local function WhisperLast()
-    if lastwhisp then
-        CHAT_SYSTEM:StartTextEntry(nil, CHAT_CHANNEL_WHISPER, lastwhisp)
-    end
+    if lastwhisp ~= nil then
+	    CHAT_SYSTEM:StartTextEntry(nil, CHAT_CHANNEL_WHISPER, lastwhisp)
+	end
 end
-SLASH_COMMANDS["/r"] = WhisperLast
-SLASH_COMMANDS["/reply"] = WhisperLast
-SLASH_COMMANDS["/respond"] = WhisperLast
+local function LoadCommands(strargs)
+	for switchArg in strargs:gmatch("%S+") do
+		switchArg = switchArg:lower()
+		SLASH_COMMANDS[switchArg] = WhisperLast
+	end
+end
+rChat.LoadCommands = LoadCommands
+SLASH_COMMANDS["/clrwhs"] = function () lastwhisp = nil end
 
 -- --------------------------------------------------
 -- Addon compatibility functions

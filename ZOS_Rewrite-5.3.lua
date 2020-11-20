@@ -334,7 +334,7 @@ end
 --     Each channel can have multiple switches, in which case only the first switch string is used.
 --
 function ZOS_CreateChannelData()
-    local g_switchLookup = {}
+    local g_switchLookup = ZO_ChatSystem_GetChannelSwitchLookupTable()
     local channelInfo = ZO_ChatSystem_GetChannelInfo()
     --
     for channelId, data in pairs(channelInfo) do

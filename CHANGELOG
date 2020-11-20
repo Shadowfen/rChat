@@ -1,4 +1,11 @@
-﻿[COLOR="DeepSkyBlue"]1.10.1 (30)[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.11 (31)[/COLOR]
+[LIST]
+[*] Fix lua error when using the "Restore Only System Messages" (Reported by hagermanj)
+[*] Fixed the /r again for replying to a whisper (Reported by mychaelo).
+[*] Possibly fixed the "->" whisper recieved lines sometimes not having the from name (Reported by StamWhip).
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.10.1 (30)[/COLOR]
 [LIST]
 [*] API bump (Markarth)
 [/LIST]
