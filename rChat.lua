@@ -644,10 +644,10 @@ end
 -- **************************************************************************
 -- Chat Tab Functions
 -- **************************************************************************
-local function getTabNames()
+local function refreshTabNames()
     local totalTabs = CHAT_SYSTEM.tabPool.m_Active
+	rChat.tabNames = {}
     if totalTabs ~= nil and #totalTabs >= 1 then
-        rChat.tabNames = {}
         for idx, tmpTab in pairs(totalTabs) do
             local tabLabel = tmpTab:GetNamedChild("Text")
             local tmpTabName = tabLabel:GetText()
@@ -656,9 +656,33 @@ local function getTabNames()
             end
         end
     end
+	return rChat.tabNames
 end
 
-local function getTabIdx (tabName)
+local function getTabNames()
+	if not rChat.tabNames  then
+		refreshTabNames()
+	end
+    local totalTabs = CHAT_SYSTEM.tabPool.m_Active
+	if #totalTabs ~= #rChat.tabNames then
+		refreshTabNames()
+	end
+	return rChat.tabNames
+end
+
+local function getTabIdx(tabName)
+    local tabIdx = 0
+    local totalTabs = rChat.tabNames
+    for i,v in ipairs(totalTabs) do
+        if v == tabName then
+            tabIdx = i
+            break
+        end
+    end
+    return tabIdx
+end
+
+local function OLDgetTabIdx(tabName)
     local tabIdx = 0
     local totalTabs = CHAT_SYSTEM.tabPool.m_Active
     for i = 1, #totalTabs do
@@ -1209,7 +1233,6 @@ local function SetDefaultTab(tabToSet)
     if not tabToSet then return end
 	if not CHAT_SYSTEM.primaryContainer then return end
 
-    -- Search in all tabs the good name
     for numTab in ipairs(CHAT_SYSTEM.primaryContainer.windows) do
         -- Not this one, try the next one, if tab is not found (newly added, removed),
         -- rChat_SwitchToNextTab() will go back to tab 1
@@ -1248,6 +1271,7 @@ local function CreateNewChatTab_PostHook()
             tabObject.buffer:SetLineFade(NEVER_FADE, NEVER_FADE)
         end
     end
+	refreshTabNames()
 
 end
 -- ------------------------------------------------------
@@ -2571,6 +2595,14 @@ local function SyncCharacterSelectChoices()
     end
 end
 
+local function UpdateChoices(name, data)
+	local dropdownCtrl = WINDOW_MANAGER:GetControlByName(name)
+    if dropdownCtrl == nil then
+        return
+    end
+	dropdownCtrl:UpdateChoices(data.choices, data.choicesValues, data.choicesTooltips)  
+end
+
 
 -- Section: Settings Start (LAM)
 -- Build LAM Option Table, used when AddonLoads or when a player join/leave a guild
@@ -2608,7 +2640,7 @@ local function BuildLAMPanel()
         table.insert(arrayTab, 1)
     end
 
-    getTabNames()
+    refreshTabNames()
 
     local optionsData = {}
 	
@@ -2919,7 +2951,6 @@ local function BuildLAMPanel()
                 type = "dropdown",
                 name = L(RCHAT_DEFAULTCHANNEL),
                 tooltip = L(RCHAT_DEFAULTCHANNELTT),
-                --choices = chatTabNames,
                 choices = {
                     L("RCHAT_DEFAULTCHANNELCHOICE", RCHAT_CHANNEL_NONE),
                     L("RCHAT_DEFAULTCHANNELCHOICE", CHAT_CHANNEL_ZONE),
@@ -2976,13 +3007,16 @@ local function BuildLAMPanel()
                 type = "dropdown",
                 name = L(RCHAT_DEFAULTTAB),
                 tooltip = L(RCHAT_DEFAULTTABTT),
-                choices = rChat.tabNames,
+                choices = getTabNames(),
                 width = "full",
-                getFunc = function() return db.defaultTabName end,
+                getFunc = function() 
+					UpdateChoices("RCHAT_TABNAMES_DD",{choices=refreshTabNames()})
+					return db.defaultTabName end,
                 setFunc = function(choice)
                         db.defaultTabName = choice
                         db.defaultTab = getTabIdx(choice)
                     end,
+				reference = "RCHAT_TABNAMES_DD",
             },
             {-- New Message Color
                 type = "colorpicker",
@@ -4266,7 +4300,6 @@ local function OnPlayerActivated()
 
     -- Set up chat window(s)
     SetToDefaultChannel()
-    SetDefaultTab(db.defaultTab)
     ChangeChatWindowDarkness()
 
     -- Restore History if needed
@@ -4277,6 +4310,7 @@ local function OnPlayerActivated()
     LINK_HANDLER:RegisterCallback(LINK_HANDLER.LINK_MOUSE_UP_EVENT, OnLinkClicked)
 
     RegisterChatEvents()
+    SetDefaultTab(db.defaultTab)
 
 end
 

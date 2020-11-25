@@ -1,4 +1,10 @@
-﻿[COLOR="DeepSkyBlue"]1.11 (31)[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.12 (32)[/COLOR]
+[LIST]
+[*] Fix default chat tab always getting set to the first tab instead of the one specified in the settings. (Reported by mycahelo)
+[*] Fixed the dropdown list of chat tab names it the Chat Tab Settings not getting updated when a chat tab is either deleted or created.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.11 (31)[/COLOR]
 [LIST]
 [*] Fix lua error when using the "Restore Only System Messages" (Reported by hagermanj)
 [*] Fixed the /r again for replying to a whisper (Reported by mychaelo).
