@@ -706,7 +706,7 @@ function rChat_Internals.formatName(channel, from, isCS, fromDisplayName)
 
     elseif channel == CHAT_CHANNEL_PARTY then
         local anchor = atname or toonname
-        overrideBrackets = true
+        --overrideBrackets = true		-- requested by saenic
         local displaynm = rChat_Internals.UseNameFormat(atname, toonname, nick, db.groupNames)
         new_from, displayed = rChat_Internals.GetNameLink(atname, displaynm, overrideBrackets)
 

@@ -1,4 +1,9 @@
-﻿[COLOR="DeepSkyBlue"]1.12 (32)[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.13 (32)[/COLOR]
+[LIST]
+[*] Make PARTY messages use the same brackets/no brackets setting for names as other message types do. (Declined request to do the same for WHISPER messages because they are treated specially by ZOS.) (Requested by saenic)
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.12 (32)[/COLOR]
 [LIST]
 [*] Fix default chat tab always getting set to the first tab instead of the one specified in the settings. (Reported by mycahelo)
 [*] Fixed the dropdown list of chat tab names it the Chat Tab Settings not getting updated when a chat tab is either deleted or created.
