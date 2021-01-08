@@ -1,4 +1,14 @@
-﻿[COLOR="DeepSkyBlue"]1.13 (32)[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.15 (35)[/COLOR]
+[LIST]
+[*] Fixed entry for mention text reported by ryh.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.14 (34)[/COLOR]
+[LIST]
+[*] Fixed disabled Guild-specific color fields reported by srtzero and chaoslord.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.13 (33)[/COLOR]
 [LIST]
 [*] Make PARTY messages use the same brackets/no brackets setting for names as other message types do. (Declined request to do the same for WHISPER messages because they are treated specially by ZOS.) (Requested by saenic)
 [/LIST]

@@ -2543,11 +2543,17 @@ end
 -- returns the mention table
 local function mention_split(newValue, col) 
     lines = {}
-    for s in newValue:gmatch("[\r\n]+") do
-        table.insert(lines, s)
+	newValue = newValue.."\r\n"
+	local dv = newValue:gsub("[\r\n]",";")
+	for s in dv:gmatch("(.-);+") do
+		table.insert(lines, s)
     end
+    --for s in newValue:gmatch("(.-)[\r\n]-") do
+	--	d("match line: "..s)
+    --    table.insert(lines, s)
+    --end
     newtbl = {}
-    for _,v in ipairs(lines) do
+    for _,v in pairs(lines) do
         -- require minimum length
         if string.len(v) >= 4 then
             if nil == string.find(v, "[%%%*%-%.%+%(%)%[%]%^%$%?]") then
@@ -2718,7 +2724,7 @@ local function BuildLAMPanel()
                 width = "half",
                 default = defaults.disableBrackets,
             },
-            {
+            {-- Nicknames
                 type = "editbox",
                 name = L(RCHAT_NICKNAMES),
                 tooltip = L(RCHAT_NICKNAMESTT),
@@ -2741,7 +2747,7 @@ local function BuildLAMPanel()
                 type = "description",
                 text = "",
             },
-            {
+            {-- Enable Timestamp
                 type = "checkbox",
                 name = L(RCHAT_ENABLETIMESTAMP),
                 tooltip = L(RCHAT_ENABLETIMESTAMPTT),
@@ -2750,7 +2756,7 @@ local function BuildLAMPanel()
                 width = "full",
                 default = defaults.showTimestamp,
             },
-            {
+            {-- Timestamp format
                 type = "editbox",
                 name = L(RCHAT_TIMESTAMPFORMAT),
                 tooltip = L(RCHAT_TIMESTAMPFORMATTT),
@@ -2760,7 +2766,7 @@ local function BuildLAMPanel()
                 default = defaults.timestampFormat,
                 disabled = function() return not db.showTimestamp end,
             },
-            {
+            {-- Timestamp color is left column color
                 type = "checkbox",
                 name = L(RCHAT_TIMESTAMPCOLORISLCOL),
                 tooltip = L(RCHAT_TIMESTAMPCOLORISLCOLTT),
@@ -2770,7 +2776,7 @@ local function BuildLAMPanel()
                 default = defaults.timestampcolorislcol,
                 disabled = function() return not db.showTimestamp end,
             },
-            {
+            {-- timestamp color
                 type = "colorpicker",
                 name = L(RCHAT_TIMESTAMP),
                 tooltip = L(RCHAT_TIMESTAMPTT),
@@ -2788,49 +2794,49 @@ local function BuildLAMPanel()
 				name = SF.GetIconized(RCHAT_MENTION_NM, SF.hex.superior), -- or string id or function returning a string
 				width = "full", --or "half" (optional)
 			},
-			{
+			{-- mention is enabled
 				type = "checkbox",
 				name = GetString(RCHAT_MENTION_ENABLED),
-				getFunc = function() return mention.mentionEnabled end,
-				setFunc = function(value) mention.mentionEnabled = value end,
+				getFunc = function() return db.mention.mentionEnabled end,
+				setFunc = function(value) db.mention.mentionEnabled = value end,
 				width = "full",
 			},
-			{
+			{-- mention emote is enabled
 				type = "checkbox",
 				name = RCHAT_MENTION_EMOTE_ENABLED,
 				tooltip = RCHAT_MENTION_EMOTE_ENABLED_TT,
-				getFunc = function() return mention.emoteEnabled end,
-				setFunc = function(value) mention.emoteEnabled = value end,
+				getFunc = function() return db.mention.emoteEnabled end,
+				setFunc = function(value) db.mention.emoteEnabled = value end,
 				width = "full",
 				default=false,
 			},
-            {
+            {-- mention strings textbox
                 type = "editbox",
                 name = L(RCHAT_MENTIONSTR),
                 --tooltip = L(RCHAT_MENTIONSTRTT),
                 isMultiline = true,
                 getFunc = function() 
                     -- return mention.mentionStr
-                    if not mention.mentiontbl then mention.mentiontbl = {} end
-                    return mention_combine(mention.mentiontbl)
+                    if not db.mention.mentiontbl then db.mention.mentiontbl = {} end
+					return mention_combine(db.mention.mentiontbl)
                 end,
                 setFunc = function(newValue)
-                    if mention.colorEnabled then
-                        mention.mentiontbl = mention_split(newValue,mention.color)
+					if db.mention.colorEnabled then
+                        db.mention.mentiontbl = mention_split(newValue,db.mention.color)
                     else
-                        mention.mentiontbl = mention_split(newValue)
+                        db.mention.mentiontbl = mention_split(newValue)
                     end
-                end,
+				end,
                 width = "full",
                 default = defaults.mention.mentionStr,
-                disabled = function() return not mention.mentionEnabled end,
+                disabled = function() return not db.mention.mentionEnabled end,
             },
-			{
+			{-- mention sound enabled
 				type = "checkbox",
 				name = GetString(RCHAT_SOUND_ENABLED),
-				getFunc = function() return mention.soundEnabled end,
-				setFunc = function(value) mention.soundEnabled = value end,
-				disabled = function() return not mention.mentionEnabled end,
+				getFunc = function() return db.mention.soundEnabled end,
+				setFunc = function(value) db.mention.soundEnabled = value end,
+				disabled = function() return not db.mention.mentionEnabled end,
 				width = "half",
 			},
             {-- Mentions: Sound
@@ -2838,59 +2844,59 @@ local function BuildLAMPanel()
                 name = GetString(RCHAT_SOUND_INDEX),
                 min = 1, max = SF.numSounds(), step = 1,
                 getFunc = function()
-                    if type(mention.sound) == "string" then
+                    if type(db.mention.sound) == "string" then
                         return SF.getSoundIndex(mention.sound)
                     end
                     return SF.getSoundIndex(defaults.mention.sound)
                 end,
                 setFunc = function(value)
-                    mention.sound = SF.getSound(value)
+                    db.mention.sound = SF.getSound(value)
                     local ctrl = WINDOW_MANAGER:GetControlByName("RCHAT_MENTION_SOUND")
                     if ctrl ~= nil then
-                        ctrl.data.text = SF.ColorText(mention.sound, SF.hex.normal)
+                        ctrl.data.text = SF.ColorText(db.mention.sound, SF.hex.normal)
                     end
-                    SF.PlaySound(mention.sound)
+                    SF.PlaySound(db.mention.sound)
                 end,
                 width = "half",
-                disabled = function() return not mention.mentionEnabled end,
+                disabled = function() return not db.mention.mentionEnabled end,
                 default = defaults.mention.sound,
             },
             {
                 type = "description",
                 title = L(RCHAT_SOUND_NAME),
-                text = SF.ColorText(mention.sound, SF.hex.normal),
+                text = SF.ColorText(db.mention.sound, SF.hex.normal),
                 disable = false,
                 reference = "RCHAT_MENTION_SOUND",
             },
 			{ -- Mention color enabled
 				type = "checkbox",
 				name = GetString(RCHAT_COLOR_ENABLED),
-				getFunc = function() return mention.colorEnabled end,
+				getFunc = function() return db.mention.colorEnabled end,
 				setFunc = function(value) 
-                    mention.colorEnabled = value 
+                    db.mention.colorEnabled = value 
                     if value then
-                        mention_recolor(mention.mentiontbl,mention.color)
+                        mention_recolor(db.mention.mentiontbl,mention.color)
                     else
-                        mention_recolor(mention.mentiontbl)
+                        mention_recolor(db.mention.mentiontbl)
                     end
                 end,
-				disabled = function() return not mention.mentionEnabled end,
+				disabled = function() return not db.mention.mentionEnabled end,
 				width = "half",
 			},
             {-- Mention Color
                 type = "colorpicker",
                 name = L(RCHAT_MENTIONCOLOR),
                 --tooltip = L(RCHAT_MENTIONCOLORTT),
-                getFunc = function() return rChat.ConvertHexToRGBA(mention.color) end,
+                getFunc = function() return rChat.ConvertHexToRGBA(db.mention.color) end,
                 setFunc = function(r, g, b)
-                    mention.color = rChat.ConvertRGBToHex(r, g, b)
-                    if mention.colorEnabled then
-                        mention_recolor(mention.mentiontbl,mention.color)
+                    db.mention.color = rChat.ConvertRGBToHex(r, g, b)
+                    if db.mention.colorEnabled then
+                        mention_recolor(db.mention.mentiontbl,db.mention.color)
                     end
                 end,
                 width = "half",
                 default = rChat.ConvertHexToRGBAPacked(defaults.mention.color),
-                disabled = function() return not mention.colorEnabled end,
+                disabled = function() return not db.mention.colorEnabled end,
             },
             {
                 type = "header",
@@ -3730,7 +3736,7 @@ local function BuildLAMPanel()
                 getFunc = function() return getLeftColorRGB(CHAT_CHANNEL_MONSTER_YELL) end,
                 setFunc = function(r, g, b) rChat.setLeftColor(CHAT_CHANNEL_MONSTER_YELL, r, g, b) end,
                 default = getRightColorRGB(CHAT_CHANNEL_MONSTER_YELL),
-                disabled = isDisabled_NPCColors,
+                disabled = function() return isDisabled_NPCColors() end,
             },
             {-- NPC Yell right
                 type = "colorpicker",
@@ -3908,8 +3914,7 @@ local function BuildLAMPanel()
             return db.allGuildsSameColour
         end
         return false
-    end
-
+    end	
 --
     local guildOptionsData = {
         type = "submenu",
@@ -4049,7 +4054,7 @@ local function BuildLAMPanel()
                 getFunc = function() return getLeftColorRGB(GetGuildChannel(guild)) end,
                 setFunc = function(r, g, b) rChat.setLeftColor(GetGuildChannel(guild), r, g, b) end,
                 default = getLeftColorRGB(GetGuildChannel(guild)),
-                disabled = isDisabled_GuildColors(guild),
+                disabled = function() return isDisabled_GuildColors(guild) end,
             },
             {-- guild right
                 type = "colorpicker",
@@ -4058,7 +4063,7 @@ local function BuildLAMPanel()
                 getFunc = function() return getRightColorRGB(GetGuildChannel(guild)) end,
                 setFunc = function(r, g, b) rChat.setRightColor(GetGuildChannel(guild), r, g, b) end,
                 default = getLeftColorRGB(GetGuildChannel(guild)),
-                disabled = isDisabled_GuildColors(guild),
+                disabled = function() return isDisabled_GuildColors(guild) end,
             },
             {-- officer left
                 type = "colorpicker",
@@ -4076,7 +4081,7 @@ local function BuildLAMPanel()
                     local _, ofc_channel = GetGuildChannel(guild)
                     return getLeftColorRGB(ofc_channel)
                 end,
-                disabled = isDisabled_GuildColors(guild),
+                disabled = function() return isDisabled_GuildColors(guild) end,
             },
             {-- officer right
                 type = "colorpicker",
@@ -4094,7 +4099,7 @@ local function BuildLAMPanel()
                     local _, ofc_channel = GetGuildChannel(guild)
                     return getRightColorRGB(ofc_channel)
                 end,
-                disabled = isDisabled_GuildColors(guild),
+                disabled = function() return isDisabled_GuildColors(guild) end,
             },
         },
     }
@@ -4107,6 +4112,8 @@ local function BuildLAMPanel()
     LAM:RegisterOptionControls("rChatOptions", optionsData)
 
 end
+
+
 
 -- Initialises the settings and settings menu
 local function BuildLAM()
@@ -4122,11 +4129,11 @@ local function BuildLAM()
         registerForDefaults = true,
     }
 
-    rData.LAMPanel = LAM:RegisterAddonPanel("rChatOptions", panelData)
 
     -- Build OptionTable. In a separate func in order to rebuild it in case of Guild Reorg.
     SyncCharacterSelectChoices()
     BuildLAMPanel()
+    rData.LAMPanel = LAM:RegisterAddonPanel("rChatOptions", panelData)
 
 end
 --**Settings End
