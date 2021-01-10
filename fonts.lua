@@ -38,5 +38,10 @@ LMP:Register("font", "Ubuntu Medium", "rChat/fonts/Ubuntu/Ubuntu-Medium.ttf")
 LMP:Register("font", "Vollkorn", "rChat/fonts/Vollkorn/Vollkorn-Regular.ttf")
 LMP:Register("font", "RuEsoChat", "rChat/fonts/RuEsoChat/RuEsoChat.ttf")
 LMP:Register("font", "OpenDyslexic", "rChat/fonts/OpenDyslexic/OpenDyslexicAlta-Regular.otf")
--- Personalized fonts :
+-- Google Fonts Roboto: https://fonts.google.com/specimen/Roboto
+LMP:Register("font", "Roboto", "rChat/fonts/Roboto/Roboto-Regular.ttf")
+LMP:Register("font", "Roboto Medium", "rChat/fonts/Roboto/Roboto-Medium.ttf")
+-- Google Fonts Roboto Condensed: https://fonts.google.com/specimen/Roboto+Condensed
+LMP:Register("font", "Roboto Condensed", "rChat/fonts/Roboto/RobotoCondensed-Regular.ttf")
 
+-- Personalized fonts :
