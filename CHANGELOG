@@ -1,4 +1,14 @@
-﻿[COLOR="DeepSkyBlue"]1.15 (35)[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.17 (37)[/COLOR]
+[LIST]
+[*] Took out debug statements that had been accidentally left behind.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.16 (36)[/COLOR]
+[LIST]
+[*] New Roboto Regular, Roboto Medium and Roboto Condensed fonts added by jaedha. They are easy-to-read, sans-serif options.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.15 (35)[/COLOR]
 [LIST]
 [*] Fixed entry for mention text reported by ryh.
 [/LIST]

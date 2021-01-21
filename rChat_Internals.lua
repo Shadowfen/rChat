@@ -484,18 +484,18 @@ function rChat_Internals.GetChannelColors(channel, from)
             rESO, gESO, bESO = ZO_ChatSystem_GetCategoryColorFromChannel(CHAT_CHANNEL_ZONE_LANGUAGE_1)
         elseif channel == CHAT_CHANNEL_PARTY and from and db.groupLeader
                 and zo_strformat(SI_UNIT_NAME, from) == GetUnitName(GetGroupLeaderUnitTag()) then
-            rESO, gESO, bESO = rChat.ConvertHexToRGBA(db.colours["groupleader"])
+            rESO, gESO, bESO = SF.ConvertHexToRGBA(db.colours["groupleader"])
         else
             rESO, gESO, bESO = ZO_ChatSystem_GetCategoryColorFromChannel(channel)
         end
 
         -- Set right colour to left colour - cause ESO colors are rewritten; if onecolor, no rewriting
         if db.oneColour then
-            lcol = rChat.ConvertRGBToHex(rESO, gESO, bESO)
+            lcol = SF.ConvertRGBToHex(rESO, gESO, bESO)
             rcol = lcol
         else
-            lcol = rChat.ConvertRGBToHex(FirstEsoColor(rESO,gESO,bESO))
-            rcol = rChat.ConvertRGBToHex(SecondEsoColor(rESO,gESO,bESO))
+            lcol = SF.ConvertRGBToHex(FirstEsoColor(rESO,gESO,bESO))
+            rcol = SF.ConvertRGBToHex(SecondEsoColor(rESO,gESO,bESO))
         end
 
     else

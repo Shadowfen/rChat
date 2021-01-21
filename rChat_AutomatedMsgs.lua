@@ -142,30 +142,30 @@ function RAM.BuildAutomatedMessagesDialog(control, saveFunc)
     end
 
     ZO_Dialogs_RegisterCustomDialog("RCHAT_AUTOMSG_EDIT_MSG",
-    {
-        customControl = control,
-        setup = EditDialogSetup,
-        title = {
-            text = RCHAT_AUTOMSG_EDIT_TITLE_HEADER,
-        },
-        buttons = {
-            [1] = {
-                control  = GetControl(control, "Request"),
-                text     = RCHAT_AUTOMSG_EDIT_AUTO_MSG,
-                callback = function(dialog)
-                    local name = GetControl(dialog, "NameEdit"):GetText()
-                    local message = GetControl(dialog, "MessageEdit"):GetText()
-                    if(name ~= "") and (message ~= "") then
-                        saveFunc(name, message, false)
-                    end
-                end,
-            },
-            [2] = {
-                control = GetControl(control, "Cancel"),
-                text = SI_DIALOG_CANCEL,
-            }
-        }
-    })
+		{
+			customControl = control,
+			setup = EditDialogSetup,
+			title = {
+				text = RCHAT_AUTOMSG_EDIT_TITLE_HEADER,
+			},
+			buttons = {
+				[1] = {
+					control  = GetControl(control, "Request"),
+					text     = RCHAT_AUTOMSG_EDIT_AUTO_MSG,
+					callback = function(dialog)
+						local name = GetControl(dialog, "NameEdit"):GetText()
+						local message = GetControl(dialog, "MessageEdit"):GetText()
+						if(name ~= "") and (message ~= "") then
+							saveFunc(name, message, false)
+						end
+					end,
+				},
+				[2] = {
+					control = GetControl(control, "Cancel"),
+					text = SI_DIALOG_CANCEL,
+				}
+			}
+		})
 
 end
 

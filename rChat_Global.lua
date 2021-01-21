@@ -8,7 +8,7 @@ local SF = LibSFUtils
 
 rChat = {
     name = "rChat",
-    version = "1.15",
+    version = "1.17",
     settingName = "rChat",
     settingDisplayName = "rChat",
     author = "Shadowfen",
@@ -58,5 +58,5 @@ function rChat.checkLibraryVersions()
     vc:CheckVersion("LibAddonMenu-2.0", 30)
     vc:CheckVersion("LibMediaProvider-1.0", 13)
     vc:CheckVersion("LibChatMessage", 100)
-    vc:CheckVersion("LibSFUtils", 23)
+    vc:CheckVersion("LibSFUtils", 29)
 end

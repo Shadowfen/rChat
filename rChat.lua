@@ -300,22 +300,22 @@ end
 
 function rChat.setLeftColor(channelId, r, g, b)
     local colorsEntry = db.newcolors[channelId]
-    colorsEntry[1] = rChat.ConvertRGBToHex(r, g, b)
+    colorsEntry[1] = SF.ConvertRGBToHex(r, g, b)
 end
 
 function rChat.setRightColor(channelId, r, g, b)
     local colorsEntry = db.newcolors[channelId]
-    colorsEntry[2] = rChat.ConvertRGBToHex(r, g, b)
+    colorsEntry[2] = SF.ConvertRGBToHex(r, g, b)
 end
 
 local function getLeftColorRGB(channelId)
     local colorsEntry = db.newcolors[channelId]
-    return rChat.ConvertHexToRGBA(colorsEntry[1])
+    return SF.ConvertHexToRGBA(colorsEntry[1])
 end
 
 local function getRightColorRGB(channelId)
     local colorsEntry = db.newcolors[channelId]
-    return rChat.ConvertHexToRGBA(colorsEntry[2])
+    return SF.ConvertHexToRGBA(colorsEntry[2])
 end
 
 
@@ -2041,7 +2041,7 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
     isCS = isCS or false
 	
 	if chanCode == CHAT_CATEGORY_WHISPER and fromDisplayName ~= nil then
-	    d("Formatting whisper from "..fromDisplayName)
+--	    d("Formatting whisper from "..fromDisplayName)
 		lastwhisp = fromDisplayName
 	end
 	
@@ -2780,9 +2780,9 @@ local function BuildLAMPanel()
                 type = "colorpicker",
                 name = L(RCHAT_TIMESTAMP),
                 tooltip = L(RCHAT_TIMESTAMPTT),
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours.timestamp) end,
-                setFunc = function(r, g, b) db.colours.timestamp = rChat.ConvertRGBToHex(r, g, b) end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours["timestamp"]),
+                getFunc = function() return SF.ConvertHexToRGBA(db.colours.timestamp) end,
+                setFunc = function(r, g, b) db.colours.timestamp = SF.ConvertRGBToHex(r, g, b) end,
+                default = SF.ConvertHexToRGBAPacked(defaults.colours["timestamp"]),
                 disabled = function()
                     if not db.showTimestamp then return true end
                     if db.timestampcolorislcol then return true end
@@ -2887,15 +2887,15 @@ local function BuildLAMPanel()
                 type = "colorpicker",
                 name = L(RCHAT_MENTIONCOLOR),
                 --tooltip = L(RCHAT_MENTIONCOLORTT),
-                getFunc = function() return rChat.ConvertHexToRGBA(db.mention.color) end,
+                getFunc = function() return SF.ConvertHexToRGBA(db.mention.color) end,
                 setFunc = function(r, g, b)
-                    db.mention.color = rChat.ConvertRGBToHex(r, g, b)
+                    db.mention.color = SF.ConvertRGBToHex(r, g, b)
                     if db.mention.colorEnabled then
                         mention_recolor(db.mention.mentiontbl,db.mention.color)
                     end
                 end,
                 width = "half",
-                default = rChat.ConvertHexToRGBAPacked(defaults.mention.color),
+                default = SF.ConvertHexToRGBAPacked(defaults.mention.color),
                 disabled = function() return not db.mention.colorEnabled end,
             },
             {
@@ -3028,11 +3028,11 @@ local function BuildLAMPanel()
                 type = "colorpicker",
                 name = L(RCHAT_TABWARNING),
                 tooltip = L(RCHAT_TABWARNINGTT),
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours["tabwarning"]) end,
+                getFunc = function() return SF.ConvertHexToRGBA(db.colours["tabwarning"]) end,
                 setFunc = function(r, g, b)
-                        db.colours["tabwarning"] = rChat.ConvertRGBToHex(r, g, b)
+                        db.colours["tabwarning"] = SF.ConvertRGBToHex(r, g, b)
                     end,
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours["tabwarning"]),
+                default = SF.ConvertHexToRGBAPacked(defaults.colours["tabwarning"]),
             },
         },
     }
@@ -3085,10 +3085,10 @@ local function BuildLAMPanel()
                 type = "colorpicker",
                 name = L(RCHAT_GROUPLEADERCOLOR),
                 tooltip = L(RCHAT_GROUPLEADERCOLORTT),
-                getFunc = function() return rChat.ConvertHexToRGBA(db.colours["groupleader"]) end,
-                setFunc = function(r, g, b) db.colours["groupleader"] = rChat.ConvertRGBToHex(r, g, b) end,
+                getFunc = function() return SF.ConvertHexToRGBA(db.colours["groupleader"]) end,
+                setFunc = function(r, g, b) db.colours["groupleader"] = SF.ConvertRGBToHex(r, g, b) end,
                 width = "half",
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours["groupleader"]),
+                default = SF.ConvertHexToRGBAPacked(defaults.colours["groupleader"]),
                 disabled = function() return not db.groupLeader end,
             },
             {-- Group Leader Color 2
@@ -3096,13 +3096,13 @@ local function BuildLAMPanel()
                 name = L(RCHAT_GROUPLEADERCOLOR1),
                 tooltip = L(RCHAT_GROUPLEADERCOLOR1TT),
                 getFunc = function()
-                        return rChat.ConvertHexToRGBA(db.colours["groupleader1"])
+                        return SF.ConvertHexToRGBA(db.colours["groupleader1"])
                     end,
                 setFunc = function(r, g, b)
-                        db.colours["groupleader1"] = rChat.ConvertRGBToHex(r, g, b)
+                        db.colours["groupleader1"] = SF.ConvertRGBToHex(r, g, b)
                     end,
                 width = "half",
-                default = rChat.ConvertHexToRGBAPacked(defaults.colours["groupleader1"]),
+                default = SF.ConvertHexToRGBAPacked(defaults.colours["groupleader1"]),
                 disabled = function()
                         if not db.groupLeader then
                             return true
