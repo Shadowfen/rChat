@@ -1,4 +1,9 @@
-﻿[COLOR="DeepSkyBlue"]1.17 (37)[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.18 (38)[/COLOR]
+[LIST]
+[*] Removed error when splitting strings for length (reported by tereza).
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.17 (37)[/COLOR]
 [LIST]
 [*] Took out debug statements that had been accidentally left behind.
 [/LIST]

@@ -165,7 +165,12 @@ function rChat.SplitTextForLinkHandler(text, numLine, chanCode)
 
                 local splitEnd = splitStart + MAX_LEN
                 splitString = text:sub(splitStart, splitEnd) -- We can "cut" characters by doing this
-
+				if splitString == "" then 
+					if newText == "" then
+						return text
+					end
+					return newText 
+				end
                 local lastByte = string.byte(splitString, -1)
                 local beforeLastByte = string.byte(splitString, -2, -2)
 
