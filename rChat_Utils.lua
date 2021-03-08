@@ -28,6 +28,24 @@ function rChat.SafeGetGuildName(index)
 end
 
 -- ------------------------------------------------------
+function rChat.getPlayerNames()
+	local names={}
+	for i = 1, GetNumCharacters() do
+		local name, _, _, _, _, _, characterId = GetCharacterInfo(i)
+		table.insert(names, zo_strformat("<<1>>", name))
+	end
+	return names
+end
+function rChat.getPlayerIds()
+	local ids={}
+	for i = 1, GetNumCharacters() do
+		local name, _, _, _, _, _, characterId = GetCharacterInfo(i)
+		table.insert(ids, characterId)
+	end
+	return ids
+end
+
+-- ------------------------------------------------------
 -- Timestamp functions
 --
 

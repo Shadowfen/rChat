@@ -1,4 +1,9 @@
-﻿[COLOR="DeepSkyBlue"]1.18 (38)[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.19 (39)[/COLOR]
+[LIST]
+[*] API bump
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.18 (38)[/COLOR]
 [LIST]
 [*] Removed error when splitting strings for length (reported by tereza).
 [/LIST]

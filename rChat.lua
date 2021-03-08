@@ -2244,10 +2244,15 @@ local function SaveTabsCategories()
 	if not CHAT_SYSTEM.primaryContainer then return end
 
     local localPlayer = GetUnitName("player")
+	if not db.chatConfSync[localplayer] then 
+		d("No chatConfSync for "..tostring(localplayer))
+		return 
+	end
     for numTab in ipairs (CHAT_SYSTEM.primaryContainer.windows) do
 
         for _, category in ipairs (rData.guildCategories) do
             local isEnabled = IsChatContainerTabCategoryEnabled(1, numTab, category)
+			if not db.chatConfSync[localPlayer].tabs then db.chatConfSync[localPlayer].tabs = {} end
             if db.chatConfSync[localPlayer].tabs[numTab] then
                 db.chatConfSync[localPlayer].tabs[numTab].enabledCategories[category] = isEnabled
             else
@@ -2588,6 +2593,8 @@ end
 -- Character Sync Option
 local function SyncCharacterSelectChoices()
     local localPlayer = GetUnitName("player")
+	local localId = GetCurrentCharacterId()
+	
     -- Sync Character Select
     rData.chatConfSyncChoices = {}
     if db.chatConfSync then
@@ -2625,16 +2632,7 @@ local function BuildLAMPanel()
     local fontsDefined = LMP:List('font')
 
         -- Sync Character Select
-    rData.chatConfSyncChoices = {}
-    if db.chatConfSync then
-        for names, tagada in pairs (db.chatConfSync) do
-            if names ~= "lastChar" then
-                table.insert(rData.chatConfSyncChoices, names)
-            end
-        end
-    else
-        table.insert(rData.chatConfSyncChoices, localPlayer)
-    end
+	SyncCharacterSelectChoices()
 
     -- CHAT_SYSTEM.primaryContainer.windows doesn't exists yet at OnAddonLoaded. So using the rChat reference.
     local arrayTab = {}
@@ -3133,11 +3131,13 @@ local function BuildLAMPanel()
                 type = "dropdown",
                 name = L(RCHAT_CHATSYNCCONFIGIMPORTFROM),
                 tooltip = L(RCHAT_CHATSYNCCONFIGIMPORTFROMTT),
-                choices = rData.chatConfSyncChoices,
+                choices = rChat.getPlayerNames(),
+                --choicesValues = rData.chatConfSyncChoices,
                 width = "full",
                 getFunc = function() return GetUnitName("player") end,
                 setFunc = function(choice)
                     SyncChatConfig(true, choice)
+					--db.chatConfSync[GetUnitName("player")] = GetUnitName("player")
                 end,
             },
         },
@@ -4376,7 +4376,7 @@ end
 -- Save a category color for guild chat, set by ChatSystem at launch + when user change manually
 local function SaveChatCategoryColors(category, r, g, b)
     local confsync = db.chatConfSync[GetUnitName("player")]
-    if confsync then
+    if confsync and confsync.colors then
         if confsync.colors[category] == nil then
             confsync.colors[category] = {}
         end
@@ -4409,8 +4409,9 @@ local function ChatSystemShowOptions(tabIndex)
     ClearMenu()
 
     if not ZO_Dialogs_IsShowingDialog() then
-        AddMenuItem(L(SI_CHAT_CONFIG_CREATE_NEW), function() self.system:CreateNewChatTab(self)
-            end)
+        AddMenuItem(L(SI_CHAT_CONFIG_CREATE_NEW), function() 
+			self.system:CreateNewChatTab(self)
+		end)
 
         if not window.combatLog and (not self:IsPrimary() or tabIndex ~= 1) then
             AddMenuItem(L(SI_CHAT_CONFIG_REMOVE), function()
