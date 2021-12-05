@@ -590,6 +590,10 @@ function rChat_Internals.UseNameFormat(atname, toonname, nickname, formatId)
         -- both ifs cannot be true
         if not toonname then formatId = 1 end
         if not atname then formatId = 2 end
+    elseif formatId == 5 then   -- "Character Name/@UserID
+        -- both ifs cannot be true
+        if not toonname then formatId = 1 end
+        if not atname then formatId = 2 end
     end
 
     local name
@@ -599,6 +603,7 @@ function rChat_Internals.UseNameFormat(atname, toonname, nickname, formatId)
     elseif formatId == 2 then name = toonname                          -- "Character Name"
     elseif formatId == 3 then name = toonname .. atname                -- "Character Name@UserID"
     elseif formatId == 4 then name = toonname .. "(" .. atname .. ")"  -- "Character Name(@UserID)
+    elseif formatId == 5 then name = toonname .. "/" .. atname         -- "Character/Name@UserID"
     end
     return name
 end

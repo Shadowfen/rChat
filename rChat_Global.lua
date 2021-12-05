@@ -8,7 +8,7 @@ local SF = LibSFUtils
 
 rChat = {
     name = "rChat",
-    version = "1.20",
+    version = "1.26",
     settingName = "rChat",
     settingDisplayName = "rChat",
     author = "Shadowfen",
@@ -25,6 +25,10 @@ rChat.data = {
     cachedMessages = {}, -- This must be init before OnAddonLoaded because it will receive data before this event.
 }
 
+--[[
+Logger implementation provided for use with SF.VersionChecker in checkLibraryVersions.
+Messages will be sent to the chat window.
+--]]
 rChat_Logger = {
     Error = function(self,...)  self.chatter:systemMessage("ERROR: "..string.format(...)) end,
     Warn = function(self,...)  self.chatter:systemMessage("WARN: "..string.format(...)) end,
@@ -55,8 +59,8 @@ function rChat.checkLibraryVersions()
     local vc = SF.VersionChecker("rChat")
     local logger = rChat_Logger:Create("rChat")
     vc:Enable(logger)
-    vc:CheckVersion("LibAddonMenu-2.0", 30)
-    vc:CheckVersion("LibMediaProvider-1.0", 13)
-    vc:CheckVersion("LibChatMessage", 100)
-    vc:CheckVersion("LibSFUtils", 29)
+    vc:CheckVersion("LibAddonMenu-2.0", 32)
+    vc:CheckVersion("LibMediaProvider-1.0", 18)
+    vc:CheckVersion("LibChatMessage", 105)
+    vc:CheckVersion("LibSFUtils", 31)
 end

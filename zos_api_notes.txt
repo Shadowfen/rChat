@@ -1,0 +1,282 @@
+h5. SettingSystemType
+* SETTING_TYPE_CHAT_GLOBALS
+* SETTING_TYPE_CHAT_TABS
+
+
+* GetDynamicChatChannelName(*integer* _channelId_)
+** _Returns:_ *string* _name_
+
+* GetChatChannelId(*string* _name_)
+** _Returns:_ *integer* _channelId_
+
+* CanWriteGuildChannel(*integer* _channelId_)
+** _Returns:_ *bool* _canWrite_
+
+* GetNumChatContainers()
+** _Returns:_ *integer* _numContainers_
+
+* GetNumChatContainerTabs(*luaindex* _chatContainerIndex_)
+** _Returns:_ *integer* _numContainerTabs_
+
+* GetChatContainerTabInfo(*luaindex* _chatContainerIndex_, *luaindex* _tabIndex_)
+** _Returns:_ *string* _name_, *bool* _isLocked_, *bool* _isInteractable_, *bool* _isCombatLog_, *bool* _areTimestampsEnabled_
+
+* GetNumChatCategories()
+** _Returns:_ *integer* _numCategories_
+
+* IsChatContainerTabCategoryEnabled(*luaindex* _chatContainerIndex_, *luaindex* _tabIndex_, *[ChatChannelCategories|#ChatChannelCategories]* _chatCategory_)
+** _Returns:_ *bool* _enabled_
+
+* SetChatContainerTabCategoryEnabled(*luaindex* _chatContainerIndex_, *luaindex* _tabIndex_, *[ChatChannelCategories|#ChatChannelCategories]* _chatCategory_, *bool* _enabled_)
+
+* SetChatContainerTabInfo(*luaindex* _chatContainerIndex_, *luaindex* _tabIndex_, *string* _name_, *bool* _isLocked_, *bool* _isInteractable_, *bool* _areTimestampsEnabled_)
+
+* ResetChatContainerTabToDefault(*luaindex* _chatContainerIndex_, *luaindex* _tabIndex_)
+
+* GetChatContainerColors(*luaindex* _chatContainerIndex_)
+** _Returns:_ *number* _bgRed_, *number* _bgGreen_, *number* _bgBlue_, *number* _bgMinAlpha_, *number* _bgMaxAlpha_
+
+* SetChatContainerColors(*luaindex* _chatContainerIndex_, *number* _bgRed_, *number* _bgGreen_, *number* _bgBlue_, *number* _bgMinAlpha_, *number* _bgMaxAlpha_)
+
+* ResetChatContainerColorsToDefault(*luaindex* _chatContainerIndex_)
+
+* AddChatContainer()
+
+* RemoveChatContainer(*luaindex* _chatContainerIndex_)
+
+* AddChatContainerTab(*luaindex* _chatContainerIndex_, *string* _name_, *bool* _isCombatLog_)
+
+* RemoveChatContainerTab(*luaindex* _chatContainerIndex_, *luaindex* _tabIndex_)
+
+* TransferChatContainerTab(*luaindex* _fromChatContainerIndex_, *luaindex* _fromTabIndex_, *luaindex* _toChatContainerIndex_, *luaindex* _toTabIndex_)
+
+* GetChatFontSize()
+** _Returns:_ *integer* _fontSize_
+
+* SetChatFontSize(*integer* _fontSize_)
+
+* GetGamepadChatFontSize()
+** _Returns:_ *integer* _gamepadFontSize_
+
+* SetGamepadChatFontSize(*integer* _gamepadFontSize_)
+
+* ResetChatFontSizeToDefault()
+
+* GetChatCategoryColor(*[ChatChannelCategories|#ChatChannelCategories]* _category_)
+** _Returns:_ *number* _red_, *number* _green_, *number* _blue_
+
+* SetChatCategoryColor(*[ChatChannelCategories|#ChatChannelCategories]* _category_, *number* _red_, *number* _green_, *number* _blue_)
+
+* ResetChatCategoryColorToDefault(*[ChatChannelCategories|#ChatChannelCategories]* _category_)
+
+* GetChannelCategoryFromChannel(*[MsgChannelType|#MsgChannelType]* _channel_)
+** _Returns:_ *[ChatChannelCategories|#ChatChannelCategories]* _category_
+
+* IsChatBubbleCategoryEnabled(*[ChatChannelCategories|#ChatChannelCategories]* _category_)
+** _Returns:_ *bool* _enabled_
+
+* SetChatBubbleCategoryEnabled(*[ChatChannelCategories|#ChatChannelCategories]* _category_, *bool* _enabled_)
+
+* IsChatSystemAvailableForCurrentPlatform()
+** _Returns:_ *bool* _enabled_
+
+* SetChatLogEnabled(*bool* _isEnabled_)
+
+* IsChatLogEnabled()
+** _Returns:_ *bool* _isEnabled_
+
+
+
+h5. ChatChannelCategories
+* CHAT_CATEGORY_COMBAT_ALLIANCE_POINTS
+* CHAT_CATEGORY_COMBAT_BLOCK_ABSORBED_DEFEND
+* CHAT_CATEGORY_COMBAT_DEATH
+* CHAT_CATEGORY_COMBAT_DIRECT_DAMAGE
+* CHAT_CATEGORY_COMBAT_DIRECT_HEAL
+* CHAT_CATEGORY_COMBAT_DODGE_PARRY_MISS
+* CHAT_CATEGORY_COMBAT_DOT
+* CHAT_CATEGORY_COMBAT_DRAIN
+* CHAT_CATEGORY_COMBAT_ENERGIZE
+* CHAT_CATEGORY_COMBAT_EXPERIENCE
+* CHAT_CATEGORY_COMBAT_GAINED_EFFECT
+* CHAT_CATEGORY_COMBAT_HOT
+* CHAT_CATEGORY_COMBAT_LOST_EFFECT
+* CHAT_CATEGORY_COMBAT_OTHER
+* CHAT_CATEGORY_COMBAT_RANK_POINTS
+* CHAT_CATEGORY_COMBAT_RESIST
+* CHAT_CATEGORY_COMBAT_TELVAR_STONES
+* CHAT_CATEGORY_EMOTE
+* CHAT_CATEGORY_GUILD_1
+* CHAT_CATEGORY_GUILD_2
+* CHAT_CATEGORY_GUILD_3
+* CHAT_CATEGORY_GUILD_4
+* CHAT_CATEGORY_GUILD_5
+* CHAT_CATEGORY_MONSTER_EMOTE
+* CHAT_CATEGORY_MONSTER_SAY
+* CHAT_CATEGORY_MONSTER_WHISPER
+* CHAT_CATEGORY_MONSTER_YELL
+* CHAT_CATEGORY_OFFICER_1
+* CHAT_CATEGORY_OFFICER_2
+* CHAT_CATEGORY_OFFICER_3
+* CHAT_CATEGORY_OFFICER_4
+* CHAT_CATEGORY_OFFICER_5
+* CHAT_CATEGORY_PARTY
+* CHAT_CATEGORY_SAY
+* CHAT_CATEGORY_SYSTEM
+* CHAT_CATEGORY_WHISPER_INCOMING
+* CHAT_CATEGORY_WHISPER_OUTGOING
+* CHAT_CATEGORY_YELL
+* CHAT_CATEGORY_ZONE
+* CHAT_CATEGORY_ZONE_ENGLISH
+* CHAT_CATEGORY_ZONE_FRENCH
+* CHAT_CATEGORY_ZONE_GERMAN
+* CHAT_CATEGORY_ZONE_JAPANESE
+* CHAT_CATEGORY_ZONE_RUSSIAN
+
+
+h5. ChatChannelCategoryHeaders
+* CHAT_CATEGORY_HEADER_CHANNELS
+* CHAT_CATEGORY_HEADER_COMBAT
+* CHAT_CATEGORY_HEADER_GUILDS
+
+
+* ExecuteChatCommand(*string* _text_)
+
+* SendChatMessage *private* (*string* _message_, *integer* _channelId_, *string* _target_)
+
+* GetChatterGreeting()
+** _Returns:_ *string* _optionString_
+
+* GetChatterData()
+** _Returns:_ *string* _text_, *integer* _numOptions_, *bool* _atGreeting_
+
+* GetDynamicChatChannelName(*integer* _channelId_)
+** _Returns:_ *string* _name_
+
+* GetChatChannelId(*string* _name_)
+** _Returns:_ *integer* _channelId_
+
+* CanWriteGuildChannel(*integer* _channelId_)
+** _Returns:_ *bool* _canWrite_
+
+* GetNumChatContainers()
+** _Returns:_ *integer* _numContainers_
+
+* GetNumChatContainerTabs(*luaindex* _chatContainerIndex_)
+** _Returns:_ *integer* _numContainerTabs_
+
+* GetChatContainerTabInfo(*luaindex* _chatContainerIndex_, *luaindex* _tabIndex_)
+** _Returns:_ *string* _name_, *bool* _isLocked_, *bool* _isInteractable_, *bool* _isCombatLog_, *bool* _areTimestampsEnabled_
+
+* GetNumChatCategories()
+** _Returns:_ *integer* _numCategories_
+
+* IsChatContainerTabCategoryEnabled(*luaindex* _chatContainerIndex_, *luaindex* _tabIndex_, *[ChatChannelCategories|#ChatChannelCategories]* _chatCategory_)
+** _Returns:_ *bool* _enabled_
+
+* SetChatContainerTabCategoryEnabled(*luaindex* _chatContainerIndex_, *luaindex* _tabIndex_, *[ChatChannelCategories|#ChatChannelCategories]* _chatCategory_, *bool* _enabled_)
+
+* SetChatContainerTabInfo(*luaindex* _chatContainerIndex_, *luaindex* _tabIndex_, *string* _name_, *bool* _isLocked_, *bool* _isInteractable_, *bool* _areTimestampsEnabled_)
+
+* ResetChatContainerTabToDefault(*luaindex* _chatContainerIndex_, *luaindex* _tabIndex_)
+
+* GetChatContainerColors(*luaindex* _chatContainerIndex_)
+** _Returns:_ *number* _bgRed_, *number* _bgGreen_, *number* _bgBlue_, *number* _bgMinAlpha_, *number* _bgMaxAlpha_
+
+* SetChatContainerColors(*luaindex* _chatContainerIndex_, *number* _bgRed_, *number* _bgGreen_, *number* _bgBlue_, *number* _bgMinAlpha_, *number* _bgMaxAlpha_)
+
+* ResetChatContainerColorsToDefault(*luaindex* _chatContainerIndex_)
+
+* AddChatContainer()
+
+* RemoveChatContainer(*luaindex* _chatContainerIndex_)
+
+* AddChatContainerTab(*luaindex* _chatContainerIndex_, *string* _name_, *bool* _isCombatLog_)
+
+* RemoveChatContainerTab(*luaindex* _chatContainerIndex_, *luaindex* _tabIndex_)
+
+* TransferChatContainerTab(*luaindex* _fromChatContainerIndex_, *luaindex* _fromTabIndex_, *luaindex* _toChatContainerIndex_, *luaindex* _toTabIndex_)
+
+* GetChatFontSize()
+** _Returns:_ *integer* _fontSize_
+
+* SetChatFontSize(*integer* _fontSize_)
+
+* GetGamepadChatFontSize()
+** _Returns:_ *integer* _gamepadFontSize_
+
+* SetGamepadChatFontSize(*integer* _gamepadFontSize_)
+
+* ResetChatFontSizeToDefault()
+
+* GetChatCategoryColor(*[ChatChannelCategories|#ChatChannelCategories]* _category_)
+** _Returns:_ *number* _red_, *number* _green_, *number* _blue_
+
+* SetChatCategoryColor(*[ChatChannelCategories|#ChatChannelCategories]* _category_, *number* _red_, *number* _green_, *number* _blue_)
+
+* ResetChatCategoryColorToDefault(*[ChatChannelCategories|#ChatChannelCategories]* _category_)
+
+* GetChannelCategoryFromChannel(*[MsgChannelType|#MsgChannelType]* _channel_)
+** _Returns:_ *[ChatChannelCategories|#ChatChannelCategories]* _category_
+
+* IsChatBubbleCategoryEnabled(*[ChatChannelCategories|#ChatChannelCategories]* _category_)
+** _Returns:_ *bool* _enabled_
+
+* SetChatBubbleCategoryEnabled(*[ChatChannelCategories|#ChatChannelCategories]* _category_, *bool* _enabled_)
+
+* IsChatSystemAvailableForCurrentPlatform()
+** _Returns:_ *bool* _enabled_
+
+* SetSessionIgnore(*string* _userName_, *bool* _isIgnoredThisSession_)
+
+* ClearSessionIgnores()
+
+* SetChatLogEnabled(*bool* _isEnabled_)
+
+* IsChatLogEnabled()
+** _Returns:_ *bool* _isEnabled_
+
+* GetChatterOption(*luaindex* _optionIndex_)
+** _Returns:_ *string* _optionString_, *integer* _optionType_, *integer* _optionalArgument_, *bool* _isImportant_, *bool* _chosenBefore_
+
+* SelectChatterOption(*luaindex* _optionIndex_)
+
+* GetChatterOptionCount()
+** _Returns:_ *integer* _optionCount_
+
+* ResetChatter()
+
+* GetChatterFarewell()
+** _Returns:_ *string* _backToTOCString_, *string* _farewellString_, *bool* _isImportant_
+
+* GetAgentChatRequestInfo()
+** _Returns:_ *bool* _isChatRequested_, *integer* _millisecondsSinceRequest_
+
+* IsAgentChatActive()
+** _Returns:_ *bool* _isActive_
+
+* AcceptAgentChat()
+
+* DeclineAgentChat()
+
+* GetNumDefaultQuickChats()
+** _Returns:_ *integer* _numQuickChats_
+
+* GetDefaultQuickChatName(*luaindex* _index_)
+** _Returns:_ *string* _name_
+
+* GetDefaultQuickChatMessage(*luaindex* _index_)
+** _Returns:_ *string* _message_
+
+* PlayDefaultQuickChat *private* (*luaindex* _index_)
+
+* EVENT_AGENT_CHAT_ACCEPTED
+* EVENT_AGENT_CHAT_DECLINED
+* EVENT_AGENT_CHAT_FORCED
+* EVENT_AGENT_CHAT_REQUESTED
+* EVENT_AGENT_CHAT_TERMINATED
+* EVENT_CHATTER_BEGIN (*integer* _optionCount_, *integer* _debugSource_)
+* EVENT_CHATTER_END
+* EVENT_CHAT_CATEGORY_COLOR_CHANGED (*integer* _categoryId_, *number* _red_, *number* _green_, *number* _blue_)
+* EVENT_CHAT_LOG_TOGGLED (*bool* _opened_)
+* EVENT_CHAT_MESSAGE_CHANNEL (*[MsgChannelType|#MsgChannelType]* _channelType_, *string* _fromName_, *string* _text_, *bool* _isCustomerService_, *string* _fromDisplayName_)

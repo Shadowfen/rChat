@@ -135,6 +135,7 @@ rChat_localization_strings["en"] = {
 	RCHAT_GROUPNAMESCHOICE2 = "Character Name",
 	RCHAT_GROUPNAMESCHOICE3 = "Character Name@UserID",
 	RCHAT_GROUPNAMESCHOICE4 = "Character Name(@UserID)",
+	RCHAT_GROUPNAMESCHOICE5 = "Character Name/@UserID",
 
 	-- Sync settings
 
@@ -280,6 +281,7 @@ rChat_localization_strings["en"] = {
 	RCHAT_FORMATCHOICE2 = "Character Name",
 	RCHAT_FORMATCHOICE3 = "Character Name@UserID",
 	RCHAT_FORMATCHOICE4 = "Character Name(@UserID)",
+	RCHAT_FORMATCHOICE5 = "Character Name/@UserID",
 
 	RCHAT_SETCOLORSFORTT = "Set colors for members of <<1>>",
 	RCHAT_SETCOLORSFORCHATTT = "Set colors for messages of <<1>>",
@@ -449,4 +451,8 @@ rChat_localization_strings["en"] = {
 
 	RCHAT_DISABLELOGGER = "Disable LibDebugLogger chat blocking",
 	RCHAT_DISABLELOGGERTT = "Disable LibDebugLogger's blocking of SYSTEM messages in chat",
+	
+	RCHAT_ANNOUNCE_ZONE = "Announce zone in chat",
+	RCHAT_ANNOUNCE_ZONETT = "Announce arrival to a zone in chat",
+	
 }

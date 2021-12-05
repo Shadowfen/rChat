@@ -1,4 +1,38 @@
-﻿[COLOR="DeepSkyBlue"]1.20 (40)[/COLOR]
+﻿[COLOR="DeepSkyBlue"]1.26 (46)[/COLOR]:
+[LIST]
+[*] API bump.
+[*] Require minimum version of installed LibAddonMenu to be at least 32. Earlier versions will break the user interface.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.25 (45)[/COLOR]
+[LIST]
+[*] API bump. Flames of Ambition.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.24 (44)[/COLOR]
+[LIST]
+[*] Added work-around for problem where default channel was not getting set properly. It seems that it was getting overwritten by LibSlashCommander if that library loaded after rChat.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.23 (43)[/COLOR]
+[LIST]
+[*] Fixed problem where when you turn off announce zone in chat - it would still announce the first zone that you logged into with your character. (Reported by Phinix)
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.22 (42)[/COLOR]
+[LIST]
+[*] Added the ability to announce in your chat window which zone you have arrived in so that you can look back through chat to see if you are still in the zone that some zone message was 
+posted from. This is initially turned OFF, to continue to behave the way that rChat has in the past. To turn
+it on, you can go to the Chat Window section of rChat settings to enable zone announcements. Note that
+this is only announced to you - not to everybody else in chat.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.21 (41)[/COLOR]
+[LIST]
+[*] Added name format "Character Name/@UserID" as requested by tralce.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.20 (40)[/COLOR]
 [LIST]
 [*] API bump. Blackwood
 [/LIST]

@@ -11,7 +11,7 @@ local CACHE = rChatData
 local HRS_TO_SEC = 3600
 
 -- Init
-local isAddonLoaded         = false -- OnAddonLoaded() done
+local isAddonLoaded = false -- OnAddonLoaded() done
 rChat.lastwhisp = nil
 local lastwhisp = rChat.lastwhisp
 
@@ -43,11 +43,21 @@ local defwhisper = {
     notifyIM = false,
 }
 
+local deftabs = {
+    -- ---- Chat Tab Settings
+    enableChatTabChannel = true,
+    defaultchannel = CHAT_CHANNEL_GUILD_1,
+    defaultTab = 1,
+    defaultTabName = "",
+    -- ---- Chat Tab Settings - End
+}
+
 -- Default variables to push in SavedVars
 local defaults = {
 	mention = defmention,
     spam = defspam,
     whisper = defwhisper,
+	tabs = deftabs,
 
     -- ---- Message Settings
     allZonesSameColour = true,
@@ -82,13 +92,6 @@ local defaults = {
     -- color[] stuff here too
     -- ---- Guild Settings - End
 
-    -- ---- Chat Tab Settings
-    enableChatTabChannel = true,
-    defaultchannel = CHAT_CHANNEL_GUILD_1,
-    defaultTab = 1,
-    defaultTabName = "",
-    -- ---- Chat Tab Settings - End
-
     -- ---- Group Settings
     enablepartyswitch = true,
     groupLeader = false,
@@ -109,6 +112,7 @@ local defaults = {
     enablecopy = true,
     -- colours["tabwarning"],
     disableDebugLoggerBlocking = true,
+	announce_zone = false,
     -- ---- Chat Window Settings specific options - End
 
     -- ---- Restore Options
@@ -640,59 +644,6 @@ function rChat_BuildAutomatedMessagesDialog(control, saveFunc)
     RAM.BuildAutomatedMessagesDialog(control, saveFunc)
 end
 
-
--- **************************************************************************
--- Chat Tab Functions
--- **************************************************************************
-local function refreshTabNames()
-    local totalTabs = CHAT_SYSTEM.tabPool.m_Active
-	rChat.tabNames = {}
-    if totalTabs ~= nil and #totalTabs >= 1 then
-        for idx, tmpTab in pairs(totalTabs) do
-            local tabLabel = tmpTab:GetNamedChild("Text")
-            local tmpTabName = tabLabel:GetText()
-            if tmpTabName ~= nil and tmpTabName ~= "" then
-                rChat.tabNames[idx] = tmpTabName
-            end
-        end
-    end
-	return rChat.tabNames
-end
-
-local function getTabNames()
-	if not rChat.tabNames  then
-		refreshTabNames()
-	end
-    local totalTabs = CHAT_SYSTEM.tabPool.m_Active
-	if #totalTabs ~= #rChat.tabNames then
-		refreshTabNames()
-	end
-	return rChat.tabNames
-end
-
-local function getTabIdx(tabName)
-    local tabIdx = 0
-    local totalTabs = rChat.tabNames
-    for i,v in ipairs(totalTabs) do
-        if v == tabName then
-            tabIdx = i
-            break
-        end
-    end
-    return tabIdx
-end
-
-local function OLDgetTabIdx(tabName)
-    local tabIdx = 0
-    local totalTabs = CHAT_SYSTEM.tabPool.m_Active
-    for i = 1, #totalTabs do
-        if rChat.tabNames[i] == tabName then
-            tabIdx = i
-            break
-        end
-    end
-    return tabIdx
-end
 
 -- Change ChatWindow Darkness by modifying its <Center> & <Edge>.
 -- Originally defined in virtual object ZO_ChatContainerTemplate in sharedchatsystem.xml
@@ -1245,19 +1196,6 @@ local function SetDefaultTab(tabToSet)
     end
 end
 
-function rChat.ChangeTab(tabToSet)
-    if type(tabToSet)~="number" then return end
-
-    local container=CHAT_SYSTEM.primaryContainer
-    if not container then return end
-
-    if tabToSet<1 or tabToSet>#container.windows then return end
-    if container.windows[tabToSet].tab==nil then return end
-
-    container.tabGroup:SetClickedButton(container.windows[tabToSet].tab)
-    if CHAT_SYSTEM:IsMinimized() then CHAT_SYSTEM:Maximize() end
-end
-
 local function CreateNewChatTab_PostHook()
 
     local container=CHAT_SYSTEM.primaryContainer
@@ -1271,7 +1209,7 @@ local function CreateNewChatTab_PostHook()
             tabObject.buffer:SetLineFade(NEVER_FADE, NEVER_FADE)
         end
     end
-	refreshTabNames()
+	rChat.tabNames:Refresh()
 
 end
 -- ------------------------------------------------------
@@ -1850,7 +1788,7 @@ end
 local function RestoreChatHistory()
 
     -- Set default tab at login
-    SetDefaultTab(db.defaultTab)
+    SetDefaultTab(db.tabs.defaultTab)
     -- Restore History
     if not db.history then
         rChat_ZOS.messagesWereRestored = true
@@ -1860,7 +1798,7 @@ local function RestoreChatHistory()
     if db.lastWasReloadUI and db.restoreOnReloadUI then
 
         -- RestoreChannel
-        if db.defaultchannel ~= RCHAT_CHANNEL_NONE then
+        if db.tabs.defaultchannel ~= RCHAT_CHANNEL_NONE then
             CHAT_SYSTEM:SetChannel(db.history.currentChannel, db.history.currentTarget)
         end
 
@@ -2390,8 +2328,8 @@ end
 
 -- Set channel to the default one
 local function SetToDefaultChannel()
-    if db.defaultchannel ~= RCHAT_CHANNEL_NONE then
-        CHAT_SYSTEM:SetChannel(db.defaultchannel)
+    if db.tabs.defaultchannel ~= RCHAT_CHANNEL_NONE then
+        CHAT_SYSTEM:SetChannel(db.tabs.defaultchannel)
     end
 end
 
@@ -2644,7 +2582,7 @@ local function BuildLAMPanel()
         table.insert(arrayTab, 1)
     end
 
-    refreshTabNames()
+    rChat.tabNames:Refresh()
 
     local optionsData = {}
 	
@@ -2684,7 +2622,7 @@ local function BuildLAMPanel()
                 type = "dropdown",
                 name = L(RCHAT_GEOCHANNELSFORMAT),
                 tooltip = L(RCHAT_GEOCHANNELSFORMATTT),
-                choices = {L("RCHAT_GROUPNAMESCHOICE", 1), L("RCHAT_GROUPNAMESCHOICE", 2), L("RCHAT_GROUPNAMESCHOICE", 3),L("RCHAT_GROUPNAMESCHOICE", 4)}, -- Same as group.
+                choices = {L("RCHAT_GROUPNAMESCHOICE", 1), L("RCHAT_GROUPNAMESCHOICE", 2), L("RCHAT_GROUPNAMESCHOICE", 3),L("RCHAT_GROUPNAMESCHOICE", 4),L("RCHAT_GROUPNAMESCHOICE", 5)}, -- Same as group.
                 width = "half",
                 default = defaults.geoChannelsFormat,
                 getFunc = function() return L("RCHAT_GROUPNAMESCHOICE", db.geoChannelsFormat) end,
@@ -2697,6 +2635,8 @@ local function BuildLAMPanel()
                         db.geoChannelsFormat = 3
                     elseif choice == L("RCHAT_GROUPNAMESCHOICE", 4) then
                         db.geoChannelsFormat = 4
+                    elseif choice == L("RCHAT_GROUPNAMESCHOICE", 5) then
+                        db.geoChannelsFormat = 5
                     else
                         -- When clicking on LAM default button
                         db.geoChannelsFormat = defaults.geoChannelsFormat
@@ -2946,10 +2886,10 @@ local function BuildLAMPanel()
                 type = "checkbox",
                 name = L(RCHAT_enableChatTabChannel),
                 tooltip = L(RCHAT_enableChatTabChannelT),
-                getFunc = function() return db.enableChatTabChannel end,
-                setFunc = function(newValue) db.enableChatTabChannel = newValue end,
+                getFunc = function() return db.tabs.enableChatTabChannel end,
+                setFunc = function(newValue) db.tabs.enableChatTabChannel = newValue end,
                 width = "full",
-                default = defaults.enableChatTabChannel,
+                default = defaults.tabs.enableChatTabChannel,
             },
             {-- TODO : optimize
                 type = "dropdown",
@@ -2971,38 +2911,38 @@ local function BuildLAMPanel()
                     L("RCHAT_DEFAULTCHANNELCHOICE", CHAT_CHANNEL_OFFICER_5)
                 },
                 width = "full",
-                default = defaults.defaultchannel,
-                getFunc = function() return L("RCHAT_DEFAULTCHANNELCHOICE", db.defaultchannel) end,
+                default = defaults.tabs.defaultchannel,
+                getFunc = function() return L("RCHAT_DEFAULTCHANNELCHOICE", db.tabs.defaultchannel) end,
                 setFunc = function(choice)
                     if choice == L("RCHAT_DEFAULTCHANNELCHOICE", CHAT_CHANNEL_ZONE) then
-                        db.defaultchannel = CHAT_CHANNEL_ZONE
+                        db.tabs.defaultchannel = CHAT_CHANNEL_ZONE
                     elseif choice == L("RCHAT_DEFAULTCHANNELCHOICE", CHAT_CHANNEL_SAY) then
-                        db.defaultchannel = CHAT_CHANNEL_SAY
+                        db.tabs.defaultchannel = CHAT_CHANNEL_SAY
                     elseif choice == L("RCHAT_DEFAULTCHANNELCHOICE", CHAT_CHANNEL_GUILD_1) then
-                        db.defaultchannel = CHAT_CHANNEL_GUILD_1
+                        db.tabs.defaultchannel = CHAT_CHANNEL_GUILD_1
                     elseif choice == L("RCHAT_DEFAULTCHANNELCHOICE", CHAT_CHANNEL_GUILD_2) then
-                        db.defaultchannel = CHAT_CHANNEL_GUILD_2
+                        db.tabs.defaultchannel = CHAT_CHANNEL_GUILD_2
                     elseif choice == L("RCHAT_DEFAULTCHANNELCHOICE", CHAT_CHANNEL_GUILD_3) then
-                        db.defaultchannel = CHAT_CHANNEL_GUILD_3
+                        db.tabs.defaultchannel = CHAT_CHANNEL_GUILD_3
                     elseif choice == L("RCHAT_DEFAULTCHANNELCHOICE", CHAT_CHANNEL_GUILD_4) then
-                        db.defaultchannel = CHAT_CHANNEL_GUILD_4
+                        db.tabs.defaultchannel = CHAT_CHANNEL_GUILD_4
                     elseif choice == L("RCHAT_DEFAULTCHANNELCHOICE", CHAT_CHANNEL_GUILD_5) then
-                        db.defaultchannel = CHAT_CHANNEL_GUILD_5
+                        db.tabs.defaultchannel = CHAT_CHANNEL_GUILD_5
                     elseif choice == L("RCHAT_DEFAULTCHANNELCHOICE", CHAT_CHANNEL_OFFICER_1) then
-                        db.defaultchannel = CHAT_CHANNEL_OFFICER_1
+                        db.tabs.defaultchannel = CHAT_CHANNEL_OFFICER_1
                     elseif choice == L("RCHAT_DEFAULTCHANNELCHOICE", CHAT_CHANNEL_OFFICER_2) then
-                        db.defaultchannel = CHAT_CHANNEL_OFFICER_2
+                        db.tabs.defaultchannel = CHAT_CHANNEL_OFFICER_2
                     elseif choice == L("RCHAT_DEFAULTCHANNELCHOICE", CHAT_CHANNEL_OFFICER_3) then
-                        db.defaultchannel = CHAT_CHANNEL_OFFICER_3
+                        db.tabs.defaultchannel = CHAT_CHANNEL_OFFICER_3
                     elseif choice == L("RCHAT_DEFAULTCHANNELCHOICE", CHAT_CHANNEL_OFFICER_4) then
-                        db.defaultchannel = CHAT_CHANNEL_OFFICER_4
+                        db.tabs.defaultchannel = CHAT_CHANNEL_OFFICER_4
                     elseif choice == L("RCHAT_DEFAULTCHANNELCHOICE", CHAT_CHANNEL_OFFICER_5) then
-                        db.defaultchannel = CHAT_CHANNEL_OFFICER_5
+                        db.tabs.defaultchannel = CHAT_CHANNEL_OFFICER_5
                     elseif choice == L("RCHAT_DEFAULTCHANNELCHOICE", RCHAT_CHANNEL_NONE) then
-                        db.defaultchannel = RCHAT_CHANNEL_NONE
+                        db.tabs.defaultchannel = RCHAT_CHANNEL_NONE
                     else
                         -- When user click on LAM reinit button
-                        db.defaultchannel = defaults.defaultchannel
+                        db.tabs.defaultchannel = defaults.tabs.defaultchannel
                     end
 
                 end,
@@ -3011,14 +2951,14 @@ local function BuildLAMPanel()
                 type = "dropdown",
                 name = L(RCHAT_DEFAULTTAB),
                 tooltip = L(RCHAT_DEFAULTTABTT),
-                choices = getTabNames(),
+                choices = rChat.tabNames:GetNames(),
                 width = "full",
                 getFunc = function() 
-					UpdateChoices("RCHAT_TABNAMES_DD",{choices=refreshTabNames()})
-					return db.defaultTabName end,
+					UpdateChoices("RCHAT_TABNAMES_DD",{choices=rChat.tabNames:Refresh()})
+					return db.tabs.defaultTabName end,
                 setFunc = function(choice)
-                        db.defaultTabName = choice
-                        db.defaultTab = getTabIdx(choice)
+                        db.tabs.defaultTabName = choice
+                        db.tabs.defaultTab = tabNames:GetIndex(choice)
                     end,
 				reference = "RCHAT_TABNAMES_DD",
             },
@@ -3052,7 +2992,7 @@ local function BuildLAMPanel()
                 type = "dropdown",
                 name = L(RCHAT_GROUPNAMES),
                 tooltip = L(RCHAT_GROUPNAMESTT),
-                choices = {L("RCHAT_GROUPNAMESCHOICE", 1), L("RCHAT_GROUPNAMESCHOICE", 2), L("RCHAT_GROUPNAMESCHOICE", 3)},
+                choices = {L("RCHAT_GROUPNAMESCHOICE", 1), L("RCHAT_GROUPNAMESCHOICE", 2), L("RCHAT_GROUPNAMESCHOICE", 3), L("RCHAT_GROUPNAMESCHOICE", 4), L("RCHAT_GROUPNAMESCHOICE", 5)},
                 width = "full",
                 default = defaults.groupNames,
                 getFunc = function() return L("RCHAT_GROUPNAMESCHOICE", db.groupNames) end,
@@ -3063,6 +3003,10 @@ local function BuildLAMPanel()
                         db.groupNames = 2
                     elseif choice == L("RCHAT_GROUPNAMESCHOICE", 3) then
                         db.groupNames = 3
+                    elseif choice == L("RCHAT_GROUPNAMESCHOICE", 4) then
+                        db.groupNames = 4
+                    elseif choice == L("RCHAT_GROUPNAMESCHOICE", 5) then
+                        db.groupNames = 5
                     else
                         -- When clicking on LAM default button
                         db.groupNames = defaults.groupNames
@@ -3240,6 +3184,15 @@ local function BuildLAMPanel()
                 setFunc = function(newValue) db.enablecopy = newValue end,
                 width = "full",
                 default = defaults.enablecopy,
+            },--
+            {-- Announce Zone
+                type = "checkbox",
+                name = L(RCHAT_ANNOUNCE_ZONE),
+                tooltip = L(RCHAT_ANNOUNCE_ZONETT),
+                getFunc = function() return db.announce_zone end,
+                setFunc = function(newValue) db.announce_zone = newValue end,
+                width = "full",
+                default = defaults.announce_zone,
             },--
             {-- LibDebugLogger
                 type = "checkbox",
@@ -3892,7 +3845,7 @@ local function BuildLAMPanel()
             default = getLeftColorRGB(CHAT_CHANNEL_ZONE_LANGUAGE_5),
             disabled = isDisabled_ZoneColors,
         },
-        {-- Zone Japanese right
+        {-- Zone Russian right
             type = "colorpicker",
             name = L(RCHAT_RUZONECHAT),
             tooltip = L(RCHAT_RUZONECHATTT),
@@ -4014,7 +3967,7 @@ local function BuildLAMPanel()
                 type = "dropdown",
                 name = L(RCHAT_NAMEFORMAT),
                 tooltip = L(RCHAT_NAMEFORMATTT),
-                choices = {L(RCHAT_FORMATCHOICE1), L(RCHAT_FORMATCHOICE2), L(RCHAT_FORMATCHOICE3), L(RCHAT_FORMATCHOICE4)},
+                choices = {L(RCHAT_FORMATCHOICE1), L(RCHAT_FORMATCHOICE2), L(RCHAT_FORMATCHOICE3), L(RCHAT_FORMATCHOICE4), L(RCHAT_FORMATCHOICE5)},
                 getFunc = function()
                     -- Config per guild
                     if db.formatguild[guildName] == 1 then
@@ -4025,6 +3978,8 @@ local function BuildLAMPanel()
                         return L(RCHAT_FORMATCHOICE3)
                     elseif db.formatguild[guildName] == 4 then
                         return L(RCHAT_FORMATCHOICE4)
+                    elseif db.formatguild[guildName] == 5 then
+                        return L(RCHAT_FORMATCHOICE5)
                     else
                         -- When user click on LAM reinit button
                         return L(RCHAT_FORMATCHOICE2)
@@ -4039,6 +3994,8 @@ local function BuildLAMPanel()
                         db.formatguild[guildName] = 3
                     elseif choice == L(RCHAT_FORMATCHOICE4) then
                         db.formatguild[guildName] = 4
+                    elseif choice == L(RCHAT_FORMATCHOICE5) then
+                        db.formatguild[guildName] = 5
                     else
                         -- When user click on LAM reinit button
                         db.formatguild[guildName] = 2
@@ -4172,12 +4129,12 @@ local function RevertCategories(guildName)
         for iGuilds=oldIndex, (totGuilds - 1) do
 
             -- If default channel was g1, keep it g1
-            if not (db.defaultchannel == CHAT_CATEGORY_GUILD_1 or db.defaultchannel == CHAT_CATEGORY_OFFICER_1) then
+            if not (db.tabs.defaultchannel == CHAT_CATEGORY_GUILD_1 or db.tabs.defaultchannel == CHAT_CATEGORY_OFFICER_1) then
 
-                if db.defaultchannel == (CHAT_CATEGORY_GUILD_1 + iGuilds) then
-                    db.defaultchannel = (CHAT_CATEGORY_GUILD_1 + iGuilds - 1)
-                elseif db.defaultchannel == (CHAT_CATEGORY_OFFICER_1 + iGuilds) then
-                    db.defaultchannel = (CHAT_CATEGORY_OFFICER_1 + iGuilds - 1)
+                if db.tabs.defaultchannel == (CHAT_CATEGORY_GUILD_1 + iGuilds) then
+                    db.tabs.defaultchannel = (CHAT_CATEGORY_GUILD_1 + iGuilds - 1)
+                elseif db.tabs.defaultchannel == (CHAT_CATEGORY_OFFICER_1 + iGuilds) then
+                    db.tabs.defaultchannel = (CHAT_CATEGORY_OFFICER_1 + iGuilds - 1)
                 end
 
             end
@@ -4228,16 +4185,26 @@ local function RegisterChatEvents()
     end
 end
 
+local function OnPlayerActivated_ZoneLoad()
+	if db.announce_zone == false then 
+		return 
+	end
+	local zoneName = ZO_CachedStrFormat("<<C:1>>", GetZoneNameByIndex(GetCurrentMapZoneIndex()))
+	d("Arrived in Zone: " ..zoneName)
+end
+
 -- Registers the formatMessage function with the libChat to handle chat formatting.
-local function OnPlayerActivated()
+local function OnPlayerActivated_Initialize()
 
     EVENT_MANAGER:UnregisterForEvent(rChat.name, EVENT_PLAYER_ACTIVATED)
 
     rData.sceneFirst = false
     rData.activeTab = 1
 
+	OnPlayerActivated_ZoneLoad()
+	
     ZO_PreHook(CHAT_SYSTEM, "ValidateChatChannel", function(self)
-            if (db.enableChatTabChannel  == true) and (self.currentChannel ~= CHAT_CHANNEL_WHISPER) then
+            if (db.tabs.enableChatTabChannel  == true) and (self.currentChannel ~= CHAT_CHANNEL_WHISPER) then
                 local tabIndex = self.primaryContainer.currentBuffer:GetParent().tab.index
                 db.chatTabChannel[tabIndex] = db.chatTabChannel[tabIndex] or {}
                 local chattab = db.chatTabChannel[tabIndex]
@@ -4249,7 +4216,7 @@ local function OnPlayerActivated()
 	if CHAT_SYSTEM.primaryContainer and CHAT_SYSTEM.primaryContainer.HandleTabClick then
 		ZO_PreHook(CHAT_SYSTEM.primaryContainer, "HandleTabClick", function(self, tab)
             rData.activeTab = tab.index
-            if (db.enableChatTabChannel == true) then
+            if (db.tabs.enableChatTabChannel == true) then
                 local tabIndex = tab.index
                 if db.chatTabChannel[tabIndex] then
                     CHAT_SYSTEM:SetChannel(db.chatTabChannel[tabIndex].channel, db.chatTabChannel[tabIndex].target)
@@ -4280,8 +4247,8 @@ local function OnPlayerActivated()
 
     -- Show 1000 lines instead of 200 & Change fade delay
     ShowFadedLines()
-    -- Get Chat Tab Names stored in chatTabNames {}
-    getTabNames()
+    -- Load Chat Tab Names stored in chatTabNames {}
+    rChat.tabNames:GetNames()
     -- Rebuild Lam Panel
     BuildLAMPanel()
     --
@@ -4317,7 +4284,8 @@ local function OnPlayerActivated()
     LINK_HANDLER:RegisterCallback(LINK_HANDLER.LINK_MOUSE_UP_EVENT, OnLinkClicked)
 
     RegisterChatEvents()
-    SetDefaultTab(db.defaultTab)
+    SetDefaultTab(db.tabs.defaultTab)
+    EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_PLAYER_ACTIVATED, OnPlayerActivated_ZoneLoad)
 
 end
 
@@ -4365,7 +4333,7 @@ local function OnGroupMemberLeft(_, characterName, reason, wasMeWhoLeft)
         -- Go back to default channel when leaving a group
         if GetGroupSize() <= 1 then
             -- Only if we was on party
-            if CHAT_SYSTEM.currentChannel == CHAT_CHANNEL_PARTY and db.defaultchannel ~= RCHAT_CHANNEL_NONE then
+            if CHAT_SYSTEM.currentChannel == CHAT_CHANNEL_PARTY and db.tabs.defaultchannel ~= RCHAT_CHANNEL_NONE then
                 SetToDefaultChannel()
             end
         end
@@ -4480,6 +4448,25 @@ local function SVvers(sv)
 		sv.nozonetags = sv.delzonetags
 		sv.delzonetags = nil
 	end
+	
+	-- v 1.24
+	if sv.tabs == nil then sv.tabs = {} end
+	if sv.enableChatTabChannel then
+		sv.tabs.enableChatTabChannel = sv.enableChatTabChannel
+		sv.enableChatTabChannel = nil
+	end
+	if sv.defaultchannel then
+		sv.tabs.defaultchannel = sv.defaultchannel
+		sv.defaultchannel = nil
+	end
+	if sv.defaultTab then
+		sv.tabs.defaultTab = sv.defaultTab
+		sv.defaultTab = nil
+	end
+	if sv.defaultTabName then
+		sv.tabs.defaultTabName = sv.defaultTabName
+		sv.defaultTabName = nil
+	end
 end
 
 local function clearSV(savedVars)
@@ -4541,6 +4528,10 @@ local function OnAddonLoaded(_, addonName)
     -- add control for LibDebugLogger
     rChat_ZOS.disableDebugLoggerBlocking = db.disableDebugLoggerBlocking
     
+    if rChat.tabNames == nil then
+        rChat.tabNames = rChat_TabNames:New()
+    end
+	
     --LAM
     BuildLAM()
 
@@ -4552,10 +4543,6 @@ local function OnAddonLoaded(_, addonName)
         db.chatTabChannel = {}
     end
 
-    if not rChat.tabNames then
-        rChat.tabNames = {}
-    end
-	
 	-- Set Window opaqueness
 	ChangeChatWindowDarkness(true)
 
@@ -4633,7 +4620,7 @@ local function OnAddonLoaded(_, addonName)
     EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_GROUP_MEMBER_LEFT, OnGroupMemberLeft)
 
     isAddonLoaded = true
-    EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_PLAYER_ACTIVATED, OnPlayerActivated)
+    EVENT_MANAGER:RegisterForEvent(rChat.name, EVENT_PLAYER_ACTIVATED, OnPlayerActivated_Initialize)
 end
 
 
