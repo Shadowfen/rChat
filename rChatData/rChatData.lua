@@ -17,10 +17,9 @@ local cmds
 --
 
 function rChatData.resetLineNumber()
+	cache.lineNumber = 0
     if cache.Entries then
         cache.lineNumber = #cache.Entries
-    else
-        cache.lineNumber = 0
     end
     return cache.lineNumber + 1
 end

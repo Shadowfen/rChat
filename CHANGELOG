@@ -1,4 +1,14 @@
-﻿[COLOR="DeepSkyBlue"]1.26 (46)[/COLOR]:
+﻿[COLOR="DeepSkyBlue"]1.28 (48)[/COLOR]:
+[LIST]
+[*] API bump.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.27 (47)[/COLOR]:
+[LIST]
+[*] Fix the key binding for chat tabs.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.26 (46)[/COLOR]:
 [LIST]
 [*] API bump.
 [*] Require minimum version of installed LibAddonMenu to be at least 32. Earlier versions will break the user interface.
