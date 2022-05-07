@@ -45,7 +45,7 @@ function TabNames:GetNames()
 end
 
 function TabNames:GetIndex(tabName)
-    local tabIdx = 0
+    local tabIdx = 1
     for i,v in ipairs(self.nameList) do
         if v == tabName then
             tabIdx = i
@@ -60,22 +60,34 @@ end
 --]]
 
 local function isValidTabIndex(tabndx)
-    if type(tabToSet)~="number" then return false end
+    if type(tabndx)~="number" then 
+		return false 
+	end
 
     local container=CHAT_SYSTEM.primaryContainer
-    if not container then return false end
+    if not container then 
+		return false 
+	end
 
-    if tabToSet<1 or tabToSet>#container.windows then return false end
-    if container.windows[tabToSet].tab==nil then return false end
+    if tabndx<1 or tabndx>#container.windows then 
+		return false 
+	end
+    if container.windows[tabndx].tab==nil then 
+		return false 
+	end
 	return true
 end
 
 function rChat.ChangeTab(tabToSet)
-    if isValidTabIndex(tabToSet) == false then return end
+    if isValidTabIndex(tabToSet) == false then 
+		return 
+	end
 
     local container=CHAT_SYSTEM.primaryContainer
-    container.tabGroup:SetClickedButton(container.windows[tabToSet].tab)
-    if CHAT_SYSTEM:IsMinimized() then CHAT_SYSTEM:Maximize() end
+	container.tabGroup:SetClickedButton(container.windows[tabToSet].tab)
+    if CHAT_SYSTEM:IsMinimized() then 
+		CHAT_SYSTEM:Maximize() 
+	end
 end
 
 

@@ -2303,7 +2303,7 @@ local function SyncChatConfig(shouldSync, whichChar)
 
     end
 
-    -- If they're was too many tabs before, drop them
+    -- If there were too many tabs before, drop them
     local removeTabs = true
     while removeTabs do
         -- Too many tabs, deleting one
@@ -4204,7 +4204,10 @@ local function OnPlayerActivated_Initialize()
 	OnPlayerActivated_ZoneLoad()
 	
     ZO_PreHook(CHAT_SYSTEM, "ValidateChatChannel", function(self)
-            if (db.tabs.enableChatTabChannel  == true) and (self.currentChannel ~= CHAT_CHANNEL_WHISPER) then
+			if self.currentChannel == CHAT_CHANNEL_WHISPER then
+				return
+			end
+            if (db.tabs.enableChatTabChannel  == true) then
                 local tabIndex = self.primaryContainer.currentBuffer:GetParent().tab.index
                 db.chatTabChannel[tabIndex] = db.chatTabChannel[tabIndex] or {}
                 local chattab = db.chatTabChannel[tabIndex]
