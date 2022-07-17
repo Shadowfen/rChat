@@ -1,4 +1,9 @@
-﻿[COLOR="DeepSkyBlue"]1.29 (49)[/COLOR]:
+﻿[COLOR="DeepSkyBlue"]1.30 (50)[/COLOR]:
+[LIST]
+[*] API bump (High Isle).
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.29 (49)[/COLOR]:
 [LIST]
 [*] Reapply the key binding fix for chat tabs that somehow got lost in the merge.
 [/LIST]
