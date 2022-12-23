@@ -204,6 +204,7 @@ local coloredChannels  = {
     CHAT_CATEGORY_ZONE_GERMAN,     -- LANGUAGE_3
     CHAT_CATEGORY_ZONE_JAPANESE,     -- LANGUAGE_4
     CHAT_CATEGORY_ZONE_RUSSIAN,     -- LANGUAGE_5
+    CHAT_CATEGORY_ZONE_SPANISH,     -- LANGUAGE_6
     CHAT_CATEGORY_MONSTER_SAY,
     CHAT_CATEGORY_MONSTER_YELL,
     CHAT_CATEGORY_MONSTER_WHISPER,
@@ -251,6 +252,7 @@ rData.chatCategories = {
     CHAT_CATEGORY_ZONE_GERMAN,
     CHAT_CATEGORY_ZONE_JAPANESE,
     CHAT_CATEGORY_ZONE_RUSSIAN,
+    CHAT_CATEGORY_ZONE_SPANISH,
     CHAT_CATEGORY_MONSTER_SAY,
     CHAT_CATEGORY_MONSTER_YELL,
     CHAT_CATEGORY_MONSTER_WHISPER,
@@ -272,23 +274,23 @@ rData.guildCategories = {
 }
 
 ------------------------------------------------------
--- bring in rChat_Internals functions
+-- bring in/alias rChat_Internals functions
 local formatLanguageTag = rChat_Internals.formatLanguageTag
-local formatName = rChat_Internals.formatName
-local formatSeparator = rChat_Internals.formatSeparator
-local formatTag = rChat_Internals.formatTag
-local formatText = rChat_Internals.formatText
-local formatTimestamp = rChat_Internals.formatTimestamp
-local formatWhisperTag = rChat_Internals.formatWhisperTag
-local formatZoneTag = rChat_Internals.formatZoneTag
+local formatName        = rChat_Internals.formatName
+local formatSeparator   = rChat_Internals.formatSeparator
+local formatTag         = rChat_Internals.formatTag
+local formatText        = rChat_Internals.formatText
+local formatTimestamp   = rChat_Internals.formatTimestamp
+local formatWhisperTag  = rChat_Internals.formatWhisperTag
+local formatZoneTag     = rChat_Internals.formatZoneTag
 local produceDisplayString = rChat_Internals.produceDisplayString
-local GetChannelColors = rChat_Internals.GetChannelColors
-local GetGuildIndex = rChat_Internals.GetGuildIndex
-local initColorTable = rChat_Internals.initColorTable
-local produceCopyFrom = rChat_Internals.produceCopyFrom
-local produceRawString = rChat_Internals.produceRawString
-local reduceString = rChat_Internals.reduceString
-local UseNameFormat = rChat_Internals.UseNameFormat
+local GetChannelColors  = rChat_Internals.GetChannelColors
+local GetGuildIndex     = rChat_Internals.GetGuildIndex
+local initColorTable    = rChat_Internals.initColorTable
+local produceCopyFrom   = rChat_Internals.produceCopyFrom
+local produceRawString  = rChat_Internals.produceRawString
+local reduceString      = rChat_Internals.reduceString
+local UseNameFormat     = rChat_Internals.UseNameFormat
 ------------------------------------------------------
 
 local MENU_CATEGORY_RCHAT = nil
@@ -388,21 +390,27 @@ function rChat.FormatRawText(text)
         elseif linkType == ACHIEVEMENT_LINK_TYPE then
             -- zo_strformat to avoid masculine/feminine problems
             return "[" .. zo_strformat(GetAchievementInfo(param1)) .. "]"
+			
         -- SysMessages Links CharacterNames
         elseif linkType == CHARACTER_LINK_TYPE then
             return text
+			
         elseif linkType == CHANNEL_LINK_TYPE then
             return text
+			
         elseif linkType == BOOK_LINK_TYPE then
             return "[" .. GetLoreBookTitleFromLink(newtext) .. "]"
+			
         -- SysMessages Links DisplayNames
         elseif linkType == DISPLAY_NAME_LINK_TYPE then
             -- No formatting here
             return "[@" .. param1 .. "]"
+			
         -- Used for Sysmessages
         elseif linkType == "quest_item" then
             -- No formatting here
             return "[" .. zo_strformat(SI_TOOLTIP_ITEM_NAME, GetQuestItemNameFromLink(newtext)) .. "]"
+			
         elseif linkType == RCHAT_LINK then
             -- No formatting here .. maybe yes ?..
             return text
@@ -420,6 +428,7 @@ end
 function rChat.ShowAutoMsg()
     if RAM then
         RAM.ShowAutoMsg()
+		
     else
         CHAT_SYSTEM.Zo_AddMessage("[rChat] Automated Message System is not enabled")
     end
@@ -440,7 +449,8 @@ function automatedMessagesList:Init(control)
     }
 
     self.masterList = {}
-    ZO_ScrollList_AddDataType(self.list, 1, "rChatXMLAutoMsgRowTemplate", 32, function(control, data) self:SetupEntry(control, data) end)
+    ZO_ScrollList_AddDataType(self.list, 1, "rChatXMLAutoMsgRowTemplate", 
+			32, function(control, data) self:SetupEntry(control, data) end)
     ZO_ScrollList_EnableHighlight(self.list, "ZO_ThinListHighlight")
     self.sortFunction = function(listEntry1, listEntry2) return ZO_TableOrderingFunction(listEntry1.data, listEntry2.data, self.currentSortKey, SortKeys, self.currentSortOrder) end
 
@@ -643,48 +653,61 @@ end
 function rChat_BuildAutomatedMessagesDialog(control, saveFunc)
     RAM.BuildAutomatedMessagesDialog(control, saveFunc)
 end
-
+-- end Automated Messages code section
+-- ------------------------------------------------------
 
 -- Change ChatWindow Darkness by modifying its <Center> & <Edge>.
--- Originally defined in virtual object ZO_ChatContainerTemplate in sharedchatsystem.xml
+-- Originally defined in virtual object ZO_ChatContainerTemplate 
+-- in sharedchatsystem.xml
 local function ChangeChatWindowDarkness(changeSetting)
 
     if dbWindowDarkness == 0 then
         ZO_ChatWindowBg:SetCenterTexture("EsoUI/Art/ChatWindow/chat_BG_center.dds")
         ZO_ChatWindowBg:SetEdgeTexture("EsoUI/Art/ChatWindow/chat_BG_edge.dds", 256, 256, 32)
+		
     else
         ZO_ChatWindowBg:SetCenterColor(0, 0, 0, 1)
         ZO_ChatWindowBg:SetEdgeColor(0, 0, 0, 1)
         if db.windowDarkness == 11 and changeSetting then
             ZO_ChatWindowBg:SetCenterTexture("rChat/dds/chat_bg_center_100.dds")
             ZO_ChatWindowBg:SetEdgeTexture("rChat/dds/chat_bg_edge_100.dds", 256, 256, 32)
+			
         elseif db.windowDarkness == 10 then
             ZO_ChatWindowBg:SetCenterTexture("rChat/dds/chat_bg_center_90.dds")
             ZO_ChatWindowBg:SetEdgeTexture("rChat/dds/chat_bg_edge_90.dds", 256, 256, 32)
+			
         elseif db.windowDarkness == 9 then
             ZO_ChatWindowBg:SetCenterTexture("rChat/dds/chat_bg_center_80.dds")
             ZO_ChatWindowBg:SetEdgeTexture("rChat/dds/chat_bg_edge_80.dds", 256, 256, 32)
+			
         elseif db.windowDarkness == 8 then
             ZO_ChatWindowBg:SetCenterTexture("rChat/dds/chat_bg_center_70.dds")
             ZO_ChatWindowBg:SetEdgeTexture("rChat/dds/chat_bg_edge_70.dds", 256, 256, 32)
+			
         elseif db.windowDarkness == 7 then
             ZO_ChatWindowBg:SetCenterTexture("rChat/dds/chat_bg_center_60.dds")
             ZO_ChatWindowBg:SetEdgeTexture("rChat/dds/chat_bg_edge_60.dds", 256, 256, 32)
+			
         elseif db.windowDarkness == 6 then
             ZO_ChatWindowBg:SetCenterTexture("rChat/dds/chat_bg_center_50.dds")
             ZO_ChatWindowBg:SetEdgeTexture("rChat/dds/chat_bg_edge_50.dds", 256, 256, 32)
+			
         elseif db.windowDarkness == 5 then
             ZO_ChatWindowBg:SetCenterTexture("rChat/dds/chat_bg_center_40.dds")
             ZO_ChatWindowBg:SetEdgeTexture("rChat/dds/chat_bg_edge_40.dds", 256, 256, 32)
+			
         elseif db.windowDarkness == 4 then
             ZO_ChatWindowBg:SetCenterTexture("rChat/dds/chat_bg_center_30.dds")
             ZO_ChatWindowBg:SetEdgeTexture("rChat/dds/chat_bg_edge_30.dds", 256, 256, 32)
+			
         elseif db.windowDarkness == 3 then
             ZO_ChatWindowBg:SetCenterTexture("rChat/dds/chat_bg_center_20.dds")
             ZO_ChatWindowBg:SetEdgeTexture("rChat/dds/chat_bg_edge_20.dds", 256, 256, 32)
+			
         elseif db.windowDarkness == 2 then
             ZO_ChatWindowBg:SetCenterTexture("rChat/dds/chat_bg_center_10.dds")
             ZO_ChatWindowBg:SetEdgeTexture("rChat/dds/chat_bg_edge_10.dds", 256, 256, 32)
+			
         elseif db.windowDarkness == 1 then
             ZO_ChatWindowBg:SetCenterColor(0, 0, 0, 0)
             ZO_ChatWindowBg:SetEdgeColor(0, 0, 0, 0)
@@ -876,6 +899,7 @@ function rChat_TryToJumpToIm(isMinimized)
     end
 
 end
+-- end IM section
 -- ----------------------------------------------------------------
 
 -- ------------------------------------------------------
@@ -1096,6 +1120,8 @@ local function OnLinkClicked(rawLink, mouseButton, linkText, color, linkType, li
         return true
     end
 end
+
+
 -- ------------------------------------------------------
 -- Tab functions
 
@@ -1169,10 +1195,12 @@ function rChat.SwitchToNextTab()
         if (not hasSwitched) then
             CHAT_SYSTEM.primaryContainer:HandleTabClick(CHAT_SYSTEM.primaryContainer.windows[1].tab)
             local tabText = GetControl("ZO_ChatWindowTabTemplate1Text")
-            tabText:SetColor(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_SELECTED))
+            tabText:SetColor(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS,
+									INTERFACE_TEXT_COLOR_SELECTED))
             tabText:GetParent().state = PRESSED
             local oldTabText = GetControl("ZO_ChatWindowTabTemplate" .. #CHAT_SYSTEM.primaryContainer.windows .. "Text")
-            oldTabText:SetColor(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_CONTRAST))
+            oldTabText:SetColor(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS,
+									INTERFACE_TEXT_COLOR_CONTRAST))
             oldTabText:GetParent().state = UNPRESSED
         end
     end
@@ -1200,6 +1228,8 @@ local function CreateNewChatTab_PostHook()
 
     local container=CHAT_SYSTEM.primaryContainer
     if not container then return end
+	
+	local NEVER_FADE = 0
 	
     for tabIndex, tabObject in ipairs(container.windows) do
         if db.augmentHistoryBuffer then
@@ -1304,10 +1334,12 @@ local function SaveChatHistory(typeOf)
         if CHAT_SYSTEM.textEntry.commandHistory.entries then
             db.history.textEntry.entries = CHAT_SYSTEM.textEntry.commandHistory.entries
             db.history.textEntry.numEntries = CHAT_SYSTEM.textEntry.commandHistory.index
+			
         else
             db.history.textEntry.entries = {}
             db.history.textEntry.numEntries = 0
         end
+		
     else
         CACHE.clearCache()
     end
@@ -4217,6 +4249,7 @@ local function OnPlayerActivated_Initialize()
         end)
 
 	if CHAT_SYSTEM.primaryContainer and CHAT_SYSTEM.primaryContainer.HandleTabClick then
+		CHAT_SYSTEM.primaryContainer:AddFadeInReference()
 		ZO_PreHook(CHAT_SYSTEM.primaryContainer, "HandleTabClick", function(self, tab)
             rData.activeTab = tab.index
             if (db.tabs.enableChatTabChannel == true) then
@@ -4226,6 +4259,7 @@ local function OnPlayerActivated_Initialize()
                 end
             end
         end)
+		
 	elseif LibDebugLogger then
 		local logger = LibDebugLogger("rChat")
 		logger:SetEnabled(true)

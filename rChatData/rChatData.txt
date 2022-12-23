@@ -9,7 +9,7 @@
 ## Version: 1.6
 ## AddOnVersion: 8
 ## Author: Shadowfen
-## APIVersion: 101033 101034
+## APIVersion: 101036 101034
 ## SavedVariables: RCHAT_CACHE RCHAT_CMDS
 
 rChatData.lua

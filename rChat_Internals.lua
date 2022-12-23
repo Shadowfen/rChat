@@ -17,6 +17,7 @@ local RC_SEGTYPE_MENTION = 1
 local RC_SEGTYPE_LINK = 2
 local RC_SEGTYPE_PAD = 3
 local RC_SEGTYPE_TEXTURE = 4
+local RC_SEGTYPE_QUICKLINK = 5
 
 -- Used for rChat LinkHandling
 local RCHAT_LINK = "p"
@@ -53,6 +54,14 @@ local lang_zone_channels = {
     [CHAT_CHANNEL_ZONE_LANGUAGE_4] = true,
     [CHAT_CHANNEL_ZONE_LANGUAGE_5] = true,
 }
+
+--Detect the QuickChat messages |s<number><number:optional><number:optional><number:optional>|s
+-- (teken from pChat with permission)
+local function isQuickLink(text, start)
+	local start, _ = string.find(text, "|s%d%d-|s", start)
+	return start
+end
+
 
 -- return true if chanCode is one of the two whisper channels
 local function isWhisperChannel( chanCode )
@@ -826,6 +835,7 @@ end
         2 = link,    RC_SEGTYPE_LINK
         3 = pad,     RC_SEGTYPE_PAD
         4 = texture, RC_SEGTYPE_TEXTURE
+		5 = qlink,   RC_SEGTYPE_QUICKLINK
     raw = rawText, (if nil then raw is the same as text)
   }
 
@@ -942,6 +952,36 @@ function rChat_Internals.getTexture(textstr)
     return rslts
 end
 
+-- QuickChat messages |s<number><number:optional><number:optional><number:optional>|s
+local function getQuickLinks(rslts, text, starttxt, endtxt)
+	if rslts == nil then rslts = {} end
+	local quicklinkpattern = "|s(%d%d-)|s"
+    local last = 1
+	starttxt = starttxt or 1
+	endtxt = endtxt or #text
+	local segtxt = string.sub(text, starttxt, endtxt)
+    local start,fin, b, d, t = string.find(segtxt, quicklinkpattern, last)
+    if not start then
+		addFragment(rslts, starttxt, #segtxt, RC_SEGTYPE_BARE, segtxt)
+		return rslts, starttxt, #segtxt
+	end
+	local ent
+    while( start ) do
+        if last ~= start then
+			addFragment(rslts, last, start-1, RC_SEGTYPE_BARE, segtxt)
+            last = start
+        end
+		ent = addFragment(rslts, start, fin, RC_SEGTYPE_QUICKLINK, segtxt)
+		ent.raw = t
+        last = fin+1
+        start, fin, b, d, t = string.find(segtxt,quicklinkpattern, last)
+    end
+    if last < #segtxt then
+		addFragment(rslts, last, #segtxt, RC_SEGTYPE_BARE, segtxt)
+    end
+    return rslts, start, endtxt
+end
+
 -- get a table of start and end positions for the link
 -- handlers in the text string (returns fragment table)
 local function getLinks(text)
@@ -953,12 +993,19 @@ local function getLinks(text)
     local last = 1
     local start,fin, b, d, t = string.find(text, linkpattern, last)
     if not start then
-		addFragment(rslts, 1, #text, RC_SEGTYPE_BARE, text)
+		rslts, start = getQuickLinks(rslts,text)
+		if not start then
+			addFragment(rslts, start, #text-start+1, RC_SEGTYPE_BARE, text)
+		end
 		return rslts
 	end
 	local ent
     while( start ) do
         if last ~= start then
+			rslts, start = getQuickLinks(rslts,text, start)
+			if not start then
+				addFragment(rslts, start, #text-start+1, RC_SEGTYPE_BARE, text)
+			end
 			addFragment(rslts, last, start-1, RC_SEGTYPE_BARE, text)
             last = start
         end
