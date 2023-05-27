@@ -8,10 +8,10 @@
 ## Description: rChat overhauls the way text is displayed in the chatbox.
       The rChat addon is based on the old pChat addon by DesertDwellers, Ayantir, and Puddy.
       You must not have both rChat and pChat enabled for a single character.
-## Version: 1.31
-## AddOnVersion: 51
+## Version: 1.33
+## AddOnVersion: 53
 ## Author: Shadowfen
-## APIVersion: 101036 101034
+## APIVersion: 101038 101037
 ## SavedVariables: RCHAT_OPTS
 ## DependsOn: LibSFUtils LibAddonMenu-2.0>=32 LibMediaProvider-1.0 rChatData
 ## OptionalDependsOn: LibDebugLogger LibChatMessage LuiExtended LibSlashCommander

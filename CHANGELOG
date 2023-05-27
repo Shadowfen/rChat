@@ -1,4 +1,14 @@
-﻿[COLOR="DeepSkyBlue"]1.31 (51)[/COLOR]:
+﻿[COLOR="DeepSkyBlue"]1.33 (53)[/COLOR]:
+[LIST]
+[*] API bump (Necrom).
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.32 (52)[/COLOR]:
+[LIST]
+[*] API bump (Scribes of Fate).
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.31 (51)[/COLOR]:
 [LIST]
 [*] Added potential fix for missing/faded chat window bug reported by fredd and SaskyaChangeling after High Isle was released.
 [*] API bump for Firesong
