@@ -1,4 +1,29 @@
-﻿[COLOR="DeepSkyBlue"]1.33 (53)[/COLOR]:
+﻿[COLOR="DeepSkyBlue"]1.38 (58)[/COLOR]:
+[LIST]
+[*] API bump.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.37 (57)[/COLOR]:
+[LIST]
+[*] Adopted fix provided by by IsaacSin.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.36 (56)[/COLOR]:
+[LIST]
+[*] Fixed error in rChat_Internals.getLinks found by IsaacSin.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.35 (55)[/COLOR]:
+[LIST]
+[*] Fixed error in SaveTabsCategories found by IsaacSin.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.34 (54)[/COLOR]:
+[LIST]
+[*] Fixed error message while selecting the default active tab reported by Childeric. Used the fix suggested by DakJaniels which correctly referred to rChat.tabNames instead of just tabNames.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.33 (53)[/COLOR]:
 [LIST]
 [*] API bump (Necrom).
 [/LIST]

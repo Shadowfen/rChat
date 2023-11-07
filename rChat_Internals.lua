@@ -56,7 +56,7 @@ local lang_zone_channels = {
 }
 
 --Detect the QuickChat messages |s<number><number:optional><number:optional><number:optional>|s
--- (teken from pChat with permission)
+-- (taken from pChat with permission)
 local function isQuickLink(text, start)
 	local start, _ = string.find(text, "|s%d%d-|s", start)
 	return start
@@ -842,12 +842,15 @@ end
 --]]
 -- a fragment table is not the same as a segment table! (yet)
 local function addFragment(tbl, start, stop, ftype, msgtext)
+	ftype =ftype or RC_SEGTYPE_BARE
+	if start > stop then return {} end
 	local entry = {
 		start=start,
 		stop=stop,
-		type=(ftype or RC_SEGTYPE_BARE),
+		type=ftype,
 		text = string.sub(msgtext,start,stop)
 		}
+	--d(SF.dstr(" ","Adding", #tbl+1,".",start, stop, ftype, text, "from",msgtext))
 	table.insert(tbl,entry)
 	return entry
 end
@@ -962,7 +965,7 @@ local function getQuickLinks(rslts, text, starttxt, endtxt)
 	local segtxt = string.sub(text, starttxt, endtxt)
     local start,fin, b, d, t = string.find(segtxt, quicklinkpattern, last)
     if not start then
-		addFragment(rslts, starttxt, #segtxt, RC_SEGTYPE_BARE, segtxt)
+		--addFragment(rslts, starttxt, #segtxt, RC_SEGTYPE_BARE, segtxt)
 		return rslts, starttxt, #segtxt
 	end
 	local ent
@@ -991,19 +994,23 @@ local function getLinks(text)
     local linkpattern = "|H(.-):(.-)|h(.-)|h"
     local rslts={}
     local last = 1
-    local start,fin, b, d, t = string.find(text, linkpattern, last)
+    local start,fin, b, dr, t = string.find(text, linkpattern, last)
     if not start then
-		rslts, start = getQuickLinks(rslts,text)
-		if not start then
-			addFragment(rslts, start, #text-start+1, RC_SEGTYPE_BARE, text)
+		-- no links in text
+		rslts, start1 = getQuickLinks(rslts,text,last)
+		if next(rslts) == nil then
+			-- no quick links either
+			addFragment(rslts, last, #text-last+1, RC_SEGTYPE_BARE, text)
 		end
 		return rslts
 	end
+	
 	local ent
+	-- got here so found a link
     while( start ) do
-        if last ~= start then
-			rslts, start = getQuickLinks(rslts,text, start)
-			if not start then
+		if last ~= start then
+			rslts, start1 = getQuickLinks(rslts,text, last,start-1)
+			if start == start1 then
 				addFragment(rslts, start, #text-start+1, RC_SEGTYPE_BARE, text)
 			end
 			addFragment(rslts, last, start-1, RC_SEGTYPE_BARE, text)
@@ -1012,7 +1019,7 @@ local function getLinks(text)
 		ent = addFragment(rslts, start, fin, RC_SEGTYPE_LINK, text)
 		ent.raw = t
         last = fin+1
-        start, fin, b, d, t = string.find(text,linkpattern, last)
+        start, fin, b, dr, t = string.find(text,linkpattern, last)
     end
     if last < #text then
 		addFragment(rslts, last, #text, RC_SEGTYPE_BARE, text)
@@ -1116,7 +1123,7 @@ local function processLinks(entry, text)
     local rslts = getLinks(text)    -- get the locations of link handlers
     local newtext = {}              -- segment table
     -- Look for link handlers
-    for k, v in ipairs(rslts) do
+	for k, v in ipairs(rslts) do
 		addSegment(newtext, v.type, v.text)
     end
     return newtext

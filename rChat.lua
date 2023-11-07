@@ -2214,8 +2214,8 @@ local function SaveTabsCategories()
 	if not CHAT_SYSTEM.primaryContainer then return end
 
     local localPlayer = GetUnitName("player")
-	if not db.chatConfSync[localplayer] then 
-		d("No chatConfSync for "..tostring(localplayer))
+	if not db.chatConfSync[localPlayer] then 
+		d("No chatConfSync for "..tostring(localPlayer))
 		return 
 	end
     for numTab in ipairs (CHAT_SYSTEM.primaryContainer.windows) do
@@ -2990,7 +2990,7 @@ local function BuildLAMPanel()
 					return db.tabs.defaultTabName end,
                 setFunc = function(choice)
                         db.tabs.defaultTabName = choice
-                        db.tabs.defaultTab = tabNames:GetIndex(choice)
+                        db.tabs.defaultTab = rChat.tabNames:GetIndex(choice)
                     end,
 				reference = "RCHAT_TABNAMES_DD",
             },
