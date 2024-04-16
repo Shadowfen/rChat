@@ -1,4 +1,19 @@
-﻿[COLOR="DeepSkyBlue"]1.38 (58)[/COLOR]:
+﻿[COLOR="DeepSkyBlue"]1.41 (61)[/COLOR]:
+[LIST]
+[*] Updated font files to new format used by ZOS.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.40 (60)[/COLOR]:
+[LIST]
+[*] Fixed initial setting in "Message Settings".
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.39 (59)[/COLOR]:
+[LIST]
+[*] Added a new setting in "Message Settings" that will allow you to turn of Friend-Player status changed messages. Requested by Smugger21.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.38 (58)[/COLOR]:
 [LIST]
 [*] API bump.
 [/LIST]

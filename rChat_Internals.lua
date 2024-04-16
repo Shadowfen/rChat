@@ -134,7 +134,7 @@ function rChat_Internals.formatTag(entry, ndx)
     local guild_number, isOfc = rChat_Internals.GetGuildIndex(entry.channel)
     if guild_number == 0 then return nil end
 
-    local guild_name = rChat.SafeGetGuildName(guild_number)
+    local guild_name = SF.SafeGetGuildName(guild_number)
     local tag
     if not isOfc then
         tag = db.guildTags[guild_name]
@@ -656,7 +656,7 @@ end
 function rChat_Internals.GetGuildToon(guildIndex, atname)
     if guildIndex == 0 then return nil end
 
-    local guildName, guildId = rChat.SafeGetGuildName(guildIndex)
+    local guildName, guildId = SF.SafeGetGuildName(guildIndex)
     if not guildId then return nil end
 
     local hastoon, rawtoonname = GetGuildMemberCharacterInfo(guildId,
@@ -733,7 +733,7 @@ function rChat_Internals.formatName(channel, from, isCS, fromDisplayName)
         local anchor = atname or toonname
 		local displaynm
 		local guildIndex = rChat_Internals.GetGuildIndex(channel)
-		local guildName, guildId = rChat.SafeGetGuildName(guildIndex)
+		local guildName, guildId = SF.SafeGetGuildName(guildIndex)
 		if db.formatguild[guildName] then
         	displaynm = rChat_Internals.UseNameFormat(atname, toonname, nick, db.formatguild[guildName])
 		else

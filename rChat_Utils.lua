@@ -9,7 +9,7 @@ local RCHAT_CHANNEL_NONE = 99
 
 -- ------------------------------------------------------
 -- Guild functions
-
+--[[
 -- does not return nil for name! - if bad then return nil guildId
 function rChat.SafeGetGuildName(index)
 
@@ -26,6 +26,7 @@ function rChat.SafeGetGuildName(index)
     end
     return guildName, guildId
 end
+--]]
 
 -- ------------------------------------------------------
 function rChat.getPlayerNames()

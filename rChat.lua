@@ -72,6 +72,7 @@ local defaults = {
     addChannelAndTargetToHistory = true,
     urlHandling = true,
     nicknames = "",
+	enableFriendStatus = true,
     -- ---- Message Settings - End
 
     -- ---- Timestamp Settings
@@ -1417,7 +1418,7 @@ local function UpdateGuildChannelNames()
     -- Each guild
     local ChanInfoArray = ZO_ChatSystem_GetChannelInfo()
     for i = 1, GetNumGuilds() do
-        local gname = rChat.SafeGetGuildName(i)
+        local gname = SF.SafeGetGuildName(i)
         local guild_channel, officer_channel = GetGuildChannel(i)
         if db.showTagInEntry then
 
@@ -2370,7 +2371,7 @@ local function SaveGuildIndexes()
 
     rData.guildIndexes = {}
     for guild = 1, GetNumGuilds() do
-        local guildName = rChat.SafeGetGuildName(guild)
+        local guildName = SF.SafeGetGuildName(guild)
         rData.guildIndexes[guildName] = guild
     end
 
@@ -2409,6 +2410,7 @@ end
 -- triggers when EVENT_FRIEND_PLAYER_STATUS_CHANGED
 local function OnFriendPlayerStatusChanged(displayName, characterName, oldStatus, newStatus)
 
+	if not db.enableFriendStatus then return end
     local statusMessage
 
     -- DisplayName is linkable
@@ -2464,7 +2466,7 @@ local function UpdateGuildSwitches()
     local guildName, guildId
     for i = 1, GetNumGuilds() do
 
-        guildName, guildId = rChat.SafeGetGuildName(i)
+        guildName, guildId = SF.SafeGetGuildName(i)
         if guildId then
             local mem, ofc = GetGuildChannel(i)
             -- Get saved string
@@ -2601,7 +2603,7 @@ local function BuildLAMPanel()
     local localPlayer = GetUnitName("player")
     local fontsDefined = LMP:List('font')
 
-        -- Sync Character Select
+	-- Sync Character Select
 	SyncCharacterSelectChoices()
 
     -- CHAT_SYSTEM.primaryContainer.windows doesn't exists yet at OnAddonLoaded. So using the rChat reference.
@@ -2623,7 +2625,22 @@ local function BuildLAMPanel()
         type = "submenu",
         name = SF.GetIconized(RCHAT_OPTIONSH, SF.hex.bronze),
         controls = {
-            {-- LAM Option Remove Zone Tags
+			{ -- Enable Friend Status Messages
+                type = "checkbox",
+                name = L(RCHAT_FRIENDSTATUS),
+                --tooltip = L(RCHAT_FRIENDSTATUSTT),
+                getFunc = function() return db.enableFriendStatus end,
+                setFunc = function(newValue) db.enableFriendStatus = newValue end,
+                width = "full",
+                default = defaults.enableFriendStatus,
+			},
+			{
+				type = "divider",
+				width = "full", --or "half" (optional)
+				height = 10,
+				alpha = 0.5,
+			},
+			{-- LAM Option Remove Zone Tags
                 type = "checkbox",
                 name = L(RCHAT_DELZONETAGS),
                 tooltip = L(RCHAT_DELZONETAGSTT),
@@ -3933,7 +3950,7 @@ local function BuildLAMPanel()
     for guild = 1, GetNumGuilds() do
 
         -- Guildname
-        local guildName, guildId = rChat.SafeGetGuildName(guild)
+        local guildName, guildId = SF.SafeGetGuildName(guild)
 
         -- If recently added to a new guild and never go in menu db.formatguild[guildName] won't exist
         if not (db.formatguild[guildName]) then
@@ -4202,11 +4219,14 @@ local function RegisterChatEvents()
     local evthdlrs = {
         [EVENT_CHAT_MESSAGE_CHANNEL] = FormatMessage,
         [EVENT_GROUP_TYPE_CHANGED] = OnGroupTypeChanged,
-        [EVENT_FRIEND_PLAYER_STATUS_CHANGED] = OnFriendPlayerStatusChanged,
         [EVENT_IGNORE_ADDED] = OnIgnoreAdded,
         [EVENT_IGNORE_REMOVED] = OnIgnoreRemoved,
         [EVENT_GROUP_MEMBER_LEFT] = OnGroupMemberLeftLC
     }
+	if db.enableFriendStatus then
+		evthdlrs[EVENT_FRIEND_PLAYER_STATUS_CHANGED] = OnFriendPlayerStatusChanged
+	end
+
 
     if CHAT_ROUTER and CHAT_ROUTER.RegisterMessageFormatter then
         for evtId, evthdlr in pairs(evthdlrs) do
@@ -4226,6 +4246,7 @@ local function OnPlayerActivated_ZoneLoad()
 end
 
 -- Registers the formatMessage function with the libChat to handle chat formatting.
+-- only executes once
 local function OnPlayerActivated_Initialize()
 
     EVENT_MANAGER:UnregisterForEvent(rChat.name, EVENT_PLAYER_ACTIVATED)
@@ -4552,9 +4573,10 @@ local function OnAddonLoaded(_, addonName)
     -- Saved variables
     rChat.save = loadSavedVars(rChat.savedvar, rChat.sv_version, defaults)
     db = rChat.save
-    -- new setting
-    if not db.mention.mentiontbl then db.mention.mentiontbl = {} end
-    if not db.mention.emoteEnabled then db.mention.emoteEnabled = false end
+    -- new setting (provided in defaults)
+    --db.mention.mentiontbl = SF.safeTable(db.mention.mentiontbl)
+    --if not db.mention.emoteEnabled then db.mention.emoteEnabled = false end
+    --if db.enableFriendStatus == nil then db.enableFriendStatus = true end
 	
     
     -- init vars for antispam

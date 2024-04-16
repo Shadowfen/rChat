@@ -31,7 +31,8 @@ rChat_localization_strings["en"] = {
 	RCHAT_enableWhisperTabT = "Enable redirect your whispers to a specific tab.",
 
 	RCHAT_OPTIONSH = "Messages Settings",
-
+	RCHAT_FRIENDSTATUS = "Enable display of Friend status messages.",
+	
 	RCHAT_GUILDNUMBERS = "Guild numbers",
 	RCHAT_GUILDNUMBERSTT = "Shows the guild number next to the guild tag",
 
