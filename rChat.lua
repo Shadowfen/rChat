@@ -909,8 +909,9 @@ end
 -- Set copied text into chatbox text entry, if possible
 local function CopyToTextEntry(message)
 
+    if not message then return end
     -- Max of inputbox is 351 chars
-    if string.len(message) < 351 then
+    if #message < 351 then
         if CHAT_SYSTEM.textEntry:GetText() == "" then
             CHAT_SYSTEM.textEntry:Open(message)
             ZO_ChatWindowTextEntryEditBox:SelectAll()
@@ -923,7 +924,7 @@ end
 local function CopyMessage(numLine)
     -- Args are passed as string through LinkHandlerSystem
     local entry = CACHE.getCacheEntry(numLine)
-    if entry then
+    if entry and entry.rawT and entry.rawT.text then
         CopyToTextEntry(entry.rawT.text)
     end
 end
@@ -932,7 +933,7 @@ end
 local function CopyLine(numLine)
     -- Args are passed as string through LinkHandlerSystem
     local entry = CACHE.getCacheEntry(numLine)
-    if entry then
+    if entry and entry.rawLine then
         CopyToTextEntry(entry.rawLine)
     end
 end
