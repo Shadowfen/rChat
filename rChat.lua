@@ -2249,7 +2249,6 @@ local function MinimizeChatInMenus()
     -- "hud" is base scene (with "hudui")
     local hudScene = SCENE_MANAGER:GetScene("hud")
     hudScene:RegisterCallback("StateChange", function(oldState, newState)
-
         if db.chatMinimizedInMenus then
             if newState == SCENE_HIDDEN and SCENE_MANAGER:GetNextScene():GetName() ~= "hudui" then
                 CHAT_SYSTEM:Minimize()
@@ -2263,6 +2262,7 @@ local function MinimizeChatInMenus()
         end
 
     end)
+
 
 end
 
