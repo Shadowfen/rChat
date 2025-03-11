@@ -1,4 +1,9 @@
-﻿[COLOR="DeepSkyBlue"]1.43 (63)[/COLOR]:
+﻿[COLOR="DeepSkyBlue"]1.44 (64)[/COLOR]:
+[LIST]
+[*] API bump.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.43 (63)[/COLOR]:
 [LIST]
 [*] Fix error encountered when trying to use the "Copy message" menu option in chat on a system message (i.e. not from a player). It now properly ignores "Copy message" requests on system messages.
 In order to copy a system message from the chat window, you should use the "Copy line" menu option instead.
