@@ -1,4 +1,10 @@
-﻿[COLOR="DeepSkyBlue"]1.44 (64)[/COLOR]:
+﻿[COLOR="DeepSkyBlue"]1.45 (65)[/COLOR]:
+[LIST]
+[*] Convert from .txt manifest to .addon
+[*] Update libary-required versions for dependent libraries
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.44 (64)[/COLOR]:
 [LIST]
 [*] API bump.
 [/LIST]

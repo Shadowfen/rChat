@@ -4,7 +4,13 @@
 			"path": "."
 		},
 		{
-			"path": "D:/Fen/eso source code/esoui-10.6/esoui"
+			"path": "../LibAddonMenu-2.0"
+		},
+		{
+			"path": "../LibChatMessage"
+		},
+		{
+			"path": "../LibMediaProvider"
 		}
 	],
 	"settings": {}
