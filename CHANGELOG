@@ -1,4 +1,10 @@
-﻿[COLOR="DeepSkyBlue"]1.45 (65)[/COLOR]:
+﻿[COLOR="DeepSkyBlue"]1.46 (66)[/COLOR]:
+[LIST]
+[*] Update to a new version of LibMMediaProvider which changed its name and thereby broke everything that used it prior to this. Now requires the updated LibMediaProvider version 1.1.
+[/LIST]
+
+
+[COLOR="DeepSkyBlue"]1.45 (65)[/COLOR]:
 [LIST]
 [*] Convert from .txt manifest to .addon
 [*] Update libary-required versions for dependent libraries
