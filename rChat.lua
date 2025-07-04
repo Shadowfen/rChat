@@ -4650,7 +4650,7 @@ local function OnAddonLoaded(_, addonName)
     ZO_PreHook("SetChatCategoryColor", SaveChatCategoryColors)
 
     -- Chat option change categories filters, add a callLater because settings are set after this function triggers.
-    ZO_PreHook("ZO_ChatOptions_ToggleChannel", function() zo_callLater(SaveTabsCategories, 100) end)
+    ZO_PreHook("ZO_ChatOptions_ToggleChannel", function() zo_callLater(function() SaveTabsCategories() end, 100) end)
 
     -- Right click on a tab name
     ZO_PreHook("ZO_ChatSystem_ShowOptions", function(control) return ChatSystemShowOptions() end)

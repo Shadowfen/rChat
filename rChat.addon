@@ -13,7 +13,7 @@
 ## Author: Shadowfen
 ## APIVersion: 101047 101046
 ## SavedVariables: RCHAT_OPTS
-## DependsOn: LibSFUtils>=60 LibAddonMenu-2.0>=40 LibMediaProvider>=34 rChatData
+## DependsOn: LibSFUtils>=61 LibAddonMenu-2.0>=40 LibMediaProvider>=34 rChatData
 ## OptionalDependsOn: LibDebugLogger LibChatMessage>=118 LuiExtended LibSlashCommander
 
 lang/en.lua

@@ -1,16 +1,27 @@
 {
 	"folders": [
 		{
+			"name": "rChat",
 			"path": "."
 		},
 		{
+			"name": "LibSFUtils",
+			"path": "../LibSFUtils"
+		},
+		{
+			"name": "LibAddonMenu-2.0",
 			"path": "../LibAddonMenu-2.0"
 		},
 		{
+			"name": "LibChatMessage",
 			"path": "../LibChatMessage"
 		},
 		{
+			"name": "LibMediaProvider",
 			"path": "../LibMediaProvider"
+		},
+		{
+			"path": "../LibDebugLogger"
 		}
 	],
 	"settings": {}
