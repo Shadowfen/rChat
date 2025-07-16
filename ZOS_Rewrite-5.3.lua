@@ -234,6 +234,7 @@ local COMBINED_CHANNELS = {
 --
 -- Override of a core function. Nothing is changed except in SKIP_CHANNELS set as above
 --  (Allows us to be able to set if we want to filter system messages.)
+--[[
 function CHAT_OPTIONS:InitializeFilterButtons(dialogControl)
     --generate a table of entry data from the chat category header information
     local entryData = {}
@@ -287,6 +288,65 @@ function CHAT_OPTIONS:InitializeFilterButtons(dialogControl)
         count = count + 1
     end
 end
+--]]
+
+-- new name of ZOS function that used to be InitializeFilterButtons
+function CHAT_OPTIONS:BuildFilterButtons(dialogControl)
+    --generate a table of entry data from the chat category header information
+    local entryData = {}
+    local lastEntry = CHAT_CATEGORY_HEADER_COMBAT - 1
+
+    for i = CHAT_CATEGORY_HEADER_CHANNELS, lastEntry do
+        if not IsChannelCategoryCommunicationRestricted(i) then
+            if SKIP_CHANNELS[i] == nil and GetString("SI_CHATCHANNELCATEGORIES", i) ~= "" then
+                if COMBINED_CHANNELS[i] == nil then
+                    entryData[i] =
+                    {
+                        channels = { i },
+                        name = GetString("SI_CHATCHANNELCATEGORIES", i),
+                    }
+                else
+                    --create the entry for those with combined channels just once
+                    local parentChannel = COMBINED_CHANNELS[i].parentChannel
+
+                    if not entryData[parentChannel] then
+                        entryData[parentChannel] =
+                        {
+                            channels = {},
+                            name = GetString(COMBINED_CHANNELS[i].name),
+                        }
+                    end
+
+                    table.insert(entryData[parentChannel].channels, i)
+                end
+            end
+        end
+    end
+
+    --now generate and anchor buttons
+    local filterAnchor = ZO_Anchor:New(TOPLEFT, self.filterSection, TOPLEFT, 0, 0)
+    local count = 0
+
+    local sortedEntries = {}
+    for _, entry in pairs(entryData) do
+        sortedEntries[#sortedEntries + 1] = entry
+    end
+
+    table.sort(sortedEntries, FilterComparator)
+
+    for _, entry in ipairs(sortedEntries) do
+        local filter = self.filterPool:AcquireObject()
+
+        local button = filter:GetNamedChild("Check")
+        ZO_CheckButton_SetLabelText(button, entry.name)
+        button.channels = entry.channels
+        table.insert(self.filterButtons, button)
+
+        ZO_Anchor_BoxLayout(filterAnchor, filter, count, FILTERS_PER_ROW, FILTER_PAD_X, FILTER_PAD_Y, FILTER_WIDTH, FILTER_HEIGHT, INITIAL_XOFFS, INITIAL_YOFFS)
+        count = count + 1
+    end
+end
+
 
 
 -- from ingame\chatsystem\sharedchatsystem.lua
