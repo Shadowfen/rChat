@@ -6,7 +6,7 @@ local L = GetString
 --[[ ---------------------------------------------
 A lookup table of tab names indexed by tab index
 --]]
-rChat_TabNames = {}
+rChat_TabNames = ZO_Object:Subclass()
 local TabNames = rChat_TabNames
 
 function TabNames:New()
