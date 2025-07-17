@@ -1,12 +1,13 @@
+local SF = LibSFUtils
+local L = GetString
+
 rChat = rChat or {}
 
 rChat.AutoMsg = {}
 
-local SF = LibSFUtils
 local RAM = rChat.AutoMsg
 
-local L = GetString
-
+--[[
 ZO_CreateStringId("RCHAT_AUTOMSG_NAME_DEFAULT_TEXT",    L(RCHAT_RCHAT_AUTOMSG_NAME_DEFAULT_TEXT))
 ZO_CreateStringId("RCHAT_AUTOMSG_MESSAGE_DEFAULT_TEXT", L(RCHAT_RCHAT_AUTOMSG_MESSAGE_DEFAULT_TEXT))
 ZO_CreateStringId("RCHAT_AUTOMSG_MESSAGE_TIP1_TEXT",    L(RCHAT_RCHAT_AUTOMSG_MESSAGE_TIP1_TEXT))
@@ -20,6 +21,7 @@ ZO_CreateStringId("RCHAT_AUTOMSG_ADD_AUTO_MSG",         L(RCHAT_RCHAT_AUTOMSG_AD
 ZO_CreateStringId("RCHAT_AUTOMSG_EDIT_AUTO_MSG",        L(RCHAT_RCHAT_AUTOMSG_EDIT_AUTO_MSG))
 ZO_CreateStringId("SI_BINDING_NAME_RCHAT_SHOW_AUTO_MSG", L(RCHAT_SI_BINDING_NAME_RCHAT_SHOW_AUTO_MSG))
 ZO_CreateStringId("RCHAT_AUTOMSG_REMOVE_AUTO_MSG",      L(RCHAT_RCHAT_AUTOMSG_REMOVE_AUTO_MSG))
+--]]
 
 -- These require access to rChat.save and rChat.data (local vars in rChat.lua that have
 -- been stuffed in rChat table so that we can get to them from here.
