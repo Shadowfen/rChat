@@ -1,4 +1,15 @@
-﻿[COLOR="DeepSkyBlue"]1.46 (66)[/COLOR]:
+﻿[COLOR="DeepSkyBlue"]1.48 (68)[/COLOR]:
+[LIST]
+[*] Fixed error message in rChatData.lua, line 8. (Reported by wlfnddl.)
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.47 (67)[/COLOR]:
+[LIST]
+[*] Reapplied the changes to override an internal ZOS function which allows us to select or deselect the System channel from a channel tab using Options. 
+[*] Updating to use new capabilities provided by LibSFUtils version 61.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.46 (66)[/COLOR]:
 [LIST]
 [*] Update to a new version of LibMMediaProvider which changed its name and thereby broke everything that used it prior to this. Now requires the updated LibMediaProvider version 1.1.
 [/LIST]

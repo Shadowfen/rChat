@@ -8,16 +8,16 @@ local SF = LibSFUtils
 
 rChat = {
     name = "rChat",
-    version = "1.46",
+    version = SF.colors.gold:Colorize("1.48"),
     settingName = "rChat",
-    settingDisplayName = "rChat",
-    author = "Shadowfen",
+    settingDisplayName = SF.colors.gold:Colorize("rChat"),
+    author =  SF.colors.purple:Colorize("Shadowfen"),
     savedvar = "RCHAT_OPTS",
     sv_version = 2,
+    evtmgr = SF.EvtMgr:New("rChat")
 }
-rChat.settingDisplayName = SF.GetIconized(rChat.settingDisplayName, SF.colors.gold.hex)
-rChat.version = SF.GetIconized(rChat.version, SF.colors.gold.hex)
-rChat.author = SF.GetIconized(rChat.author, SF.colors.purple.hex)
+
+rChat_Logger = SF.SafeLoggerFunction(rChat, "logger", "rChat")
 
 SF.LoadLanguage(rChat_localization_strings, "en")
 
@@ -25,42 +25,3 @@ rChat.data = {
     cachedMessages = {}, -- This must be init before OnAddonLoaded because it will receive data before this event.
 }
 
---[[
-Logger implementation provided for use with SF.VersionChecker in checkLibraryVersions.
-Messages will be sent to the chat window.
---]]
-rChat_Logger = {
-    Error = function(self,...)  self.chatter:systemMessage("ERROR: "..string.format(...)) end,
-    Warn = function(self,...)  self.chatter:systemMessage("WARN: "..string.format(...)) end,
-    Info = function(self,...)  self.chatter:debugMsg("INFO: "..string.format(...)) end,
-    Debug = function(self,...)  self.chatter:debugMsg("DEBUG: "..string.format(...)) end,
-
-    Create = function(self, addon_name)
-        local o = {}
-        setmetatable(o, self)
-        self.__index = self
-        o.addonName = addon_name
-        o.chatter = SF.addonChatter:New(addon_name)
-        return o
-    end,
-
-    enableDebug = function(self,...) self.chatter:enableDebug() end,
-    disableDebug = function(self,...) self.chatter:disableDebug() end,
-    SetEnabled = function(self, val)
-            if val == true then
-                self.chatter:enableDebug()
-            else
-                self.chatter:disableDebug()
-            end
-        end,
-}
-
-function rChat.checkLibraryVersions()
-    local vc = SF.VersionChecker("rChat")
-    local logger = rChat_Logger:Create("rChat")
-    vc:Enable(logger)
-    vc:CheckVersion("LibAddonMenu-2.0", 32)
-    vc:CheckVersion("LibMediaProvider-1.0", 18)
-    vc:CheckVersion("LibChatMessage", 105)
-    vc:CheckVersion("LibSFUtils", 31)
-end
