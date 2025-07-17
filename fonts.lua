@@ -8,7 +8,6 @@ local LMP = LibMediaProvider
 
 LMP:Register("font", "ESO Standard Font", "EsoUI/Common/Fonts/univers57.slug")
 LMP:Register("font", "ESO Book Font", "EsoUI/Common/Fonts/ProseAntiquePSMT.slug")
--- LMP:Register("font", "ESO Handwritten Font"] = "EsoUI/Common/Fonts/Handwritten_Bold.slug" -- Too hard to read.
 LMP:Register("font", "ESO Tablet Font", "EsoUI/Common/Fonts/TrajanPro-Regular.slug")
 -- LMP:Register("font", "ESO Gamepad Font"] = "EsoUI/Common/Fonts/FuturaStd-Condensed.slug"  -- Too hard to read.
 
