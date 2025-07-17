@@ -543,7 +543,9 @@ function rChat.SaveAutomatedMessage(name, message, isNew)
             rChatXMLAutoMsg:GetNamedChild("Warning"):SetHidden(false)
             rChatXMLAutoMsg:GetNamedChild("Warning"):SetText(L(RCHAT_SAVMSGERRALREADYEXISTS))
             rChatXMLAutoMsg:GetNamedChild("Warning"):SetColor(1, 0, 0)
+
             zo_callLater(function() rChatXMLAutoMsg:GetNamedChild("Warning"):SetHidden(true) end, 5000)
+
         end
 
     end
@@ -2768,7 +2770,7 @@ local function OnPlayerActivated_Initialize()
     rChat.UpdateGuildSwitches()
     SaveGuildIndexes()
 
-	ZOS_CreateChannelData()
+	rChat.ZOS_CreateChannelData()
 	rChat.LoadCommands(GetString(SI_CHANNEL_SWITCH_WHISPER_REPLY))
 
     -- Set up chat window(s)
@@ -2817,6 +2819,7 @@ local function SwitchToParty(characterName)
         end,
         200
     )
+    
 
 end
 
@@ -3059,57 +3062,43 @@ local function OnAddonLoaded(_, addonName)
     MinimizeChatInMenus()
 
     rChat.BuildNicknames()
+    rChat.BuildFilterButtons()
 
     InitializeURLHandling()
 
     -- PreHook ReloadUI, SetCVar, LogOut & Quit to handle Chat Import/Export
-    ZO_PreHook("ReloadUI", function()
-        SaveChatHistory(1)
+    local function saveHistandConf(tp)
+        SaveChatHistory(tp)
         SaveChatConfig()
+    end
+
+    ZO_PreHook("ReloadUI", function()
+        saveHistandConf(1)
     end)
 
     ZO_PreHook("SetCVar", function()
-        SaveChatHistory(1)
-        SaveChatConfig()
+        saveHistandConf(1)
     end)
 
     ZO_PreHook("Logout", function()
-        SaveChatHistory(2)
-        SaveChatConfig()
+        saveHistandConf(2)
     end)
 
     ZO_PreHook("Quit", function()
-        SaveChatHistory(3)
-        SaveChatConfig()
+        saveHistandConf(3)
     end)
 
     -- Social option change color
     ZO_PreHook("SetChatCategoryColor", SaveChatCategoryColors)
 
     -- Chat option change categories filters, add a callLater because settings are set after this function triggers.
+    
     ZO_PreHook("ZO_ChatOptions_ToggleChannel", function() zo_callLater(function() SaveTabsCategories() end, 100) end)
+    
 
     -- Right click on a tab name
     ZO_PreHook("ZO_ChatSystem_ShowOptions", function(control) return ChatSystemShowOptions() end)
     ZO_PreHook("ZO_ChatWindow_OpenContextMenu", function(control) return ChatSystemShowOptions(control.index) end)
-    
-    -- Bindings
-    --[[
-    ZO_CreateStringId("SI_BINDING_NAME_RCHAT_TOGGLE_CHAT_WINDOW", L(RCHAT_TOGGLECHATBINDING))
-    ZO_CreateStringId("SI_BINDING_NAME_RCHAT_WHISPER_MY_TARGET", L(RCHAT_WHISPMYTARGETBINDING))
-    ZO_CreateStringId("SI_BINDING_NAME_TAB_1", L(RCHAT_Tab1))
-    ZO_CreateStringId("SI_BINDING_NAME_TAB_2", L(RCHAT_Tab2))
-    ZO_CreateStringId("SI_BINDING_NAME_TAB_3", L(RCHAT_Tab3))
-    ZO_CreateStringId("SI_BINDING_NAME_TAB_4", L(RCHAT_Tab4))
-    ZO_CreateStringId("SI_BINDING_NAME_TAB_5", L(RCHAT_Tab5))
-    ZO_CreateStringId("SI_BINDING_NAME_TAB_6", L(RCHAT_Tab6))
-    ZO_CreateStringId("SI_BINDING_NAME_TAB_7", L(RCHAT_Tab7))
-    ZO_CreateStringId("SI_BINDING_NAME_TAB_8", L(RCHAT_Tab8))
-    ZO_CreateStringId("SI_BINDING_NAME_TAB_9", L(RCHAT_Tab9))
-    ZO_CreateStringId("SI_BINDING_NAME_TAB_10", L(RCHAT_Tab10))
-    ZO_CreateStringId("SI_BINDING_NAME_TAB_11", L(RCHAT_Tab11))
-    ZO_CreateStringId("SI_BINDING_NAME_TAB_12", L(RCHAT_Tab12))
-    --]]
     
     -- handlers
     rChat.evtmgr:registerEvt(EVENT_GUILD_SELF_JOINED_GUILD, OnSelfJoinedGuild)

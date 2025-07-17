@@ -25,6 +25,7 @@ fonts.lua
 rChat_Global.lua
 
 ZOS_Rewrite-5.3.lua
+
 rChat_Tabs.lua
 rChat_Internals.lua
 rChat_AutomatedMsgs.lua

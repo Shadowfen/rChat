@@ -13,7 +13,7 @@ rChat_ZOS = {
     disableDebugLoggerBlocking = true,
 }
 
---
+
 function CHAT_ROUTER.AddSystemMessage(self,messageText)
     if not IsChatSystemAvailableForCurrentPlatform() then
         table.insert(rChat_ZOS.cachedMessages, messageText)
@@ -22,111 +22,32 @@ function CHAT_ROUTER.AddSystemMessage(self,messageText)
 
     self:FireCallbacks("FormattedChatMessage", messageText, CHAT_CATEGORY_SYSTEM)
 end
+--[[
+-- Modification of core function from chathandlers.lua to save messages to table if chat system is not up yet
+function CHAT_ROUTER:AddSystemMessage(messageText)
+    if not IsChatSystemAvailableForCurrentPlatform() then
+        table.insert(rChat_ZOS.cachedMessages, messageText)
+        return
+    end
+    self:FormatAndAddChatMessage("AddSystemMessage", messageText)
+end
 
 function CHAT_ROUTER.AddDebugMessage(self,messageText)
     self:AddSystemMessage(messageText)
 end
-
--- Rewrite of core function to save messages if chat system not yet up
--- (from addoncompatibility.lua)
---function KEYBOARD_CHAT_SYSTEM:AddMessage(text)
-function CHAT_ROUTER:AddSystemMessage(text)
-    if LibDebugLogger then
-        if rChat_ZOS.disableDebugLoggerBlocking then
-            if LibDebugLogger:IsBlockChatOutputEnabled() then
-                LibDebugLogger:SetBlockChatOutputEnabled(false)
-            end
-        else
-            if not LibDebugLogger:IsBlockChatOutputEnabled() then
-                LibDebugLogger:SetBlockChatOutputEnabled(true)
-            end
-        end
-    end
-
-	if CHAT_SYSTEM.primaryContainer and rChat_ZOS.messagesWereRestored then
-        for k in ipairs(CHAT_SYSTEM.containers) do
-			local chatContainer = CHAT_SYSTEM.containers[k]
-            chatContainer:AddEventMessageToContainer(rChat_ZOS.FormatSysMessage(text), CHAT_CATEGORY_SYSTEM)
-		end
-	else
-		table.insert(rChat_ZOS.cachedMessages, text)
-	end
-end
---
---
-
--- Rewrite of core local adding restoration of messages from cache
-local function EmitMessage(text)
-    if CHAT_ROUTER and rChat_ZOS.messagesWereRestored then
-        if text == "" then
-            text = "[Empty String]"
-        end
-        CHAT_ROUTER:AddSystemMessage(text)
-        --CHAT_ROUTER:AddDebugMessage(text)
-    else
-        table.insert(rChat_ZOS.cachedMessages, text)
-    end
-end
-
--- Copy of core local (no changes from debugutils.lua)
-local function EmitTable(t, indent, tableHistory)
-    indent        = indent or "."
-    tableHistory    = tableHistory or {}
-
-    for k, v in pairs(t)
-    do
-        local vType = type(v)
-
-        EmitMessage(indent.."("..vType.."): "..tostring(k).." = "..tostring(v))
-
-        if(vType == "table")
-        then
-            if(tableHistory[v])
-            then
-                EmitMessage(indent.."Avoiding cycle on table...")
-            else
-                tableHistory[v] = true
-                EmitTable(v, indent.."  ", tableHistory)
-            end
-        end
-    end
-end
---
---
--- Copy of a core function (from debugutils.lua)
---   The local EmitMessage() function was rewritten
---   to handle the case of when the chat system is
---   not up.
---   The core df() is still implemented in terms of d() so
---   it is also changed by this.
-function d(...)
-    for i = 1, select("#", ...) do
-        local value = select(i, ...)
-        if(type(value) == "table")
-        then
-            EmitTable(value)
-        else
-            EmitMessage(tostring (value))
-        end
-    end
-end
 --]]
---
+
 
 -- from libraries\utility\zo_tabbuttongroup.lua
 -- Rewrite of core function to use saved var color instead of parameter
-function ZO_TabButton_Text_SetTextColor(self, color)
+function ZO_TabButton_Text_SetTextColor(control, color)
     if self.allowLabelColorChanges then
-        local label = GetControl(self, "Text")
+        local label = control:GetNamedChild("Text")
         if rChat_ZOS.tabwarning_color then
             label:SetColor(rChat_ZOS.tabwarning_color:UnpackRGBA())
         else
             label:SetColor(color:UnpackRGBA())
         end
-    end
-    if(self.allowLabelColorChanges) then
-	    local label = GetControl(self, "Text")
-        label:SetColor(color:UnpackRGBA())
     end
 end
 
@@ -158,11 +79,14 @@ local CHANNEL_ORDERING_WEIGHT = {
     [CHAT_CATEGORY_ZONE_JAPANESE] = 120,
     [CHAT_CATEGORY_ZONE_RUSSIAN] = 130,
     [CHAT_CATEGORY_ZONE_SPANISH] = 140,
+    [CHAT_CATEGORY_ZONE_CHINESE_S] = 150,
 
     [CHAT_CATEGORY_SYSTEM] = 200,
+
 }
 
--- Copy of a core function (from chatoptions.lua)
+-- Copy of a core function (from chatoptions.lua) (unchanged)
+-- used by BuildFilterButtons
 local function FilterComparator(left, right)
     local leftPrimaryCategory = left.channels[1]
     local rightPrimaryCategory = right.channels[1]
@@ -183,7 +107,7 @@ end
 
 -- from ingame\chatsystem\chatoptions.lua
 -- Copy of a core data
--- (CHAT_CATEGORY_SYSTEM is commented out from ZOS defaults so we can unselect
+-- (CHAT_CATEGORY_SYSTEM is commented out from ZOS defaults so we can select/unselect
 -- system messages in a chat tab)
 local SKIP_CHANNELS = {
     -- [CHAT_CATEGORY_SYSTEM] = true,
@@ -231,67 +155,14 @@ local COMBINED_CHANNELS = {
 		parentChannel = CHAT_CATEGORY_MONSTER_SAY, 
 		name = SI_CHAT_CHANNEL_NAME_NPC},
 }
---
--- Override of a core function. Nothing is changed except in SKIP_CHANNELS set as above
+
+
+-- Reimplementation of a core function based on ChatOptions:BuildFilterButtons from chatoptions.lua. 
+-- Nothing is changed except in SKIP_CHANNELS set as above
 --  (Allows us to be able to set if we want to filter system messages.)
---[[
-function CHAT_OPTIONS:InitializeFilterButtons(dialogControl)
-    --generate a table of entry data from the chat category header information
-    local entryData = {}
-    local lastEntry = CHAT_CATEGORY_HEADER_COMBAT - 1
-
-    for i = CHAT_CATEGORY_HEADER_CHANNELS, lastEntry do
-        if(SKIP_CHANNELS[i] == nil and GetString("SI_CHATCHANNELCATEGORIES", i) ~= "") then
-
-            if(COMBINED_CHANNELS[i] == nil) then
-                entryData[i] = {
-                    channels = { i },
-                    name = GetString("SI_CHATCHANNELCATEGORIES", i),
-                }
-            else
-                --create the entry for those with combined channels just once
-                local parentChannel = COMBINED_CHANNELS[i].parentChannel
-
-                if(not entryData[parentChannel]) then
-                    entryData[parentChannel] = {
-                        channels = { },
-                        name = GetString(COMBINED_CHANNELS[i].name),
-                    }
-                end
-
-                table.insert(entryData[parentChannel].channels, i)
-            end
-        end
-    end
-
-    --now generate and anchor buttons
-    local filterAnchor = ZO_Anchor:New(TOPLEFT, self.filterSection, TOPLEFT, 0, 0)
-    local count = 0
-
-    local sortedEntries = {}
-    for _, entry in pairs(entryData) do
-        sortedEntries[#sortedEntries + 1] = entry
-    end
-
-    table.sort(sortedEntries, FilterComparator)
-
-    for _, entry in ipairs(sortedEntries) do
-        local filter, key = self.filterPool:AcquireObject()
-        filter.key = key
-
-        local button = filter:GetNamedChild("Check")
-        ZO_CheckButton_SetLabelText(button, entry.name)
-        button.channels = entry.channels
-        table.insert(self.filterButtons, button)
-
-        ZO_Anchor_BoxLayout(filterAnchor, filter, count, FILTERS_PER_ROW, FILTER_PAD_X, FILTER_PAD_Y, FILTER_WIDTH, FILTER_HEIGHT, INITIAL_XOFFS, INITIAL_YOFFS)
-        count = count + 1
-    end
-end
---]]
-
--- new name of ZOS function that used to be InitializeFilterButtons
-function CHAT_OPTIONS:BuildFilterButtons(dialogControl)
+-- Used to be an override, but the original is only called once before this addon loads.
+-- So, created an rChat version to call on our own addon load to modify the tables/controls.
+function rChat.BuildFilterButtons(dialogControl)
     --generate a table of entry data from the chat category header information
     local entryData = {}
     local lastEntry = CHAT_CATEGORY_HEADER_COMBAT - 1
@@ -322,9 +193,8 @@ function CHAT_OPTIONS:BuildFilterButtons(dialogControl)
             end
         end
     end
-
     --now generate and anchor buttons
-    local filterAnchor = ZO_Anchor:New(TOPLEFT, self.filterSection, TOPLEFT, 0, 0)
+    local filterAnchor = ZO_Anchor:New(TOPLEFT, CHAT_OPTIONS.filterSection, TOPLEFT, 0, 0)
     local count = 0
 
     local sortedEntries = {}
@@ -335,12 +205,12 @@ function CHAT_OPTIONS:BuildFilterButtons(dialogControl)
     table.sort(sortedEntries, FilterComparator)
 
     for _, entry in ipairs(sortedEntries) do
-        local filter = self.filterPool:AcquireObject()
+        local filter = CHAT_OPTIONS.filterPool:AcquireObject()
 
         local button = filter:GetNamedChild("Check")
         ZO_CheckButton_SetLabelText(button, entry.name)
         button.channels = entry.channels
-        table.insert(self.filterButtons, button)
+        table.insert(CHAT_OPTIONS.filterButtons, button)
 
         ZO_Anchor_BoxLayout(filterAnchor, filter, count, FILTERS_PER_ROW, FILTER_PAD_X, FILTER_PAD_Y, FILTER_WIDTH, FILTER_HEIGHT, INITIAL_XOFFS, INITIAL_YOFFS)
         count = count + 1
@@ -406,7 +276,7 @@ end
 --     This is used to enumerate what kinds of channels are available and what switch string you can use to refer to them.
 --     Each channel can have multiple switches, in which case only the first switch string is used.
 --
-function ZOS_CreateChannelData()
+function rChat.ZOS_CreateChannelData()
     local g_switchLookup = ZO_ChatSystem_GetChannelSwitchLookupTable()
     local channelInfo = ZO_ChatSystem_GetChannelInfo()
     --
