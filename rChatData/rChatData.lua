@@ -1,8 +1,11 @@
+local SF = LibSFUtils
+
 rChatData = {
     name = "rChatData",
 
     cache = {},
     cmds = {},
+    evtmgr = SF.EvtMgr:New("rChatData")
 }
 
 local MAX_HISTORY_LENGTH = 5000
@@ -32,10 +35,12 @@ function rChatData.getChatCacheSize()
 end
 
 -- only returns an entry for previously written entries, nil otherwise
+-- returns entrytable, index
 function rChatData.getCacheEntry(linenum)
     if cache.Entries == nil then return nil, 0 end
     if not linenum or linenum < 1 then return nil, 0 end
     if linenum >= cache.lineNumber then return nil, 0 end
+    if not cache.Entries[linenum] then return nil, 0 end
     return cache.Entries[linenum], linenum
 end
 
@@ -79,8 +84,14 @@ end
 -- optional parameter that defaults to the end of
 -- the cache if not specified).
 -- If an entry for index already exists it will be overwritten.
-function rChatData.SetLine(entry, index)
+-- Note: Primarily used for unit tests
+function rChatData.SetLine(index, entry)
+    if type(index) ~= "number" then
+        entry = index
+        index = nil
+    end
     if not index then
+        if cache.lineNumber == nil then rChatData.clearCache() end
         index = cache.lineNumber
         cache.lineNumber = cache.lineNumber + 1
     end
@@ -91,16 +102,19 @@ end
 -- obsolete - use filter*() instead
 -- Truncate overflow entries from a table
 -- Specifying maxage is optional
+--[[
 function rChatData.truncate(tbl, maxlen, trunclen, maxage)
     local tmptbl = {}
+    if not tbl or type(tbl) ~= "table" or not next(tbl) then return {} end
+
     if #tbl >= maxlen or maxage then
         local currentTime= GetTimeStamp()
         local start = #tbl - trunclen + 1
         if start < 1 then start = 1 end
         for i = start, #tbl do
-            if CHAT_CHANNEL_MONSTER_SAY == tbl[i].channel
-              or CHAT_CHANNEL_MONSTER_YELL == tbl[i].channel
-              or CHAT_CHANNEL_MONSTER_EMOTE == tbl[i].channel
+            if   CHAT_CHANNEL_MONSTER_SAY     == tbl[i].channel
+              or CHAT_CHANNEL_MONSTER_YELL    == tbl[i].channel
+              or CHAT_CHANNEL_MONSTER_EMOTE   == tbl[i].channel
               or CHAT_CHANNEL_MONSTER_WHISPER == tbl[i].channel then
                 -- ignore it
             elseif maxage then
@@ -123,15 +137,16 @@ function rChatData.truncate(tbl, maxlen, trunclen, maxage)
     end
     return tbl, #tbl+1
 end
+--]]
 
 -- filter out the chat entries from the specified channels
 -- in the excludeChannels table (key = channel id, value=anything)
 function rChatData.filterChannels(excludeChannels)
+    cache.Entries = SF.safeTable(cache.Entries)
     local tbl = cache.Entries
-    if not tbl then return tbl,0 end
     if not excludeChannels or type(excludeChannels) ~= "table" then return tbl, cache.lineNumber end
     if not next(excludeChannels) then return tbl, cache.lineNumber end
-    if cache.lineNumber < 2 then return cache.Entries,cache.lineNumber end
+    if cache.lineNumber < 2 then return cache.Entries, cache.lineNumber end
 
     local tmptbl = {}
     for _,v in ipairs(tbl) do
@@ -196,7 +211,7 @@ function rChatData.initCache(maxage)
     if not rChatData.cache then
         rChatData.cache = { Entries = {}, lineNumber = 1, }
     end
-    if not cache then cache = rChatData.cache end
+    local cache = rChatData.cache
     if not cache.Entries then
         cache.Entries = {}
         cache.lineNumber = 1
@@ -230,4 +245,4 @@ local function OnDataLoaded(_, addonName)
     cmds = rChatData.cmds
 end
 
-EVENT_MANAGER:RegisterForEvent("rChatData", EVENT_ADD_ON_LOADED, OnDataLoaded)
+rChatData.evtmgr:registerEvt(EVENT_ADD_ON_LOADED, OnDataLoaded)
