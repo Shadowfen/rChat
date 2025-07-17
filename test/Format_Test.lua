@@ -1,9 +1,15 @@
 require "rChat.test.tk"
 require "rChat.test.zos"
 require "LibSFUtils.LibSFUtils_Global"
+require "LibSFUtils.SFUtils_Color"
+require "LibSFUtils.SFUtils_Events"
 require "LibSFUtils.LibSFUtils"
-require "LibSFUtils.SFUtils_VersionChecker"
+--require "LibSFUtils.SFUtils_VersionChecker"
 require "LibSFUtils.SFUtils_LoadLanguage"
+require "LibSFUtils.SFUtils_Logger"
+require "LibSFUtils.SFUtils_Tables"
+require "LibSFUtils.SFUtils_Guild"
+
 require "rChat.lang.en"
 require "rChat.rChat_Global"
 require "rChat.rChat_Utils"
@@ -50,7 +56,6 @@ function initDb()
     }
     db["guildTags"] = gTags
     db["officertag"] = otag
-    --dbg(db)
     return db
 end
 rChat.save = initDb()
@@ -76,8 +81,73 @@ local produceDisplayString = rChat_Internals.produceDisplayString
 local produceRawString = rChat_Internals.produceRawString
 local UseNameFormat = rChat_Internals.UseNameFormat
 
+
+-- helper for testFormatTag tests
+local function guildTest(entry, ndx, channel, gtag)
+    local tag, raw = formatTag(entry, ndx)
+    local linkfmt = "|H1:channel:%d|h%s|h "
+
+    TK.assertNotNil(tag,"new guild tag exists")
+    local expectedDsp = string.format(linkfmt,channel,gtag)
+    TK.assertTrue(tag == expectedDsp, string.format("zone tag is '%s' (%s)",tag,expectedDsp))
+
+    local expectedR = string.format("%s ",gtag)
+    TK.assertTrue(raw == expectedR,string.format("raw zone tag is '%s' (%s)",tag, expectedR))
+end
+
+
 ---------------------------------
 -- test functions
+--colors
+local function Format_testInitColorTable()
+    local fn = "testInitColorTable"
+    TK.printSuite(mn,fn)
+    local channel = 6
+
+    rChat.save = initDb()
+    local db = rChat.save
+    db.useESOcolors = false
+    db.newcolors = {}
+    db.newcolors[channel] = { 1,.733 }
+    db.mention.mentionEnabled = true
+    db.mention.colorEnabled = true
+    
+    local tbl = rChat_Internals.initColorTable(channel)
+    TK.assertTrue(tbl.lcol == 1, "lcol was set")
+    TK.assertTrue(tbl.rcol == .733, "rcol was set")
+    TK.assertTrue(tbl.mentioncol == db.mention.color, "mention color set - tbl.col = "..tostring(tbl.mentioncol).."  mencol = "..tostring(db.mention.color))
+end
+
+
+
+local function Format_testGetrChatChannelColors()
+    local fn = "testGetrChatChannelColors"
+    TK.printSuite(mn,fn)
+
+    rChat.save = initDb()
+    local db = rChat.save
+    db.useESOcolors = false
+    db.newcolors = {}
+    db.newcolors[6] = { 1,.733 }
+    local lc, rc = GetChannelColors(6)
+    TK.assertTrue(lc,"getChannelColors - lc = "..tostring(lc).." rc = "..tostring(rc))
+end
+
+local function Format_testGetColors()
+    local fn = "testGetColors"
+    TK.printSuite(mn,fn)
+
+    rChat.save = initDb()
+    local db = rChat.save
+    db.useESOcolors = false
+    db.newcolors = {}
+    db.newcolors[6] = { .5,.733 }
+    local lc, rc = rChat.getColors(6)
+    TK.assertTrue(lc == .5,"getColors - lc = "..tostring(lc))
+    TK.assertTrue(rc == .733,"getColors - rc = "..tostring(rc))
+end
+
+--guild
 local function Format_testGetGuildIndex()
     local fn = "testGetGuildIndex"
     TK.printSuite(mn,fn)
@@ -86,12 +156,106 @@ local function Format_testGetGuildIndex()
     TK.assertTrue(guildndx == 1, "got index for guild 1")
 end
 
+local function Format_testProduceString_guild()
+    local fn = "testProduceDisplayString_guild"
+    TK.printSuite(mn,fn)
+
+    rChat.save = initDb()
+    local db = rChat.save
+    
+    db.showTimestamp = true
+    db.timestampFormat = "HH:m"
+    local entry, ndx = rChatData.getNewCacheEntry(CHAT_CHANNEL_SAY)
+    entry.from = "Lost And Confused"
+    entry.text = "Where is a vendor?"
+
+    local display = {
+        from = entry.from,
+        text = entry.text,
+    }
+    local raw = {
+        from = entry.from,
+        text = entry.text,
+    }
+    entry.displayT = display
+    entry.rawT = raw
+
+    display.timestamp, raw.timestamp = formatTimestamp(entry, ndx)
+    display.separator, raw.separator = formatSeparator(entry, ndx)
+    display.language, raw.language = formatLanguageTag(entry, ndx)
+    display.whisper, raw.whisper = formatWhisperTag(entry, ndx)
+    display.zonetag, raw.zonetag = formatZoneTag(entry, ndx)
+    display.tag, raw.tag = formatTag(entry, ndx)
+
+    local colorT = {
+        timecol = "|cAAFFFF",
+        lcol = "|cBBFFFF",
+        rcol = "|cCCFFFF",
+        mentioncol = "|cDDFFFF",
+    }
+
+    local str = produceDisplayString(entry, ndx, display,colorT)
+    local expected = string.format("%s%s|r%s%s%s|r: Where is a vendor?", colorT.timecol,display.timestamp, colorT.lcol,display.from, display.zonetag, colorT.rcol)
+    d("   expected: "..expected)
+    d("        got: "..str)
+    TK.assertTrue(str == expected, "got the correct message")
+
+end
+
+
+local function Format_testProduceRawString_guild()
+    local fn = "testProduceRawString_guild"
+    TK.printSuite(mn,fn)
+
+    rChat.save = initDb()
+    local db = rChat.save
+    db.showTimestamp = true
+    db.timestampFormat = "HH:m"
+
+    local entry, ndx = rChatData.getNewCacheEntry(CHAT_CHANNEL_GUILD_2)
+    TK.assertNotNil(entry, "entry is not nil")
+    entry.from = "Will Die Soon"
+    entry.text = "Anyone want to do a pledge?"
+    TK.assertTrue(ndx == 1, "created guild entry "..tostring(ndx))
+    TK.assertTrue(entry == rChatData.getCacheEntry(ndx), "found entry in cache")
+    TK.assertTrue(entry.channel == CHAT_CHANNEL_GUILD_2, "got correct channel number")
+
+    local display = {
+        from = entry.from,
+        text = entry.text,
+    }
+    local raw = {
+        from = entry.from,
+        text = entry.text,
+    }
+
+    display.timestamp, raw.timestamp = formatTimestamp(entry, ndx)
+    display.separator, raw.separator = formatSeparator(entry, ndx)
+    display.language, raw.language = formatLanguageTag(entry, ndx)
+    display.whisper, raw.whisper = formatWhisperTag(entry, ndx)
+    display.zonetag, raw.zonetag = formatZoneTag(entry, ndx)
+    display.tag, raw.tag = formatTag(entry, ndx)
+
+    local rawstr = produceRawString(entry, ndx, raw)
+    local expected = "[13:12] [ESM] Will Die Soon: Anyone want to do a pledge?"
+    TK.assertTrue(rawstr == expected, "got the correct raw message ("..rawstr..")")
+
+    db.showGuildNumbers = true
+    display.tag, raw.tag = formatTag(entry, ndx)
+    rawstr = produceRawString(entry, ndx, raw)
+    expected = "[13:12] [2-ESM] Will Die Soon: Anyone want to do a pledge?"
+    TK.assertTrue(rawstr == expected, "got the correct raw message 2 ("..rawstr..")")
+end
+
+
+-- name
 local function Format_testGetNameLink()
     local fn = "testGetNameLink"
     TK.printSuite(mn,fn)
 
     rChat.save = initDb()
     local db = rChat.save
+    
     local rslt = rChat_Internals.GetNameLink("@anchor", "hello@dedfred")
     local expected = "|H1:display:@anchor|h[hello@dedfred]|h"
     TK.assertNotNil(rslt, "got display link")
@@ -115,6 +279,35 @@ local function Format_testGetNameLink()
 
 end
 
+local function Format_testFormatName()
+    local fn = "testFormatName"
+    TK.printSuite(mn,fn)
+
+    rChat.save = initDb()
+    local db = rChat.save
+    TK.assertTrue(false,"Not yet implemented")
+end
+
+local function Format_testUseNameFormat()
+    local fn = "testUseNameFormat"
+    TK.printSuite(mn,fn)
+
+    TK.assertTrue("@lost" == UseNameFormat("@lost","Where am I", nil, 1), "1 - @lost" )
+    TK.assertTrue("Where am I" == UseNameFormat("@lost","Where am I", nil, 2), "2 - Where am I")
+    TK.assertTrue("Where am I@lost" == UseNameFormat("@lost","Where am I", nil, 3), "3 - Where am I@lost")
+    TK.assertTrue("Where am I(@lost)" == UseNameFormat("@lost","Where am I", nil, 4), "4 - Where am I(@lost)")
+    TK.assertTrue("Fred" == UseNameFormat("@lost","Where am I", "Fred", 4), "0 - Fred")
+
+    TK.assertTrue("Where am I" == UseNameFormat(nil,"Where am I", nil, 1), "1 degraded -> Where am I" )
+    TK.assertTrue("@lost" == UseNameFormat("@lost",nil, nil, 2), "2 degraded -> @lost")
+    TK.assertTrue("@lost" == UseNameFormat("@lost",nil, nil, 3), "3 degraded -> @lost")
+    TK.assertTrue("Where am I" == UseNameFormat(nil,"Where am I", nil, 3), "3 degraded -> Where am I")
+    TK.assertTrue("@lost" == UseNameFormat("@lost",nil, nil, 4), "4 degraded -> @lost")
+    TK.assertTrue("Where am I" == UseNameFormat(nil,"Where am I", nil, 4), "4 degraded -> Where am I")
+
+end
+
+-- language tags
 local function Format_testFormatLanguageTag()
     local fn = "testFormatLanguageTag"
     TK.printSuite(mn,fn)
@@ -132,6 +325,7 @@ local function Format_testFormatLanguageTag()
     tag = rChat_Internals.formatLanguageTag(entry,ndx)
     TK.assertNil(tag,"language tag does not exist for CHAT_CHANNEL_WHISPER")
 end
+
 
 local function Format_testFormatSeparator()
     local fn = "testFormatSeparator"
@@ -153,18 +347,6 @@ local function Format_testFormatSeparator()
     TK.assertTrue(sep == ":\n","separator is ':\\n' ("..sep..")")
 end
 
--- helper for testFormatTag tests
-local function guildTest(entry, ndx, channel, gtag)
-    local tag, raw = formatTag(entry, ndx)
-    local linkfmt = "|H1:channel:%d|h%s|h "
-
-    TK.assertNotNil(tag,"new guild tag exists")
-    local expectedDsp = string.format(linkfmt,channel,gtag)
-    TK.assertTrue(tag == expectedDsp, string.format("zone tag is '%s' (%s)",tag,expectedDsp))
-
-    local expectedR = string.format("%s ",gtag)
-    TK.assertTrue(raw == expectedR,string.format("raw zone tag is '%s' (%s)",tag, expectedR))
-end
 
 local function Format_testFormatTag_brackets()
     local fn = "testFormatTag_brackets"
@@ -220,6 +402,7 @@ local function Format_testFormatTag_nobrackets()
     db.disableBrackets = false
 end
 
+
 local function Format_testFormatWhisper()
     local fn = "testFormatWhisper"
     TK.printSuite(mn,fn)
@@ -273,6 +456,7 @@ local function Format_testFormatZoneTag_party()
     TK.assertTrue(pltag == expected, string.format("party tag is '%s' (%s)",pltag,expected))
 end
 
+
 local function Format_testProduceRawString_say()
     local fn = "testProduceRawString_say"
     TK.printSuite(mn,fn)
@@ -285,6 +469,8 @@ local function Format_testProduceRawString_say()
     local entry, ndx = rChatData.getNewCacheEntry(CHAT_CHANNEL_SAY)
     entry.from = "Lost And Confused"
     entry.text = "Where is a pack merchant?"
+    entry.original = {}
+    entry.original.text = entry.text
 
     local displayT = {
         from = entry.from,
@@ -294,6 +480,15 @@ local function Format_testProduceRawString_say()
         from = entry.from,
         text = entry.text,
     }
+    local channel = 6
+
+    db.useESOcolors = false
+    db.newcolors = {}
+    db.newcolors[channel] = { 1,.733 }
+    db.mention.mentionEnabled = true
+    db.mention.colorEnabled = true
+    local tbl = rChat_Internals.initColorTable(channel)
+
 
     displayT.timestamp, rawT.timestamp = formatTimestamp(entry, ndx)
     displayT.separator, rawT.separator = formatSeparator(entry, ndx)
@@ -301,7 +496,7 @@ local function Format_testProduceRawString_say()
     displayT.whisper, rawT.whisper = formatWhisperTag(entry, ndx)
     displayT.zonetag, rawT.zonetag = formatZoneTag(entry, ndx)
     displayT.tag, rawT.tag = formatTag(entry, ndx)
-    displayT.text, rawT.text = formatText(entry, ndx)
+    displayT.text, rawT.text = formatText(entry, ndx, tbl)
 
     local rawstr = produceRawString(entry, ndx, rawT)
     local expected = "[13:12] Lost And Confused says: Where is a pack merchant?"
@@ -317,107 +512,21 @@ local function Format_testProduceRawString_say()
 end
 
 
-local function Format_testProduceRawString_guild()
-    local fn = "testProduceRawString"
-    TK.printSuite(mn,fn)
-
-    rChat.save = initDb()
-    local db = rChat.save
-    db.showTimestamp = true
-    db.timestampFormat = "HH:m"
-
-    local entry, ndx = rChatData.getNewCacheEntry(CHAT_CHANNEL_GUILD_2)
-    entry.from = "Will Die Soon"
-    entry.text = "Anyone want to do a pledge?"
-
-    local display = {
-        from = entry.from,
-        text = entry.text,
-    }
-    local raw = {
-        from = entry.from,
-        text = entry.text,
-    }
-
-    display.timestamp, raw.timestamp = formatTimestamp(entry, ndx)
-    display.separator, raw.separator = formatSeparator(entry, ndx)
-    display.language, raw.language = formatLanguageTag(entry, ndx)
-    display.whisper, raw.whisper = formatWhisperTag(entry, ndx)
-    display.zonetag, raw.zonetag = formatZoneTag(entry, ndx)
-    display.tag, raw.tag = formatTag(entry, ndx)
-
-    local rawstr = produceRawString(entry, ndx, raw)
-    local expected = "[13:12] [ESM] Will Die Soon: Anyone want to do a pledge?"
-    TK.assertTrue(rawstr == expected, "got the correct raw message ("..rawstr..")")
-
-    db.showGuildNumbers = true
-    display.tag, raw.tag = formatTag(entry, ndx)
-    rawstr = produceRawString(entry, ndx, raw)
-    expected = "[13:12] [2-ESM] Will Die Soon: Anyone want to do a pledge?"
-    TK.assertTrue(rawstr == expected, "got the correct raw message 2 ("..rawstr..")")
-end
-
-local function Format_testFormatName()
-    local fn = "testFormatName"
-    TK.printSuite(mn,fn)
-
-    rChat.save = initDb()
-    local db = rChat.save
-end
-
 local function Format_testFormatText()
     local fn = "testFormatText"
     TK.printSuite(mn,fn)
 
     rChat.save = initDb()
     local db = rChat.save
-    TK.assertTrue(true,"Not yet implemented")
+    TK.assertTrue(false,"Not yet implemented")
 end
-
-local function Format_testProduceDisplayString_guild()
-    local fn = "testProduceDisplayString_guild"
+local function Format_testFormatTimestamp()
+    local fn = "Format_testFormatTimestamp"
     TK.printSuite(mn,fn)
 
     rChat.save = initDb()
     local db = rChat.save
-    
-    db.showTimestamp = true
-    db.timestampFormat = "HH:m"
-    local entry, ndx = rChatData.getNewCacheEntry(CHAT_CHANNEL_SAY)
-    entry.from = "Lost And Confused"
-    entry.text = "Where is a vendor?"
-
-    local display = {
-        from = entry.from,
-        text = entry.text,
-    }
-    local raw = {
-        from = entry.from,
-        text = entry.text,
-    }
-    entry.displayT = display
-    entry.rawT = raw
-
-    display.timestamp, raw.timestamp = formatTimestamp(entry, ndx)
-    display.separator, raw.separator = formatSeparator(entry, ndx)
-    display.language, raw.language = formatLanguageTag(entry, ndx)
-    display.whisper, raw.whisper = formatWhisperTag(entry, ndx)
-    display.zonetag, raw.zonetag = formatZoneTag(entry, ndx)
-    display.tag, raw.tag = formatTag(entry, ndx)
-
-    local colorT = {
-        timecol = "|cAAFFFF",
-        lcol = "|cBBFFFF",
-        rcol = "|cCCFFFF",
-        mentioncol = "|cDDFFFF",
-    }
-
-    local str = produceDisplayString(entry, ndx, display,colorT)
-    local expected = string.format("%s%s|r%s%s%s|r: %sWhere is a vendor?|r", colorT.timecol,display.timestamp, colorT.lcol,display.from, display.zonetag, colorT.rcol)
-    d("   expected: "..expected)
-    d("        got: "..str)
-    TK.assertTrue(str == expected, "got the correct message")
-
+    TK.assertTrue(false,"Not yet implemented")
 end
 
 local function Format_testProduceDisplayString_say()
@@ -457,40 +566,21 @@ local function Format_testProduceDisplayString_say()
     db.delzonetags = false
 
     local str = produceDisplayString(entry, ndx, display, colorT)
-    local expected = string.format("%s%s|r%s%s%s|r: %sWhere is a pack merchant?|r", 
+    local expected = string.format("%s%s|r%s%s%s|r: Where is a pack merchant?", 
                                 colorT.timecol, display.timestamp, colorT.lcol, display.from, 
-                                display.zonetag, colorT.rcol)
-    d("   expected: "..expected)
-    d("        got: "..str)
+                                display.zonetag)
+    --d("   expected: "..expected)
+    --d("        got: "..str)
     TK.assertTrue(str == expected, "got the correct message")
 
     db.showTimestamp = false
     display.timestamp, raw.timestamp = formatTimestamp(entry, ndx)
     str = produceDisplayString(entry, ndx, display, colorT)
-    expected = string.format("%s%s%s|r: %sWhere is a pack merchant?|r", colorT.lcol,display.from, display.zonetag,colorT.rcol)
-    --expected = "|cBBBBBBLost And Confused |H1:p:13:0|h[says]|h|r: |CCCCCCWhere is a pack merchant?|r"
-    d("   expected: "..expected)
-    d("        got: "..str)
+    expected = string.format("%s%s%s|r: Where is a pack merchant?", colorT.lcol, display.from, display.zonetag)
+    --expected = "|cBBBBBBLost And Confused |H1:p:13:0|h[says]|h|r: |cCCCCCCWhere is a pack merchant?|r"
+    --d("   expected: "..expected)
+    --d("        got: "..str)
     TK.assertTrue(str == expected, "got the correct message 2 ("..str..")")
-end
-
-local function Format_testUseNameFormat()
-    local fn = "testUseNameFormat"
-    TK.printSuite(mn,fn)
-
-    TK.assertTrue("@lost" == UseNameFormat("@lost","Where am I", nil, 1), "1 - @lost" )
-    TK.assertTrue("Where am I" == UseNameFormat("@lost","Where am I", nil, 2), "2 - Where am I")
-    TK.assertTrue("Where am I@lost" == UseNameFormat("@lost","Where am I", nil, 3), "3 - Where am I@lost")
-    TK.assertTrue("Where am I(@lost)" == UseNameFormat("@lost","Where am I", nil, 4), "4 - Where am I(@lost)")
-    TK.assertTrue("Fred" == UseNameFormat("@lost","Where am I", "Fred", 4), "0 - Fred")
-
-    TK.assertTrue("Where am I" == UseNameFormat(nil,"Where am I", nil, 1), "1 degraded -> Where am I" )
-    TK.assertTrue("@lost" == UseNameFormat("@lost",nil, nil, 2), "2 degraded -> @lost")
-    TK.assertTrue("@lost" == UseNameFormat("@lost",nil, nil, 3), "3 degraded -> @lost")
-    TK.assertTrue("Where am I" == UseNameFormat(nil,"Where am I", nil, 3), "3 degraded -> Where am I")
-    TK.assertTrue("@lost" == UseNameFormat("@lost",nil, nil, 4), "4 degraded -> @lost")
-    TK.assertTrue("Where am I" == UseNameFormat(nil,"Where am I", nil, 4), "4 degraded -> Where am I")
-
 end
 
 local function Format_testProcessLinks_bare()
@@ -532,30 +622,6 @@ local function Format_testProcessLinks_item()
     TK.assertTrue(rslts[3][2] == 0, "known to be bare 3 text")
 end
 
-local function Format_testGetChannelColors()
-    local fn = "testGetChannelColors"
-    TK.printSuite(mn,fn)
-
-    rChat.save = initDb()
-    local db = rChat.save
-end
-
-local function Format_testGetColors()
-    local fn = "testGetColors"
-    TK.printSuite(mn,fn)
-
-    rChat.save = initDb()
-    local db = rChat.save
-end
-
-local function Format_testInitColorTable()
-    local fn = "testInitColorTable"
-    TK.printSuite(mn,fn)
-
-    rChat.save = initDb()
-    local db = rChat.save
-end
-
 local function Format_testProduceCopyFrom()
     local fn = "testProduceCopyFrom"
     TK.printSuite(mn,fn)
@@ -564,33 +630,38 @@ local function Format_testProduceCopyFrom()
     local db = rChat.save
 end
 
+
 function Format_runTests()
     rChatData.initCache()
     rChatData.clearCache()
-    --Format_testGetChannelColors()
-    --Format_testGetColors()
+    
+    Format_testInitColorTable()
+    Format_testGetrChatChannelColors()
+    Format_testGetColors()
+    
     Format_testGetGuildIndex()
+    Format_testProduceRawString_guild()
+    Format_testProduceString_guild()
+
     Format_testGetNameLink()
+    Format_testFormatName()
+    Format_testUseNameFormat()
+    
     Format_testFormatLanguageTag()
-    --Format_testFormatName()
     Format_testFormatSeparator()
     Format_testFormatTag_brackets()
     Format_testFormatTag_nobrackets()
-    --Format_testFormatText()
-    --Format_testFormatTimestamp()
+    Format_testFormatText()
+    Format_testFormatTimestamp()
     Format_testFormatWhisper()
     Format_testFormatZoneTag()
     Format_testFormatZoneTag_party()
-    --Format_testInitColorTable()
     Format_testProcessLinks_bare()
     Format_testProcessLinks_item()
-    --Format_testProduceCopyFrom()
+    
+    Format_testProduceCopyFrom()
     Format_testProduceDisplayString_say()
-    Format_testProduceDisplayString_guild()
     Format_testProduceRawString_say()
-    Format_testProduceRawString_guild()
-    --Format_testProduceString_guild()
-    Format_testUseNameFormat()
 
 end
 

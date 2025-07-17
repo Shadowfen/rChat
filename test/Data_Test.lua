@@ -1,13 +1,19 @@
 require "rChat.test.tk"
 require "rChat.test.zos"
 require "LibSFUtils.LibSFUtils_Global"
+require "LibSFUtils.SFUtils_Color"
+require "LibSFUtils.SFUtils_Events"
 require "LibSFUtils.LibSFUtils"
 require "LibSFUtils.SFUtils_VersionChecker"
 require "LibSFUtils.SFUtils_LoadLanguage"
+require "LibSFUtils.SFUtils_Logger"
 require "rChat.rChat_Global"
 require "rChat.rChatData.rChatData"
 local TK = TestKit
 local SF = LibSFUtils
+
+SF.EvtMgr.evtnames = {}
+
 
 local TR = test_run
 local d = print
@@ -55,17 +61,17 @@ end
 local function Cache_testInitCache()
     local fn = "testInitCache"
     TK.printSuite(mn,fn)
-    
+
     rChatData.initCache()
-    TK.assertNotNil(rChatData.cache.Entries,"new Entries exists")
+    TK.assertNotNil(rChatData.cache.Entries,"new Entries table exists")
     TK.assertTrue(type(rChatData.cache.Entries) == "table", "new Entries is a table")
     TK.assertTrue(rChatData.cache.lineNumber == 1,"next entry is 1")
-end    
+end
 
 local function Cache_testFilterSize()
     local fn = "testFilterSize"
     TK.printSuite(mn,fn)
-    
+
     rChatData.cache.Entries = { 
         { channel=6, timestamp = 100, message = "one",}, 
         { channel=6, timestamp = 200, message = "two",}, 
@@ -73,7 +79,7 @@ local function Cache_testFilterSize()
         { channel=6, timestamp = 400, message = "four",}, 
         { channel=6, timestamp = 500, message = "five",}, 
     }
-    rChatData.cache.lineNumber = 6
+    rChatData.cache.lineNumber = #rChatData.cache.Entries + 1
     local rslt = rChatData.filterSize(4, 3)
     TK.assertNotNil(rslt,"got truncated table")
     TK.assertTrue(#rslt == 3,#rslt)
@@ -86,7 +92,7 @@ end
 local function Cache_testFilterAged()
     local fn = "testFilterAged"
     TK.printSuite(mn,fn)
-    
+
     local currentTime= GetTimeStamp()
     rChatData.cache.Entries = { 
         { channel=6, timestamp = currentTime - 500, message = "one",}, 
@@ -95,7 +101,7 @@ local function Cache_testFilterAged()
         { channel=6, timestamp = currentTime - 200, message = "four",}, 
         { channel=6, timestamp = currentTime - 100, message = "five",}, 
     }
-    rChatData.cache.lineNumber = 6
+    rChatData.cache.lineNumber = #rChatData.cache.Entries + 1
     local rslt = rChatData.filterAged(300)
     TK.assertNotNil(rslt,"got filter aged table")
     TK.assertTrue(#rslt == 3,#rslt)
@@ -108,15 +114,15 @@ end
 local function Cache_testFilterChannels()
     local fn = "testFilterAged"
     TK.printSuite(mn,fn)
-    
-    rChatData.cache.Entries = { 
+
+    rChatData.cache.Entries = {
         { channel=6, timestamp = 100, message = "one",}, 
         { channel=11, timestamp = 200, message = "two",}, 
         { channel=6, timestamp = 300, message = "three",}, 
         { channel=11, timestamp = 400, message = "four",}, 
         { channel=6, timestamp = 500, message = "five",}, 
     }
-    rChatData.cache.lineNumber = 6
+    rChatData.cache.lineNumber = #rChatData.cache.Entries + 1
     local exclude = {
         [11] = true,
     }
@@ -132,7 +138,7 @@ end
 local function Cache_testNewEntry()
     local fn = "testNewEntry"
     TK.printSuite(mn, fn)
-    
+
     local sttime = os.time()
     local entry = rChatData.getNewCacheEntry(6)
     local etime = os.time()
@@ -150,24 +156,24 @@ local function Cache_testGetLine()
     local fn = "testGetLine"
     TK.printSuite(mn,fn)
     populateNewCache()
-    --dbg(rChatData.cache.Entries)
-    
-     fn = "  testGetLine_last"
+    TK.assertTrue(rChatData.cache.lineNumber == 4, "cache is populated "..rChatData.cache.lineNumber)
+
+    fn = "  testGetLine_last"
     TK.printSuite(mn,fn)
     local entry, ndx = rChatData.getCacheEntry(3)  -- "real" last line is always empty - lineNumber == 4 here
     TK.assertTrue(ndx == 3, "Entry index is 3")
     TK.assertTrue(entry.from == "@Adam", "Entry from is @Adam")
-    
+
     fn = "  testGetLine_first"
     TK.printSuite(mn,fn)
     entry, ndx = rChatData.getCacheEntry(1)
-    --dbg("entry = ",entry," ",ndx)
     TK.assertNotNil(entry, "entry is not nil")
     TK.assertTrue(ndx == 1, "Entry index is 1")
     TK.assertTrue(entry.from == "@Bob", "Entry from is @Bob")
-    
+
     fn = "  testGetLine_5th"
     TK.printSuite(mn,fn)
+    TK.assertTrue(rChatData.cache.lineNumber < 5, "cache doesn't have enough entries")
     entry, ndx = rChatData.getCacheEntry(5)
     TK.assertTrue(ndx == 0, "Entry index is "..ndx)
     TK.assertNil(entry, "No such entry")
@@ -176,24 +182,26 @@ end
 local function Cache_testSetEntry()
     local fn = "testSetEntry"
     TK.printSuite(mn,fn)
-    
+
     rChatData.clearCache()   -- start with empty cache
-    
+
     local froms = {
         [1] = {channel = 6, timestamp = 1234,from="@Bob"},
         [2] = {channel = 6, timestamp = 1235,from="@Bobbie"},
         [3] = {channel = 6, timestamp = 1236,from="@Adam"},
     }
-    --dbg(froms)
-    
+
     -- this actually adds the entry with channel and ts
     local entry,index = rChatData.getNewCacheEntry(6)
     -- add more info to the entry
     entry.from = froms[2].from
     entry.timestamp = froms[2].timestamp
-    
+
     -- now, check the entry in the table
-    TK.assertTrue(index == 1,"created first entry in table")
+    TK.assertFalse(index == 0,"cache is empty")
+    TK.assertTrue(index == 1,"table has at least one entry")
+    TK.assertTrue(rChatData.cache.lineNumber == 2, "next line will be "..rChatData.cache.lineNumber)
+
     entry = rChatData.cache.Entries[index]
     TK.assertNotNil(entry, "retrieved entry "..index)
     TK.assertTrue(entry.channel == froms[2].channel, "channel is correct")
@@ -204,7 +212,7 @@ end
 local function Cache_testIterCache()
     local fn = "testIterCache"
     TK.printSuite(mn,fn)
-    
+
     local froms = {
         [1] = {channel = 6, timestamp = 1234,from="@Bob"},
         [2] = {channel = 6, timestamp = 1235,from="@Bobbie"},
@@ -226,7 +234,7 @@ local function Cache_testClearCache()
     local fn = "testClearCache"
     TK.printSuite(mn,fn)
     populateNewCache()
-    
+
     rChatData.clearCache()
     TK.assertTrue(type(rChatData.cache.Entries) == "table","Valid Entries table")
     TK.assertNil(next(rChatData.cache.Entries), "Table is empty")
