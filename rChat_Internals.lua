@@ -166,7 +166,7 @@ function rChat_Internals.reduceString(entry, ndx, lvl)
 
     local rawS = {}     -- A list of strings to turn into a reduced message
 	if not lvl then lvl = 0 end
-	
+
 	rawS[#rawS+1] = "*"	-- I'm a reduced message
 
     -- timestamp
@@ -485,27 +485,27 @@ function rChat_Internals.GetChannelColors(channel, from)
         -- Handle the same-colour options.
         if db.allNPCSameColour and npc_channels[channel] then
             rESO, gESO, bESO = ZO_ChatSystem_GetCategoryColorFromChannel(CHAT_CHANNEL_MONSTER_SAY)
+
         elseif db.allGuildsSameColour and guild_mem_channels[channel] then
             rESO, gESO, bESO = ZO_ChatSystem_GetCategoryColorFromChannel(CHAT_CHANNEL_GUILD_1)
+
         elseif db.allGuildsSameColour and guild_ofc_channels[channel] then
             rESO, gESO, bESO = ZO_ChatSystem_GetCategoryColorFromChannel(CHAT_CHANNEL_OFFICER_1)
+
         elseif db.allZonesSameColour and lang_zone_channels[channel] then
             rESO, gESO, bESO = ZO_ChatSystem_GetCategoryColorFromChannel(CHAT_CHANNEL_ZONE_LANGUAGE_1)
+
         elseif channel == CHAT_CHANNEL_PARTY and from and db.groupLeader
                 and zo_strformat(SI_UNIT_NAME, from) == GetUnitName(GetGroupLeaderUnitTag()) then
             rESO, gESO, bESO = SF.ConvertHexToRGBA(db.colours["groupleader"])
+
         else
             rESO, gESO, bESO = ZO_ChatSystem_GetCategoryColorFromChannel(channel)
         end
 
         -- Set right colour to left colour - cause ESO colors are rewritten; if onecolor, no rewriting
-        if db.oneColour then
-            lcol = SF.ConvertRGBToHex(rESO, gESO, bESO)
-            rcol = lcol
-        else
-            lcol = SF.ConvertRGBToHex(FirstEsoColor(rESO,gESO,bESO))
-            rcol = SF.ConvertRGBToHex(SecondEsoColor(rESO,gESO,bESO))
-        end
+        lcol = SF.ConvertRGBToHex(FirstEsoColor(rESO,gESO,bESO))
+        rcol = SF.ConvertRGBToHex(SecondEsoColor(rESO,gESO,bESO))
 
     else
         -- rChat Colors
@@ -521,16 +521,17 @@ function rChat_Internals.GetChannelColors(channel, from)
         elseif channel == CHAT_CHANNEL_PARTY and from and db.groupLeader and zo_strformat(SI_UNIT_NAME, from) == GetUnitName(GetGroupLeaderUnitTag()) then
             lcol = db.colours["groupleader"]
             rcol = db.colours["groupleader1"]
+
         else
             lcol, rcol = rChat.getColors(channel)
         end
 
-        -- Set right colour to left colour
-        if db.oneColour then
-            rcol = lcol
-        end
     end
 
+    -- Set right colour to left colour
+    if db.oneColour then
+        rcol = lcol
+    end
     return lcol, rcol
 end
 
@@ -850,7 +851,6 @@ local function addFragment(tbl, start, stop, ftype, msgtext)
 		type=ftype,
 		text = string.sub(msgtext,start,stop)
 		}
-	--d(SF.dstr(" ","Adding", #tbl+1,".",start, stop, ftype, text, "from",msgtext))
 	table.insert(tbl,entry)
 	return entry
 end
@@ -866,21 +866,6 @@ local function frag2seg(frag)
 	return segentry
 end
 
---[[
--- not currently used
--- convert a fragment table entry into a segment
-local function convert2Segment(tbl, key)
-	if not tbl or not key then return end
-	local fragentry = tbl[key]
-	if not fragentry then return end
-
-	local segentry = {
-		fragentry.text,
-		fragentry.type,
-	}
-	return segentry
-end
---]]
 -- Find out if segment is the specified type
 -- returns true or false
 local function isSegType(entry, stype)
