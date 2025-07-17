@@ -2,16 +2,6 @@ rChat = rChat or {}
 
 local SF = LibSFUtils
 
--- disable debug logging
-local logger = {
-	Debug = function(self,...) end,
-	SetEnabled = function(self,boolval) end
-}
---[[
-local logger = LibDebugLogger("rChat")
-logger:SetEnabled(true)
---]]
-
 -- the spam table from the saved variables
 local config = {}
 function rChat.setSpamConfig(cfgtable)
@@ -294,12 +284,12 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
     local rChatData = rChat.data
 
     -- 4 options for spam : Spam flood (multiple messages) ; LFM/LFG ; WT(T/S/B) ; Guild Recruitment
-	logger:Debug("Looking for spam in "..chanCode.."  text = "..text)
+	rChat_Logger():Debug("Looking for spam in "..chanCode.."  text = "..text)
     -- Spam (I'm not allowed to flood even for testing)
     if IsSpamEnabledForCategory("Flood") then
-		logger:Debug("Looking for flood")
+		rChat_Logger():Debug("Looking for flood")
         if SpamFlood(from, text, chanCode) then
-			logger:Debug("found")
+			rChat_Logger():Debug("found")
             return true
         end
     end
@@ -314,7 +304,7 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
     -- Looking For
     if IsSpamEnabledForCategory("LookingFor") then
 		if SpamLookingFor(text) then
-			logger:Debug("found Looking for")
+			rChat_Logger():Debug("found Looking for")
             if isMe == false then
                 return true
             else
@@ -329,7 +319,7 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
     -- Want To
     if IsSpamEnabledForCategory("WantTo") then
 		if SpamWantTo(text) then
-			logger:Debug("found Want To")
+			rChat_Logger():Debug("found Want To")
             if isMe == false then
                 return true
             else
@@ -343,7 +333,7 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
     -- Price Check
     if IsSpamEnabledForCategory("Price") then
 		if SpamPriceCheck(text) then
-			logger:Debug("found Price Check")
+			rChat_Logger():Debug("found Price Check")
             if isMe == false then
                 return true
             else
@@ -357,7 +347,7 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
     -- Guild Recruit
     if IsSpamEnabledForCategory("GuildRecruit") then
 		if SpamGuildRecruit(text, chanCode) then
-			logger:Debug("found GuildRecruit")
+			rChat_Logger():Debug("found GuildRecruit")
             if isMe == false then
                 return true
             else
