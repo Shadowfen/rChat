@@ -431,7 +431,7 @@ local function chatTabSettings()
                 name = L(RCHAT_DEFAULTCHANNEL),
                 tooltip = L(RCHAT_DEFAULTCHANNELTT),
                 choices = {
-                    L("RCHAT_DEFAULTCHANNELCHOICE", RCHAT_CHANNEL_NONE),
+                    --L("RCHAT_DEFAULTCHANNELCHOICE", RCHAT_CHANNEL_NONE),
                     L("RCHAT_DEFAULTCHANNELCHOICE", CHAT_CHANNEL_ZONE),
                     L("RCHAT_DEFAULTCHANNELCHOICE", CHAT_CHANNEL_SAY),
                     L("RCHAT_DEFAULTCHANNELCHOICE", CHAT_CHANNEL_GUILD_1),
@@ -479,6 +479,7 @@ local function chatTabSettings()
                         -- When user click on LAM reinit button
                         db.tabs.defaultchannel = rChat.defaults.tabs.defaultchannel
                     end
+                    rChat.SetToDefaultChannel()
 
                 end,
             },
