@@ -170,7 +170,7 @@ local defaults = {
         [CHAT_CHANNEL_ZONE_LANGUAGE_4] = {"|cCEB36F", "|cB0A074",},  -- JP zone
         [CHAT_CHANNEL_ZONE_LANGUAGE_5] = {"|cCEB36F", "|cB0A074",},  -- RU zone
         [CHAT_CHANNEL_ZONE_LANGUAGE_6] = {"|cCEB36F", "|cB0A074",},  -- SP zone
-        [CHAT_CHANNEL_ZONE_LANGUAGE_7] = {"|cCEB36F", "|cB0A074",},  -- ZH_S zone
+        [CHAT_CHANNEL_ZONE_LANGUAGE_7] = {"|cCEB36F", "|cB0A074",},  -- ZH_Han zone
     },
     colours = {
         -- misc
