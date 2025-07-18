@@ -46,7 +46,7 @@ local defwhisper = {
 local deftabs = {
     -- ---- Chat Tab Settings
     enableChatTabChannel = true,
-    defaultchannel = CHAT_CHANNEL_GUILD_1,
+    defaultchannel = CHAT_CHANNEL_ZONE,
     defaultTab = 1,
     defaultTabName = "",
     -- ---- Chat Tab Settings - End
@@ -169,6 +169,8 @@ local defaults = {
         [CHAT_CHANNEL_ZONE_LANGUAGE_3] = {"|cCEB36F", "|cB0A074",},  -- DE zone
         [CHAT_CHANNEL_ZONE_LANGUAGE_4] = {"|cCEB36F", "|cB0A074",},  -- JP zone
         [CHAT_CHANNEL_ZONE_LANGUAGE_5] = {"|cCEB36F", "|cB0A074",},  -- RU zone
+        [CHAT_CHANNEL_ZONE_LANGUAGE_6] = {"|cCEB36F", "|cB0A074",},  -- SP zone
+        [CHAT_CHANNEL_ZONE_LANGUAGE_7] = {"|cCEB36F", "|cB0A074",},  -- ZH_S zone
     },
     colours = {
         -- misc
@@ -2352,7 +2354,8 @@ local function AutoSyncSettingsForNewPlayer()
 end
 
 -- Set channel to the default one
-local function SetToDefaultChannel()
+function rChat.SetToDefaultChannel()
+    rChat_Logger():Debug("Default channel == ".. db.tabs.defaultchannel)
     if db.tabs.defaultchannel ~= RCHAT_CHANNEL_NONE then
         CHAT_SYSTEM:SetChannel(db.tabs.defaultchannel)
     end
@@ -2701,7 +2704,6 @@ local function OnPlayerActivated_Initialize()
     rData.activeTab = 1
 
 	OnPlayerActivated_ZoneLoad()
-	
     ZO_PreHook(CHAT_SYSTEM, "ValidateChatChannel", function(self)
             if self.currentChannel == CHAT_CHANNEL_WHISPER then
                 return
@@ -2774,7 +2776,6 @@ local function OnPlayerActivated_Initialize()
 	rChat.LoadCommands(GetString(SI_CHANNEL_SWITCH_WHISPER_REPLY))
 
     -- Set up chat window(s)
-    SetToDefaultChannel()
     rChat.ChangeChatWindowDarkness()
 
     -- Restore History if needed
@@ -2787,6 +2788,8 @@ local function OnPlayerActivated_Initialize()
     RegisterChatEvents()
     SetDefaultTab(db.tabs.defaultTab)
     rChat.evtmgr:registerEvt(EVENT_PLAYER_ACTIVATED, OnPlayerActivated_ZoneLoad)
+    rChat.SetToDefaultChannel()
+	
 
 end
 
@@ -2836,7 +2839,7 @@ local function OnGroupMemberLeft(_, characterName, reason, wasMeWhoLeft)
         if GetGroupSize() <= 1 then
             -- Only if we was on party
             if CHAT_SYSTEM.currentChannel == CHAT_CHANNEL_PARTY and db.tabs.defaultchannel ~= RCHAT_CHANNEL_NONE then
-                SetToDefaultChannel()
+                rChat.SetToDefaultChannel()
             end
         end
     end
