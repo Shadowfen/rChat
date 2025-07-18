@@ -53,6 +53,8 @@ local lang_zone_channels = {
     [CHAT_CHANNEL_ZONE_LANGUAGE_3] = true,
     [CHAT_CHANNEL_ZONE_LANGUAGE_4] = true,
     [CHAT_CHANNEL_ZONE_LANGUAGE_5] = true,
+    [CHAT_CHANNEL_ZONE_LANGUAGE_6] = true,
+    [CHAT_CHANNEL_ZONE_LANGUAGE_7] = true,
 }
 
 --Detect the QuickChat messages |s<number><number:optional><number:optional><number:optional>|s
@@ -422,7 +424,9 @@ function rChat_Internals.formatLanguageTag(entry, ndx)
     elseif channel == CHAT_CHANNEL_ZONE_LANGUAGE_2 then lang = "[FR] "
     elseif channel == CHAT_CHANNEL_ZONE_LANGUAGE_3 then lang = "[DE] "
     elseif channel == CHAT_CHANNEL_ZONE_LANGUAGE_4 then lang = "[JP] "
-    elseif channel == CHAT_CHANNEL_ZONE_LANGUAGE_5 then lang = "[RU] "
+    elseif channel == CHAT_CHANNEL_ZONE_LANGUAGE_5 then lang = "[JP] "
+    elseif channel == CHAT_CHANNEL_ZONE_LANGUAGE_6 then lang = "[ES] "
+    elseif channel == CHAT_CHANNEL_ZONE_LANGUAGE_7 then lang = "[ZH-Hans] "
     end
     return lang, lang
 end
