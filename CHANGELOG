@@ -1,4 +1,15 @@
-﻿[COLOR="DeepSkyBlue"]1.48 (68)[/COLOR]:
+﻿
+[COLOR="DeepSkyBlue"]2.0 (69)[/COLOR]:
+[LIST]
+[*] Revised all of the code that overrides ZOS functions to be comparable with the latest official version of those functions.
+[*] Removed override code that is no longer needed or used.
+[*] Fixed problem that was preventing us from selecting (or unselecting) System from the chat options dialog.
+[*] Changed the value of the settings "Chat Tab Settings"->"Default Channel" to be "/zone". This only affects someone who is using rChat for the first time (after the saved variables file is removed).
+[*] Converted to using the logger function code from LibSFUtils to control if debug-level messages actually get sent to LibDebugLogger.
+[*] Converted event registration/unregistering to use the LibSFUtils EvtMgr.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]1.48 (68)[/COLOR]:
 [LIST]
 [*] Fixed error message in rChatData.lua, line 8. (Reported by wlfnddl.)
 [/LIST]
