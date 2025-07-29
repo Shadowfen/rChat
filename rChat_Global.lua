@@ -8,7 +8,7 @@ local SF = LibSFUtils
 
 rChat = {
     name = "rChat",
-    version = SF.colors.gold:Colorize("2.0"),
+    version = SF.colors.gold:Colorize("2.0.1"),
     settingName = "rChat",
     settingDisplayName = SF.colors.gold:Colorize("rChat"),
     author =  SF.colors.purple:Colorize("Shadowfen"),

@@ -1,4 +1,9 @@
 ﻿
+[COLOR="DeepSkyBlue"]2.0.1 (70)[/COLOR]:
+[LIST]
+[*] Fixed error message in ZOS_Rewrite-5.3.lua, line 44 sometimes when reloading chat history.
+[/LIST]
+
 [COLOR="DeepSkyBlue"]2.0 (69)[/COLOR]:
 [LIST]
 [*] Revised all of the code that overrides ZOS functions to be comparable with the latest official version of those functions.

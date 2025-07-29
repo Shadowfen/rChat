@@ -41,7 +41,7 @@ end
 -- from libraries\utility\zo_tabbuttongroup.lua
 -- Rewrite of core function to use saved var color instead of parameter
 function ZO_TabButton_Text_SetTextColor(control, color)
-    if self.allowLabelColorChanges then
+    if control.allowLabelColorChanges then
         local label = control:GetNamedChild("Text")
         if rChat_ZOS.tabwarning_color then
             label:SetColor(rChat_ZOS.tabwarning_color:UnpackRGBA())
