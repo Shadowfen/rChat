@@ -1,4 +1,9 @@
 ﻿
+[COLOR="DeepSkyBlue"]2.0.2 (71)[/COLOR]:
+[LIST]
+[*] API and dependencies update.
+[/LIST]
+
 [COLOR="DeepSkyBlue"]2.0.1 (70)[/COLOR]:
 [LIST]
 [*] Fixed error message in ZOS_Rewrite-5.3.lua, line 44 sometimes when reloading chat history.
