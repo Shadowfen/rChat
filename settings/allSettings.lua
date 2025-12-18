@@ -27,7 +27,7 @@ end
 -- split a mention string (one entry per line) into appropriate entries
 -- in the mention table
 -- returns the mention table
-local function mention_split(newValue, col) 
+local function mention_split(newValue, col)
     lines = {}
 	newValue = newValue.."\r\n"
 	local dv = newValue:gsub("[\r\n]",";")

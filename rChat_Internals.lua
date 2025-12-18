@@ -4,6 +4,11 @@ are "testable" because they use few enough of the ZOS functions
 that I don't have to reproduce the entirety of ESO in my offline
 test environment.
 --]] ---------------------------------------
+
+local ZO_ChatSystem_GetCategoryColorFromChannel = ZO_ChatSystem_GetCategoryColorFromChannel
+local ZO_LinkHandler_CreateLink= ZO_LinkHandler_CreateLink
+local zo_strformat = zo_strformat
+local ZO_LinkHandler_CreateLinkWithoutBrackets = ZO_LinkHandler_CreateLinkWithoutBrackets
 rChat_Internals = {}
 
 
@@ -87,7 +92,7 @@ local function isGuildChannel( chanCode )
     end
     return false
 end
-rChat_Internals.isGuildChannel = isGuildChannel     -- make available
+--rChat_Internals.isGuildChannel = isGuildChannel     -- make available
 
 -- return true if chanCode is one of the language zone channels
 local function isLanguageChannel( chanCode )

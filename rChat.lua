@@ -5,6 +5,11 @@ local SF = LibSFUtils
 local RAM = rChat.AutoMsg
 
 local L = GetString
+local GetInterfaceColor = GetInterfaceColor
+local GetControl = GetControl
+local t_insert = table.insert
+local str_sub = string.sub
+local str_len = string.len
 
 local CACHE = rChatData
 
@@ -458,8 +463,8 @@ function automatedMessagesList:SetupEntry(control, data)
     control.message = GetControl(control, "Message")
 
     local messageTrunc = rChat.FormatRawText(data.message)
-    if string.len(messageTrunc) > 53 then
-        messageTrunc = string.sub(messageTrunc, 1, 53) .. " .."
+    if str_len(messageTrunc) > 53 then
+        messageTrunc = str_sub(messageTrunc, 1, 53) .. " .."
     end
 
     control.name:SetText(data.name)
@@ -475,7 +480,7 @@ function automatedMessagesList:BuildMasterList()
     if messages then
         for k, v in ipairs(messages) do
             local data = v
-            table.insert(self.masterList, data)
+            t_insert(self.masterList, data)
         end
     end
 
@@ -492,7 +497,7 @@ function automatedMessagesList:FilterScrollList()
 
     for i = 1, #self.masterList do
         local data = self.masterList[i]
-        table.insert(scrollData, ZO_ScrollList_CreateDataEntry(1, data))
+        t_insert(scrollData, ZO_ScrollList_CreateDataEntry(1, data))
     end
 end
 
@@ -515,12 +520,12 @@ function rChat.SaveAutomatedMessage(name, message, isNew)
             rChatXMLAutoMsg:GetNamedChild("Warning"):SetHidden(true)
             rChatXMLAutoMsg:GetNamedChild("Warning"):SetText("")
 
-            if string.len(name) > 12 then
-                name = string.sub(name, 1, 12)
+            if str_len(name) > 12 then
+                name = str_sub(name, 1, 12)
             end
 
-            if string.len(message) > 350 then
-                message = string.sub(message, 1, 350)
+            if str_len(message) > 350 then
+                message = str_sub(message, 1, 350)
             end
 
             local entryList = ZO_ScrollList_GetDataList(rData.automatedMessagesList.list)
@@ -528,8 +533,8 @@ function rChat.SaveAutomatedMessage(name, message, isNew)
             if isNew then
                 local data = {name = "!" .. name, message = message}
                 local entry = ZO_ScrollList_CreateDataEntry(1, data)
-                table.insert(entryList, entry)
-                table.insert(db.automatedMessages, {name = "!" .. name, message = message}) -- "data" variable is modified by ZO_ScrollList_CreateDataEntry and will crash eso if saved to savedvars
+                t_insert(entryList, entry)
+                t_insert(db.automatedMessages, {name = "!" .. name, message = message}) -- "data" variable is modified by ZO_ScrollList_CreateDataEntry and will crash eso if saved to savedvars
             else
 
                 local data = RAM.FindAutomatedMsg(name)
@@ -798,8 +803,8 @@ local function OnIMReceived(from, lineNumber)
 
             -- Split if name too long
             local displayedFrom = from
-            if string.len(displayedFrom) > 8 then
-                displayedFrom = string.sub(from, 1, 7) .. ".."
+            if str_len(displayedFrom) > 8 then
+                displayedFrom = str_sub(from, 1, 7) .. ".."
             end
 
             -- Show
@@ -938,7 +943,7 @@ local function ShowCopyDialog(message)
     local maxChars      = 20000
 
     -- editbox is 20000 chars max
-    if string.len(message) < maxChars then
+    if str_len(message) < maxChars then
         rChatCopyDialogTLCTitle:SetText(L(RCHAT_COPYXMLTITLE))
         rChatCopyDialogTLCLabel:SetText(L(RCHAT_COPYXMLLABEL))
         rChatCopyDialogTLCNoteEdit:SetText(message)
@@ -1361,10 +1366,10 @@ function rChat.BuildNicknames(lamCall)
         if (div=='') then return false end
         local pos,arr = 0,{}
         for st,sp in function() return string.find(str,div,pos,true) end do
-            table.insert(arr,string.sub(str,pos,st-1))
+            t_insert(arr,str_sub(str,pos,st-1))
             pos = sp + 1
         end
-        table.insert(arr,string.sub(str,pos))
+        t_insert(arr,str_sub(str,pos))
         return arr
     end
 
@@ -1479,10 +1484,10 @@ local function AddLinkHandlerToStringWithoutDDS(textToCheck, numLine, chanCode)
         if not startpos then
             -- If nil, then we won't have new link after startposition = startNoColor , so add ours util the end
 
-            -- Some addons use table.insert() and chat convert to a CRLF
+            -- Some addons use t_insert() and chat convert to a CRLF
             -- First, drop the final CRLF if we are at the end of the text
-            if string.sub(textToCheck, -2) == "\r\n" then
-                textToCheck = string.sub(textToCheck, 1, -2)
+            if str_sub(textToCheck, -2) == "\r\n" then
+                textToCheck = str_sub(textToCheck, 1, -2)
             end
             -- MultiCRLF is handled in .addLinkHandler()
 
@@ -1696,7 +1701,7 @@ local function AddLinkHandler(text, chanCode, numLine)
             for _, line in pairs(lines) do
 
                 -- Only if there something to display
-                if string.len(line) > 0 then
+                if str_len(line) > 0 then
 
                     if first then
                         formattedText = AddLinkHandlerToLine(line, chanCode, numLine)
@@ -1909,7 +1914,7 @@ end
 -- Debug must call CHAT_SYSTEM:Zo_AddMessage() which is backed up copy of CHAT_SYSTEM.AddMessage
 local function FormatSysMessage(statusMessage)
 
-    if not statusMessage or string.len(statusMessage) == 0 then return end
+    if not statusMessage or str_len(statusMessage) == 0 then return end
 
     -- Display Timestamp if needed
     local function ShowTimestamp(timevalue)
@@ -2021,8 +2026,8 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
         isCS = isCS,
     }
 
-	--if string.len(text) > 240 then
-	--	text = string.sub(text,1,240)
+	--if str_len(text) > 240 then
+	--	text = str_sub(text,1,240)
 	--end
     
     local newtext = text
@@ -2074,7 +2079,7 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
     entry.rawLine = produceRawString(entry, ndx, raw)
     entry.displayed = produceDisplayString(entry, ndx, display, colorT)
 	local lvl = 0
-	while ( lvl < 3 and string.len(entry.displayed) > 350) do
+	while ( lvl < 3 and str_len(entry.displayed) > 350) do
 		entry.displayed = reduceString(entry,ndx, lvl)
 		lvl = lvl + 1
 	end
@@ -2518,16 +2523,16 @@ local function mention_split(newValue, col)
 	newValue = newValue.."\r\n"
 	local dv = newValue:gsub("[\r\n]",";")
 	for s in dv:gmatch("(.-);+") do
-		table.insert(lines, s)
+		t_insert(lines, s)
     end
     --for s in newValue:gmatch("(.-)[\r\n]-") do
 	--	d("match line: "..s)
-    --    table.insert(lines, s)
+    --   t_insert(lines, s)
     --end
     newtbl = {}
     for _,v in pairs(lines) do
         -- require minimum length
-        if string.len(v) >= 4 then
+        if str_len(v) >= 4 then
             if nil == string.find(v, "[%%%*%-%.%+%(%)%[%]%^%$%?]") then
                 -- have no regex pattern characters
                 local c = v -- in case we don't have a color passed in
@@ -2567,11 +2572,11 @@ local function SyncCharacterSelectChoices()
     if db.chatConfSync then
         for names, tagada in pairs (db.chatConfSync) do
             if names ~= "lastChar" then
-                table.insert(rData.chatConfSyncChoices, names)
+                t_insert(rData.chatConfSyncChoices, names)
             end
         end
     else
-        table.insert(rData.chatConfSyncChoices, localPlayer)
+        t_insert(rData.chatConfSyncChoices, localPlayer)
     end
 end
 
@@ -3027,7 +3032,7 @@ local function OnAddonLoaded(_, addonName)
     rChat.setSpamConfig(db.spam)
 
     -- init vars/funcs for ZOS rewritten functions
-    rChat_ZOS.tabwarning_color = ZO_ColorDef:New(string.sub(db.colours["tabwarning"],3,8))
+    rChat_ZOS.tabwarning_color = ZO_ColorDef:New(str_sub(db.colours["tabwarning"],3,8))
     -- add control for LibDebugLogger
     rChat_ZOS.disableDebugLoggerBlocking = db.disableDebugLoggerBlocking
     

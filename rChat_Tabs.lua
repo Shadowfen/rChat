@@ -60,33 +60,33 @@ end
 --]]
 
 local function isValidTabIndex(tabndx)
-    if type(tabndx)~="number" then 
-		return false 
+    if type(tabndx)~="number" then
+		return false
 	end
 
     local container=CHAT_SYSTEM.primaryContainer
-    if not container then 
-		return false 
+    if not container then
+		return false
 	end
 
-    if tabndx<1 or tabndx>#container.windows then 
-		return false 
+    if tabndx<1 or tabndx>#container.windows then
+		return false
 	end
-    if container.windows[tabndx].tab==nil then 
-		return false 
+    if container.windows[tabndx].tab==nil then
+		return false
 	end
 	return true
 end
 
 function rChat.ChangeTab(tabToSet)
-    if isValidTabIndex(tabToSet) == false then 
-		return 
+    if isValidTabIndex(tabToSet) == false then
+		return
 	end
 
     local container=CHAT_SYSTEM.primaryContainer
 	container.tabGroup:SetClickedButton(container.windows[tabToSet].tab)
-    if CHAT_SYSTEM:IsMinimized() then 
-		CHAT_SYSTEM:Maximize() 
+    if CHAT_SYSTEM:IsMinimized() then
+		CHAT_SYSTEM:Maximize()
 	end
 end
 
