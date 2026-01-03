@@ -1026,10 +1026,12 @@ local function CopyWholeChat()
 
 end
 
+--[[
 local function CopyToTextEntryText()
     LINK_HANDLER:RegisterCallback(LINK_HANDLER.LINK_CLICKED_EVENT, OnLinkClicked)
     LINK_HANDLER:RegisterCallback(LINK_HANDLER.LINK_MOUSE_UP_EVENT, OnLinkClicked)
 end
+--]]
 
 -- Called by XML
 function rChat_ShowCopyDialogNext()
@@ -1167,18 +1169,20 @@ end
 function rChat.SwitchToNextTab()
 
 	if not CHAT_SYSTEM.primaryContainer then return end
+    local primaryContainer = CHAT_SYSTEM.primaryContainer
+
     local hasSwitched
 
     local PRESSED = 1
     local UNPRESSED = 2
-    local numTabs = #CHAT_SYSTEM.primaryContainer.windows
+    local numTabs = #primaryContainer.windows
 
     if numTabs > 1 then
-        for numTab, container in ipairs (CHAT_SYSTEM.primaryContainer.windows) do
+        for numTab, container in ipairs (primaryContainer.windows) do
 
             if (not hasSwitched) then
                 if rData.activeTab + 1 == numTab then
-                    CHAT_SYSTEM.primaryContainer:HandleTabClick(container.tab)
+                    primaryContainer:HandleTabClick(container.tab)
 
                     local tabText = GetControl("ZO_ChatWindowTabTemplate" .. numTab .. "Text")
                     tabText:SetColor(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS, INTERFACE_TEXT_COLOR_SELECTED))
@@ -1194,12 +1198,12 @@ function rChat.SwitchToNextTab()
         end
 
         if (not hasSwitched) then
-            CHAT_SYSTEM.primaryContainer:HandleTabClick(CHAT_SYSTEM.primaryContainer.windows[1].tab)
+            primaryContainer:HandleTabClick(primaryContainer.windows[1].tab)
             local tabText = GetControl("ZO_ChatWindowTabTemplate1Text")
             tabText:SetColor(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS,
 									INTERFACE_TEXT_COLOR_SELECTED))
             tabText:GetParent().state = PRESSED
-            local oldTabText = GetControl("ZO_ChatWindowTabTemplate" .. #CHAT_SYSTEM.primaryContainer.windows .. "Text")
+            local oldTabText = GetControl("ZO_ChatWindowTabTemplate" .. #primaryContainer.windows .. "Text")
             oldTabText:SetColor(GetInterfaceColor(INTERFACE_COLOR_TYPE_TEXT_COLORS,
 									INTERFACE_TEXT_COLOR_CONTRAST))
             oldTabText:GetParent().state = UNPRESSED
@@ -2114,8 +2118,8 @@ local function SaveChatConfig()
     end
 
     if isAddonLoaded and CHAT_SYSTEM and CHAT_SYSTEM.primaryContainer then -- Some addons calls SetCVar before
-
-        local primeSettings = CHAT_SYSTEM.primaryContainer.settings
+        local primaryContainer = CHAT_SYSTEM.primaryContainer
+        local primeSettings = primaryContainer.settings
         local saveChar = {}
 
         -- Save Chat positions
@@ -2156,7 +2160,7 @@ local function SaveChatConfig()
 
         -- GetNumChatContainerTabs(1) don't refresh its number before a ReloadUI
         -- for numTab = 1, GetNumChatContainerTabs(1) do
-        for numTab in ipairs (CHAT_SYSTEM.primaryContainer.windows) do
+        for numTab in ipairs (primaryContainer.windows) do
 
             local newtab = {
                 isLocked = false,
@@ -2172,26 +2176,26 @@ local function SaveChatConfig()
             end
 
             -- IsLocked
-            if CHAT_SYSTEM.primaryContainer:IsLocked(numTab) then
+            if primaryContainer:IsLocked(numTab) then
                 newtab.isLocked = true
             end
 
             -- IsInteractive
-            if CHAT_SYSTEM.primaryContainer:IsInteractive(numTab) then
+            if primaryContainer:IsInteractive(numTab) then
                 newtab.isInteractable = true
             end
 
             -- IsCombatLog
-            if CHAT_SYSTEM.primaryContainer:IsCombatLog(numTab) then
+            if primaryContainer:IsCombatLog(numTab) then
                 newtab.isCombatLog = true
                 -- AreTimestampsEnabled
-                if CHAT_SYSTEM.primaryContainer:AreTimestampsEnabled(numTab) then
+                if primaryContainer:AreTimestampsEnabled(numTab) then
                     newtab.areTimestampsEnabled = true
                 end
             end
 
             -- GetTabName
-            newtab.name = CHAT_SYSTEM.primaryContainer:GetTabName(numTab)
+            newtab.name = primaryContainer:GetTabName(numTab)
 
             -- Enabled categories
             for _, category in ipairs (rData.chatCategories) do
@@ -2213,18 +2217,19 @@ end
 -- Save Chat Tabs config when user changes it
 local function SaveTabsCategories()
 	if not CHAT_SYSTEM.primaryContainer then return end
+    local primaryContainer = CHAT_SYSTEM.primaryContainer
 
     local localPlayer = GetUnitName("player")
-	if not db.chatConfSync[localPlayer] then 
-		return 
+	if not db.chatConfSync[localPlayer] then
+		return
 	end
-    for numTab in ipairs (CHAT_SYSTEM.primaryContainer.windows) do
-
+    local playerInfo = db.chatConfSync[localPlayer]
+    for numTab in ipairs (primaryContainer.windows) do
         for _, category in ipairs (rData.guildCategories) do
             local isEnabled = IsChatContainerTabCategoryEnabled(1, numTab, category)
-			if not db.chatConfSync[localPlayer].tabs then db.chatConfSync[localPlayer].tabs = {} end
-            if db.chatConfSync[localPlayer].tabs[numTab] then
-                db.chatConfSync[localPlayer].tabs[numTab].enabledCategories[category] = isEnabled
+			if not playerInfo.tabs then playerInfo.tabs = {} end
+            if playerInfo.tabs[numTab] then
+                playerInfo.tabs[numTab].enabledCategories[category] = isEnabled
             else
                 SaveChatConfig()
             end
@@ -2271,6 +2276,7 @@ local function SyncChatConfig(shouldSync, whichChar)
     if not db.chatConfSync then return end
     if not db.chatConfSync[whichChar] then return end   -- no character config to use
 	if not CHAT_SYSTEM.primaryContainer then return end
+    local primaryContainer = CHAT_SYSTEM.primaryContainer
 
     local newcfg = db.chatConfSync[whichChar]
 
@@ -2280,7 +2286,7 @@ local function SyncChatConfig(shouldSync, whichChar)
     CHAT_SYSTEM.control:SetDimensions(newcfg.width, newcfg.height)
 
     -- Save settings immediately (to check, maybe call function which do this)
-    local primeSettings = CHAT_SYSTEM.primaryContainer.settings
+    local primeSettings = primaryContainer.settings
     primeSettings.height = newcfg.height
     primeSettings.point = newcfg.point
     primeSettings.relPoint = newcfg.relPoint
@@ -2308,7 +2314,7 @@ local function SyncChatConfig(shouldSync, whichChar)
         --Create a Tab if nessesary
         if (GetNumChatContainerTabs(1) < numTab) then
             -- AddChatContainerTab() -- Requires a ReloadUI
-            CHAT_SYSTEM.primaryContainer:AddWindow(newcfg.tabs[numTab].name)
+            primaryContainer:AddWindow(newcfg.tabs[numTab].name)
         end
 
         if newcfg.tabs[numTab] and newcfg.tabs[numTab].notBefore then
@@ -2318,10 +2324,10 @@ local function SyncChatConfig(shouldSync, whichChar)
             rData.tabNotBefore[numTab] = newcfg.tabs[numTab].notBefore
         end
 
-        CHAT_SYSTEM.primaryContainer:SetTabName(numTab, newcfg.tabs[numTab].name)
-        CHAT_SYSTEM.primaryContainer:SetLocked(numTab, newcfg.tabs[numTab].isLocked)
-        CHAT_SYSTEM.primaryContainer:SetInteractivity(numTab, newcfg.tabs[numTab].isInteractable)
-        CHAT_SYSTEM.primaryContainer:SetTimestampsEnabled(numTab, newcfg.tabs[numTab].areTimestampsEnabled)
+        primaryContainer:SetTabName(numTab, newcfg.tabs[numTab].name)
+        primaryContainer:SetLocked(numTab, newcfg.tabs[numTab].isLocked)
+        primaryContainer:SetInteractivity(numTab, newcfg.tabs[numTab].isInteractable)
+        primaryContainer:SetTimestampsEnabled(numTab, newcfg.tabs[numTab].areTimestampsEnabled)
 
         -- Set Channel per tab configuration
         for _, category in ipairs (rData.chatCategories) do
@@ -2341,7 +2347,7 @@ local function SyncChatConfig(shouldSync, whichChar)
         -- Too many tabs, deleting one
         if GetNumChatContainerTabs(1) > chatSyncNumTab then
             -- Not in realtime : RemoveChatContainerTab(1, chatSyncNumTab + 1)
-            CHAT_SYSTEM.primaryContainer:RemoveWindow(chatSyncNumTab + 1, nil)
+            primaryContainer:RemoveWindow(chatSyncNumTab + 1, nil)
         else
             removeTabs = false
         end
@@ -2612,6 +2618,7 @@ end
 local function RevertCategories(guildName)
 
     local localPlayer = GetUnitName("player")
+    local playerInfo = db.chatConfSync[localPlayer]
     -- Old GuildId
     local oldIndex = rData.guildIndexes[guildName]
     -- old Total Guilds
@@ -2635,17 +2642,17 @@ local function RevertCategories(guildName)
             end
 
             -- New Guild color for Guild #X is the old #X+1
-            local gcolor = db.chatConfSync[localPlayer].colors[CHAT_CATEGORY_GUILD_1 + iGuilds]
+            local gcolor = playerInfo.colors[CHAT_CATEGORY_GUILD_1 + iGuilds]
             SetChatCategoryColor(CHAT_CATEGORY_GUILD_1 + iGuilds - 1,
                 gcolor.red, gcolor.green, gcolor.blue)
 
             -- New Officer color for Guild #X is the old #X+1
-            gcolor = db.chatConfSync[localPlayer].colors[CHAT_CATEGORY_OFFICER_1 + iGuilds]
+            gcolor = playerInfo.colors[CHAT_CATEGORY_OFFICER_1 + iGuilds]
             SetChatCategoryColor(CHAT_CATEGORY_OFFICER_1 + iGuilds - 1,
                 gcolor.red, gcolor.green, gcolor.blue)
 
             -- Restore tab config previously set.
-            local tabs = db.chatConfSync[localPlayer].tabs
+            local tabs = playerInfo.tabs
 			if not CHAT_SYSTEM.primaryContainer then return end
             for numTab in ipairs (CHAT_SYSTEM.primaryContainer.windows) do
                 if tabs[numTab] then
@@ -2794,8 +2801,6 @@ local function OnPlayerActivated_Initialize()
     SetDefaultTab(db.tabs.defaultTab)
     rChat.evtmgr:registerEvt(EVENT_PLAYER_ACTIVATED, OnPlayerActivated_ZoneLoad)
     rChat.SetToDefaultChannel()
-	
-
 end
 
 
@@ -2807,7 +2812,6 @@ local function OnSelfLeftGuild(_, _, guildName)
 
     -- Revert category colors & options
     RevertCategories(guildName)
-
 end
 
 local function SwitchToParty(characterName)
@@ -3019,7 +3023,7 @@ local function OnAddonLoaded(_, addonName)
     rChat_ZOS.cachedMessages = rData.cachedMessages
     rChat_ZOS.saveMsg = function(text) end
 
-    -- Saved variables
+    -- Load saved variables
     rChat.save = loadSavedVars(rChat.savedvar, rChat.sv_version, defaults)
     db = rChat.save
     -- new setting (provided in defaults)
@@ -3101,7 +3105,9 @@ local function OnAddonLoaded(_, addonName)
 
     -- Chat option change categories filters, add a callLater because settings are set after this function triggers.
     
-    ZO_PreHook("ZO_ChatOptions_ToggleChannel", function() zo_callLater(function() SaveTabsCategories() end, 100) end)
+    ZO_PreHook("ZO_ChatOptions_ToggleChannel", function() 
+            zo_callLater(function() SaveTabsCategories() end, 100) 
+        end)
     
 
     -- Right click on a tab name

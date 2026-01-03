@@ -37,6 +37,7 @@ function rChat.getPlayerNames()
 	end
 	return names
 end
+
 function rChat.getPlayerIds()
 	local ids={}
 	for i = 1, GetNumCharacters() do
@@ -199,7 +200,7 @@ function rChat.SplitTextForLinkHandler(text, numLine, chanCode)
 	local maxsplits = (textLen - leftover)/MAX_LEN + 2
 	while maxsplits do
 		maxsplits = maxsplits - 1
-		
+
 		local segment = ""
 		local UTFAditionalBytes = 0
 
@@ -214,7 +215,7 @@ function rChat.SplitTextForLinkHandler(text, numLine, chanCode)
 				end
 				break 
 			end
-			
+
 			local lastByte = string.byte(segment, -1)
 			local beforeLastByte = string.byte(segment, -2, -2)
 
@@ -247,7 +248,7 @@ function rChat.SplitTextForLinkHandler(text, numLine, chanCode)
 				UTFAditionalBytes = 1
 				splitEnd = splitEnd + UTFAditionalBytes
 				segment = text:sub(splitStart, splitEnd)
-				
+
 			elseif lastByte >= 224 and lastByte < 240 then 
 				-- last byte = 1st byte of a 3 Byte character. We take 2 byte more.  (cut was incorrect)
 				UTFAditionalBytes = 2
