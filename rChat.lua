@@ -1129,7 +1129,7 @@ end
 -- Tab functions
 
 -- Needed to bind Shift+Tab in SetSwitchToNextBinding
-function KEYBINDING_MANAGER:IsChordingAlwaysEnabled()
+function KEYBINDINGS_MANAGER:IsChordingAlwaysEnabled()
     return true
 end
 
