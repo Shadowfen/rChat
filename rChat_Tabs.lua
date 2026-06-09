@@ -18,34 +18,36 @@ function TabNames:New()
 end
 
 function TabNames:Refresh()
-	local nameList = {}
+	local nameList = self.nameList
+	SF.safeClearTable(self.nameList)
     local totalTabs = CHAT_SYSTEM.tabPool.m_Active
+	rChat.logDebug("[Refresh] total tabs #",#totalTabs)
 	if totalTabs ~= nil and #totalTabs >= 1 then
         for idx, tmpTab in pairs(totalTabs) do
             local tabLabel = tmpTab:GetNamedChild("Text")
-            local tmpTabName = tabLabel:GetText()
-            if tmpTabName ~= nil and tmpTabName ~= "" then
-                nameList[idx] = tmpTabName
-            end
+			rChat.logDebug("[Refresh] idx ",idx," - tab label ",tabLabel:GetText())
+			if tabLabel then 
+				local tmpTabName = tabLabel:GetText()
+				if tmpTabName ~= nil and tmpTabName ~= "" then
+					rChat.logDebug("[Refresh] adding ", tmpTabName, " to self.nameList at ",idx)
+					self.nameList[idx] = tmpTabName
+				end
+			end
         end
     end
-	self.nameList = nameList
 	return self.nameList
 end
 
 function TabNames:GetNames()
-	if not self.nameList  then
-		self:Refresh()
-	end
+	self:Refresh()
     local totalTabs = CHAT_SYSTEM.tabPool.m_Active
-	if #totalTabs ~= #self.nameList then
-		self:Refresh()
-	end
+	rChat.logDebug("[TabNames:GetNames] got tabs 1 #",#totalTabs)
+	rChat.logDebug("[TabNames:GetNames] got names 1 #",#self.nameList)
 	return self.nameList
 end
 
 function TabNames:GetIndex(tabName)
-    local tabIdx = 1
+    local tabIdx = nil
     for i,v in ipairs(self.nameList) do
         if v == tabName then
             tabIdx = i

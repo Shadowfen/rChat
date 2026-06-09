@@ -10,7 +10,7 @@ rChat_ZOS = {
     cachedMessages = {},        -- table of messages for chat restoring
     messagesWereRestored = false, -- bool  (was messagesHaveBeenRestorated)
     tabwarning_color = ZO_ColorDef:New("76BCC3"), -- tab Warning ~ "Azure" (ZOS default),
-    disableDebugLoggerBlocking = true,
+    --disableDebugLoggerBlocking = true,
 }
 
 

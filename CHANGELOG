@@ -1,4 +1,19 @@
 ﻿
+[COLOR="DeepSkyBlue"]2.0.5 (74)[/COLOR]:
+[LIST]
+[*] API bump.
+[/LIST]
+
+[COLOR="DeepSkyBlue"]2.0.4 (73)[/COLOR]:
+[LIST]
+[*] Fixed so that the chosen default Chat Tab is actually selected when starting up. (reported by balota)
+[*] Fix dropdown values for Tab names in the Settings -> Chat Tabs for setting the default tab to use.
+[*] Fixed various typos and one-off loop errors.
+[*] Fixed message length management to properly handle UTF8.
+[*] Removed the setting to turn off LibDebugLogger's automatic consumption of d() messages because the LibDebugLogger API interface for that no longer supports that.
+[*] Updated version numbers for dependent libraries.
+[/LIST]
+
 [COLOR="DeepSkyBlue"]2.0.3 (72)[/COLOR]:
 [LIST]
 [*] Updated keybind modifier key handling to fix recommended by IsharaMeradin. Thanks!

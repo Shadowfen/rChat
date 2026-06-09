@@ -230,7 +230,7 @@ function rChat_Internals.reduceString(entry, ndx, lvl)
 end
 
 -- overall message format
---  [timestamp] [guildtag|partytag|langtag|whisptag] from [zonetag] separator linktext
+--  [timestamp] [guildtag|partyTag|langtag|whisptag] from [zonetag] separator linktext
 --
 function rChat_Internals.produceRawString(entry, ndx, rawT)
     if not rawT then return "" end
@@ -244,12 +244,12 @@ function rChat_Internals.produceRawString(entry, ndx, rawT)
     -- message header
 
     -- optional party, guild, language, whisper tag
-    if rawT.partytag then
-        rawS[#rawS+1] = rawT.partytag
+    if rawT.partyTag then
+        rawS[#rawS+1] = rawT.partyTag
     elseif rawT.tag then        -- note: this is the guild tag
         rawS[#rawS+1] = rawT.tag
-    elseif rawT.languagetag then
-        rawS[#rawS+1] = rawT.languagetag
+    elseif rawT.languageTag then
+        rawS[#rawS+1] = rawT.languageTag
     elseif rawS.whisper then
         rawS[#rawS+1] = rawT.whisper
     end
@@ -282,7 +282,7 @@ function rChat_Internals.produceRawString(entry, ndx, rawT)
 end
 
 -- overall message format
---  [timestamp] lcol[guildtag|partytag|langtag|whisptag] from [zonetag] |r separator rcol linktext |r
+--  [timestamp] lcol[guildtag|partyTag|langtag|whisptag] from [zonetag] |r separator rcol linktext |r
 --
 -- Similar message format as used by produceRawString, but this function will
 -- produce a message string containing colors, links, etc.
@@ -310,12 +310,12 @@ function rChat_Internals.produceDisplayString(entry, ndx, displayT, colorT)
     end
 
     -- optional party, guild, language, whisper tag
-    if displayT.partytag then
+    if displayT.partyTag then
         displayS[#displayS+1] = displayT.partyTag
     elseif displayT.tag then
         displayS[#displayS+1] = displayT.tag    -- note: this is the guild tag
-    elseif displayT.languagetag then
-        displayS[#displayS+1] = displayT.languagetag
+    elseif displayT.languageTag then
+        displayS[#displayS+1] = displayT.languageTag
     elseif displayT.whisper then
         displayS[#displayS+1] = displayT.whisper
     end
@@ -354,7 +354,7 @@ function rChat_Internals.produceDisplayString(entry, ndx, displayT, colorT)
 end
 
 -- overall copy from format
---  [guildtag|partytag|langtag|whisptag] from [zonetag]
+--  [guildtag|partyTag|langtag|whisptag] from [zonetag]
 --
 -- npc and emote format never has []s
 -- otherwise [] around player is controllable
@@ -366,7 +366,7 @@ function rChat_Internals.produceCopyFrom(entry, ndx, rawT)
     -- message header (only)
 
     -- optional party, guild, language, whisper tag
-    if rawT.partytag then
+    if rawT.partyTag then
         rawS[#rawS+1] = rawT.partyTag
     elseif rawT.tag then
         rawS[#rawS+1] = rawT.tag
@@ -387,7 +387,7 @@ function rChat_Internals.produceCopyFrom(entry, ndx, rawT)
     return table.concat(rawS)
 end
 
--- creates formatted zonetag/partytag for message prefix
+-- creates formatted zonetag/partyTag for message prefix
 -- returns linked and raw zone and party tags (which will be nil if nozonetags is true)
 -- returns nil if not applicable
 function rChat_Internals.formatZoneTag(entry, ndx)
@@ -487,6 +487,7 @@ function rChat_Internals.GetChannelColors(channel, from)
         return r,g,b
     end
 
+    local lcol, rcol
     if db.useESOcolors then
 
         -- ESO actual color, return r,g,b
@@ -917,37 +918,6 @@ function rChat_Internals.getPad(textstr)
     return rslts
 end
 
--- not currently used (or tested)
--- get a table of start and end positions for the textures
--- in the text string (returns fragment table)
-function rChat_Internals.getTexture(textstr)
-    if not textstr or type(textstr) ~= "string" then return {} end
-    local db = rChat.save
-
-    local linkpattern = "(|t.-|t)"
-    local rslts={}
-    local last = 1
-    local start,fin,t = string.find(textstr, linkpattern)
-    if not start then
-		addFragment(rslts, 1, #textstr, RC_SEGTYPE_BARE, textstr)
-		return rslts
-	end
-	local ent
-    while( start ) do
-        if last ~= start then
-			addFragment(rslts, last, start-1, RC_SEGTYPE_BARE, textstr)
-            last = start
-        end
-		ent = addFragment(rslts, start, fin, RC_SEGTYPE_TEXTURE, textstr)
-		ent.raw = ""
-        last = fin+1
-        start, fin, t = string.find(textstr, linkpattern, last)
-    end
-    if last < #text then
-		addFragment(rslts, last, #text, RC_SEGTYPE_BARE, textstr)
-    end
-    return rslts
-end
 
 -- QuickChat messages |s<number><number:optional><number:optional><number:optional>|s
 local function getQuickLinks(rslts, text, starttxt, endtxt)
@@ -1134,7 +1104,7 @@ local function processMentions(entry, text)
 
     if type(text) == "string" then
         local newtxt = {}
-        addSegment(RC_SEGTYPE_BARE, text)
+        addSegment(newtxt,RC_SEGTYPE_BARE, text)
         text = newtxt
     end
 

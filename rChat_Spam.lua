@@ -37,7 +37,7 @@ local function SpamFlood(from, text, spamChanCode)
     local ourMessageTimestamp = GetTimeStamp()
 
     local checkSpam = true
-    while checkSpam do
+    while checkSpam and previousLine > 0 do
         local entry = rChatData.getCacheEntry(previousLine)
         -- Previous line can be a ChanSystem one
         if entry and entry.channel ~= CHAT_CHANNEL_SYSTEM then
@@ -54,9 +54,9 @@ local function SpamFlood(from, text, spamChanCode)
                         end
                     end
                 end
-            else
+            --else
                 -- > 30s, stop analysis
-                checkSpam = false
+            --    checkSpam = false
             end
         end
 
@@ -86,7 +86,7 @@ local function SpamLookingFor(text)
         [8] = "l[%s.]?f[%s.]?[%d]?[%s.]?dungeon", -- dungeon
     }
     local lowertext = string.lower(text)
-	if string.find(text,"^lf") then
+	if string.find(lowertext,"^lf") then
 		for _, spamString in ipairs(spamStrings) do
 			if string.find(lowertext, spamString) then
 				return true
@@ -326,7 +326,7 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
                 return true
             else
                 rChatData.spamTempWantToStopTimestamp = GetTimeStamp()
-                rChatData.spamWantToStop = true
+                rChatData.spamWantToEnabled = false
                 return false
             end
         end
@@ -340,7 +340,7 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
                 return true
             else
                 rChatData.spamTempPriceStopTimestamp = GetTimeStamp()
-                rChatData.spamPriceCheck = true
+                rChatData.spamPriceCheckEnabled = false
                 return false
             end
         end
@@ -354,7 +354,7 @@ function rChat.SpamFilter(chanCode, from, text, isCS)
                 return true
             else
                 rChatData.spamTempGuildRecruitStopTimestamp = GetTimeStamp()
-                rChatData.spamGuildRecruitStop = true
+                rChatData.spamGuildRecruitEnabled = false
                 return false
             end
         end

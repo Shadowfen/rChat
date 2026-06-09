@@ -117,7 +117,7 @@ local defaults = {
     fonts = "ESO Standard Font",
     enablecopy = true,
     -- colours["tabwarning"],
-    disableDebugLoggerBlocking = true,
+    --disableDebugLoggerBlocking = true,
 	announce_zone = false,
     -- ---- Chat Window Settings specific options - End
 
@@ -383,8 +383,6 @@ function rChat.FormatRawText(text)
             -- Fakelink and GetItemLinkName
             return "[" .. zo_strformat(SI_TOOLTIP_ITEM_NAME, GetItemLinkName("|H" .. linkStyle ..":" .. data .. "|h|h")) .. "]"
 
---      if linkType == GUILD_LINK_TYPE then
---          return "[" .. zo_strformat(GetItemLinkName("|H" .. linkStyle ..":" .. data .. "|h|h")) .. "]"
         -- param1 : achievementID
         elseif linkType == ACHIEVEMENT_LINK_TYPE then
             -- zo_strformat to avoid masculine/feminine problems
@@ -1353,7 +1351,7 @@ end
 
 local function ShowFadedLines()
 
-	SecurePostHook(CHAT_SYSTEM, "CreateNewChatTab", function()
+	rChat.hookmgr:SecurePostHook(CHAT_SYSTEM, "CreateNewChatTab", function()
 		CreateNewChatTab_PostHook()
 	end)
 end
@@ -2096,7 +2094,7 @@ local function FormatMessage(chanCode, from, text, isCS, fromDisplayName)
     -- Only if not handled by rChat
     if not notHandled then
         -- Store message and params into an array for copy system and SpamFiltering
-        StorelineNumber(entry.timestamp, raw.from, original.text, chanCode, originalFrom, ndx)
+        StorelineNumber(entry.timestamp, raw.from, original.text, chanCode, fromDisplayName, ndx)
     end
 
     if chanCode == CHAT_CHANNEL_WHISPER then
@@ -2593,7 +2591,7 @@ local function UpdateChoices(name, data)
     end
 	dropdownCtrl:UpdateChoices(data.choices, data.choicesValues, data.choicesTooltips)  
 end
-
+rChat.UpdateChoices = UpdateChoices
 
 -- ---------------------------------------------------------------------------
 
@@ -2710,13 +2708,16 @@ end
 -- only executes once
 local function OnPlayerActivated_Initialize()
 
-    rChat.evtmgr:unregEvt(EVENT_PLAYER_ACTIVATED)
+    local hookmgr = rChat.hookmgr
+    local evtmgr = rChat.evtmgr
+
+    evtmgr:unregEvt(EVENT_PLAYER_ACTIVATED)
  
     rData.sceneFirst = false
     rData.activeTab = 1
 
 	OnPlayerActivated_ZoneLoad()
-    ZO_PreHook(CHAT_SYSTEM, "ValidateChatChannel", function(self)
+    hookmgr:PreHook(CHAT_SYSTEM, "ValidateChatChannel", function(self)
             if self.currentChannel == CHAT_CHANNEL_WHISPER then
                 return
             end
@@ -2731,7 +2732,7 @@ local function OnPlayerActivated_Initialize()
 
 	if CHAT_SYSTEM.primaryContainer and CHAT_SYSTEM.primaryContainer.HandleTabClick then
 		CHAT_SYSTEM.primaryContainer:AddFadeInReference()
-		ZO_PreHook(CHAT_SYSTEM.primaryContainer, "HandleTabClick", function(self, tab)
+		hookmgr:PreHook(CHAT_SYSTEM.primaryContainer, "HandleTabClick", function(self, tab)
             rData.activeTab = tab.index
             if (db.tabs.enableChatTabChannel == true) then
                 local tabIndex = tab.index
@@ -2745,14 +2746,41 @@ local function OnPlayerActivated_Initialize()
 	end
 
 
-    SecurePostHook("ZO_ChatSystem_ScrollToBottom", function(ctrl)
+    hookmgr:SecurePostHook("ZO_ChatSystem_ScrollToBottom", function(ctrl)
         rChat_RemoveIMNotification()
     end)
 
     -- Visual Notification PreHook
-    ZO_PreHook(CHAT_SYSTEM, "Maximize", function(self)
+    hookmgr:PreHook(CHAT_SYSTEM, "Maximize", function(self)
         CHAT_SYSTEM.IMLabelMin:SetHidden(true)
     end)
+
+    	local evtmgr = rChat.evtmgr
+
+	-- make sure we are only called once
+	evtmgr:unregEvt(EVENT_PLAYER_ACTIVATED)
+
+    --LAM
+    rChat.BuildLAM()
+    UpdateChoices("RCHAT_TABNAMES_DD",{choices=rChat.tabNames:GetNames()})
+
+    -- Set Window opaqueness
+	rChat.ChangeChatWindowDarkness(true)
+
+    -- Will set Keybind for "switch to next tab" if needed
+    SetSwitchToNextBinding()
+
+    -- Will change font if needed
+    rChat.ChangeChatFont()
+
+    -- Minimize Chat in Menus
+    MinimizeChatInMenus()
+
+    rChat.BuildNicknames()
+    rChat.BuildFilterButtons()
+
+    InitializeURLHandling()
+
 
     -- AntiSpam
     rData.spamLookingForEnabled = true
@@ -2798,8 +2826,8 @@ local function OnPlayerActivated_Initialize()
     LINK_HANDLER:RegisterCallback(LINK_HANDLER.LINK_MOUSE_UP_EVENT, OnLinkClicked)
 
     RegisterChatEvents()
+    evtmgr:registerEvt(EVENT_PLAYER_ACTIVATED, OnPlayerActivated_ZoneLoad)
     SetDefaultTab(db.tabs.defaultTab)
-    rChat.evtmgr:registerEvt(EVENT_PLAYER_ACTIVATED, OnPlayerActivated_ZoneLoad)
     rChat.SetToDefaultChannel()
 end
 
@@ -3008,14 +3036,19 @@ local function loadSavedVars(savedvar, sv_version, defaults)
     return save
 end
 
--- Please note that some things are delayed in OnPlayerActivated() because Chat isn't ready when this function triggers
+-- Please note that some things are delayed in OnPlayerActivated() 
+-- because Chat isn't ready when this function triggers
 local function OnAddonLoaded(_, addonName)
 
     --Protect
     if addonName ~= rChat.name then return end
 
+    local evtmgr = rChat.evtmgr
+    local hookmgr = rChat.hookmgr
+
     -- Unregisters
-    rChat.evtmgr:unregEvt(EVENT_ADD_ON_LOADED)
+    evtmgr:unregEvt(EVENT_ADD_ON_LOADED)
+    evtmgr:registerEvt(EVENT_ADD_ON_LOADED, OnAddonLoaded)
 
     rChat_ZOS.FormatSysMessage = FormatSysMessage
     rChat_ZOS.FormatMessage = FormatMessage
@@ -3038,15 +3071,12 @@ local function OnAddonLoaded(_, addonName)
     -- init vars/funcs for ZOS rewritten functions
     rChat_ZOS.tabwarning_color = ZO_ColorDef:New(str_sub(db.colours["tabwarning"],3,8))
     -- add control for LibDebugLogger
-    rChat_ZOS.disableDebugLoggerBlocking = db.disableDebugLoggerBlocking
+    --rChat_ZOS.disableDebugLoggerBlocking = db.disableDebugLoggerBlocking
     
     if rChat.tabNames == nil then
         rChat.tabNames = rChat_TabNames:New()
     end
 	
-    --LAM
-    rChat.BuildLAM()
-
     local HRS_TO_SEC = 3600
     local maxage = GetTimeStamp() - (db.timeBeforeRestore * HRS_TO_SEC) - 1
     rChatData.initCache(maxage)
@@ -3055,28 +3085,11 @@ local function OnAddonLoaded(_, addonName)
         db.chatTabChannel = {}
     end
 
-	-- Set Window opaqueness
-	rChat.ChangeChatWindowDarkness(true)
-
-    -- Will set Keybind for "switch to next tab" if needed
-    SetSwitchToNextBinding()
-
-    -- Will change font if needed
-    rChat.ChangeChatFont()
-
     -- Automated messages
     rChat.InitAutomatedMessages()
 
     -- Resize, must be loaded before CHAT_SYSTEM is set
     CHAT_SYSTEM.maxContainerWidth, CHAT_SYSTEM.maxContainerHeight = GuiRoot:GetDimensions()
-
-    -- Minimize Chat in Menus
-    MinimizeChatInMenus()
-
-    rChat.BuildNicknames()
-    rChat.BuildFilterButtons()
-
-    InitializeURLHandling()
 
     -- PreHook ReloadUI, SetCVar, LogOut & Quit to handle Chat Import/Export
     local function saveHistandConf(tp)
@@ -3084,45 +3097,47 @@ local function OnAddonLoaded(_, addonName)
         SaveChatConfig()
     end
 
-    ZO_PreHook("ReloadUI", function()
+    hookmgr:PreHook("ReloadUI", function()
+        saveHistandConf(1)
+    end)
+    --ZO_PreHook("ReloadUI", function() saveHistandConf(1) end)
+
+    hookmgr:PreHook("SetCVar", function()
         saveHistandConf(1)
     end)
 
-    ZO_PreHook("SetCVar", function()
-        saveHistandConf(1)
-    end)
-
-    ZO_PreHook("Logout", function()
+    hookmgr:PreHook("Logout", function()
         saveHistandConf(2)
     end)
 
-    ZO_PreHook("Quit", function()
+    hookmgr:PreHook("Quit", function()
         saveHistandConf(3)
     end)
 
     -- Social option change color
-    ZO_PreHook("SetChatCategoryColor", SaveChatCategoryColors)
+    hookmgr:PreHook("SetChatCategoryColor", SaveChatCategoryColors)
 
-    -- Chat option change categories filters, add a callLater because settings are set after this function triggers.
+    -- Chat option change categories filters, add a callLater because 
+    -- settings are set after this function triggers.
     
-    ZO_PreHook("ZO_ChatOptions_ToggleChannel", function() 
+    hookmgr:PreHook("ZO_ChatOptions_ToggleChannel", function() 
             zo_callLater(function() SaveTabsCategories() end, 100) 
         end)
     
 
     -- Right click on a tab name
-    ZO_PreHook("ZO_ChatSystem_ShowOptions", function(control) return ChatSystemShowOptions() end)
-    ZO_PreHook("ZO_ChatWindow_OpenContextMenu", function(control) return ChatSystemShowOptions(control.index) end)
+    hookmgr:PreHook("ZO_ChatSystem_ShowOptions", function(control) return ChatSystemShowOptions() end)
+    hookmgr:PreHook("ZO_ChatWindow_OpenContextMenu", function(control) return ChatSystemShowOptions(control.index) end)
     
     -- handlers
-    rChat.evtmgr:registerEvt(EVENT_GUILD_SELF_JOINED_GUILD, OnSelfJoinedGuild)
-    rChat.evtmgr:registerEvt(EVENT_GUILD_SELF_LEFT_GUILD, OnSelfLeftGuild)
-    rChat.evtmgr:registerEvt(EVENT_RETICLE_TARGET_CHANGED, OnReticleTargetChanged)
-    rChat.evtmgr:registerEvt(EVENT_GROUP_MEMBER_JOINED, OnGroupMemberJoined)
-    rChat.evtmgr:registerEvt(EVENT_GROUP_MEMBER_LEFT, OnGroupMemberLeft)
+    evtmgr:registerEvt(EVENT_GUILD_SELF_JOINED_GUILD, OnSelfJoinedGuild)
+    evtmgr:registerEvt(EVENT_GUILD_SELF_LEFT_GUILD, OnSelfLeftGuild)
+    evtmgr:registerEvt(EVENT_RETICLE_TARGET_CHANGED, OnReticleTargetChanged)
+    evtmgr:registerEvt(EVENT_GROUP_MEMBER_JOINED, OnGroupMemberJoined)
+    evtmgr:registerEvt(EVENT_GROUP_MEMBER_LEFT, OnGroupMemberLeft)
 
     isAddonLoaded = true
-    rChat.evtmgr:registerEvt(EVENT_PLAYER_ACTIVATED, OnPlayerActivated_Initialize)
+    evtmgr:registerEvt(EVENT_PLAYER_ACTIVATED, OnPlayerActivated_Initialize)
 end
 
 

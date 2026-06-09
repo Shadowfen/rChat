@@ -490,11 +490,10 @@ local function chatTabSettings()
                 choices = rChat.tabNames:GetNames(),
                 width = "full",
                 getFunc = function() 
-					UpdateChoices("RCHAT_TABNAMES_DD",{choices=rChat.tabNames:Refresh()})
 					return db.tabs.defaultTabName end,
                 setFunc = function(choice)
                         db.tabs.defaultTabName = choice
-                        db.tabs.defaultTab = rChat.tabNames:GetIndex(choice)
+                        db.tabs.defaultTab = rChat.tabNames:GetIndex(choice) or 1
                     end,
 				reference = "RCHAT_TABNAMES_DD",
             },
@@ -743,6 +742,7 @@ local function chatWindowSettings()
                 width = "full",
                 default = rChat.defaults.announce_zone,
             },--
+            --[[
             {-- LibDebugLogger
                 type = "checkbox",
                 name = L(RCHAT_DISABLELOGGER),
@@ -760,7 +760,7 @@ local function chatWindowSettings()
                 width = "full",
                 default = rChat.defaults.disableDebugLoggerBlocking,
                 disable = (not LibDebugLogger),
-            },--
+            },--]]
         },
     }
 end
@@ -1556,9 +1556,9 @@ function rChat.BuildLAMPanel()
     -- Chat Colors
     optionsData[#optionsData + 1] = chatColors()
 
--- Guilds
+    -- Guilds
 
---  Guild Stuff
+    --  Guild Stuff
     local function isDisabled_GuildColors(guild)
         if db.useESOcolors then return true end
         if guild ~= 1 then
@@ -1566,7 +1566,7 @@ function rChat.BuildLAMPanel()
         end
         return false
     end	
---
+    --
     local guildOptionsData = guildSettings()
 
     for guild = 1, GetNumGuilds() do

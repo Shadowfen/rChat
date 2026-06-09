@@ -6,11 +6,11 @@
 
 ## Title: rChatData
 ## Description: Separate save location for rChat chat history data.
-## Version: 1.13
-## AddOnVersion: 5
+## Version: 1.14
+## AddOnVersion: 6
 ## Author: Shadowfen
-## APIVersion: 101047 101048
-## DependsOn: LibSFUtils>=66 
+## APIVersion: 101050 101049
+## DependsOn: LibSFUtils>=70 
 ## SavedVariables: RCHAT_CACHE RCHAT_CMDS
 
 rChatData.lua
