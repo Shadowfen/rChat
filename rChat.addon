@@ -14,7 +14,7 @@
 ## Author: Shadowfen
 ## APIVersion: 101051 101050
 ## SavedVariables: RCHAT_OPTS
-## DependsOn: LibSFUtils>=71 LibAddonMenu-2.0>=43 LibMediaProvider>=37
+## DependsOn: LibSFUtils>=75 LibAddonMenu-2.0>=43 LibMediaProvider>=37
 ## DependsOn: rChatData LibDebugLogger>=307
 ## OptionalDependsOn: LibChatMessage LuiExtended LibSlashCommander
 
