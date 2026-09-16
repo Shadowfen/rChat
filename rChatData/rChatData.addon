@@ -9,8 +9,8 @@
 ## Version: 1.14
 ## AddOnVersion: 6
 ## Author: Shadowfen
-## APIVersion: 101050 101049
-## DependsOn: LibSFUtils>=75 
+## APIVersion: 101050 101051
+## DependsOn: LibSFUtils>=77 
 ## SavedVariables: RCHAT_CACHE RCHAT_CMDS
 
 rChatData.lua
